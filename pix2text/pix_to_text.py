@@ -9,6 +9,8 @@ from typing import Dict, Any, Optional, Union
 from copy import deepcopy
 
 from PIL import Image
+import numpy as np
+import torch
 from cnocr import CnOcr, ImageClassifier
 
 from .consts import IMAGE_TYPES, LATEX_CONFIG_FP, MODEL_VERSION, CLF_MODEL_URL_FMT
@@ -45,7 +47,6 @@ DEFAULT_CONFIGS = {
 
 
 class Pix2Text(object):
-    # model_fp = './data/image-formula-text/image-clf-epoch=015-val-accuracy-epoch=0.9394-model.ckpt'
     MODEL_FILE_PREFIX = 'pix2text-v{}'.format(MODEL_VERSION)
 
     def __init__(
@@ -138,21 +139,25 @@ class Pix2Text(object):
             device=device,
         )
 
-    def __call__(self, img):
+    def __call__(self, img: Union[str, Path, Image.Image]) -> Dict[str, Any]:
         return self.recognize(img)
 
-    def recognize(self, img: Union[str, Path]) -> Dict[str, Any]:
+    def recognize(self, img: Union[str, Path, Image.Image]) -> Dict[str, Any]:
         """
 
         Args:
-            img (str): an image path
+            img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
 
-        Returns: dict, with keys:
+        Returns: a dict, with keys:
            `image_type`: 图像类别；
            `text`: 识别出的文字或Latex公式
 
         """
-        res = self.image_clf.predict_images([img])[0]
+        if isinstance(img, Image.Image):
+            _img = torch.tensor(np.asarray(img.convert('RGB')))
+            res = self.image_clf.predict_images([_img])[0]
+        else:
+            res = self.image_clf.predict_images([img])[0]
         logger.debug('CLF Result: %s', res)
         image_type = res[0]
         if res[1] < self.thresholds['formula2general'] and res[0] == 'formula':
@@ -174,7 +179,9 @@ class Pix2Text(object):
         return result
 
     def _latex(self, image):
-        out = self.latex_model(Image.open(image))
+        if isinstance(image, (str, Path)):
+            image = Image.open(image)
+        out = self.latex_model(image)
         return str(out)
 
 
@@ -184,5 +191,6 @@ if __name__ == '__main__':
     logger = set_logger(log_level='DEBUG')
 
     p2t = Pix2Text()
-    out = p2t.recognize('examples/taobao.jpg')
+    img = 'examples/english.jpg'
+    out = p2t.recognize(Image.open(img))
     logger.info(out)
