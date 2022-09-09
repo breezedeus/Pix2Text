@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
+# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
 
 import os
 from setuptools import find_packages, setup
@@ -37,7 +38,7 @@ entry_points = """
 setup(
     name=PACKAGE_NAME,
     version=about['__version__'],
-    description="Python3 package to extract information from images",
+    description="Python3 package to extract text information from images",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='breezedeus',
@@ -47,6 +48,14 @@ setup(
     platforms=["Mac", "Linux", "Windows"],
     packages=find_packages(),
     include_package_data=True,
+    data_files=[
+        (
+            '',
+            [
+                'pix2text/latex_config.yaml',
+            ],
+        )
+    ],
     entry_points=entry_points,
     install_requires=required,
     extras_require=extras_require,

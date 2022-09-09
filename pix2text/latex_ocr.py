@@ -1,10 +1,13 @@
 # coding: utf-8
+# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+#
 # credit to: pix2tex, lukas-blecher/LaTeX-OCR
 # Adapted from https://github.com/lukas-blecher/LaTeX-OCR/blob/main/pix2tex/cli.py
 
-from typing import Tuple
+from typing import Tuple, Optional, Dict, Any
 import logging
 import yaml
+from pathlib import Path
 
 from PIL import Image
 from transformers import PreTrainedTokenizerFast
@@ -14,9 +17,35 @@ from timm.models.layers import StdConv2dSame
 from pix2tex.utils import *
 from pix2tex.models import get_model
 from pix2tex.dataset.transforms import test_transform
-from pix2tex.model.checkpoints.get_latest_checkpoint import download_checkpoints
+from pix2tex.model.checkpoints.get_latest_checkpoint import (
+    download_as_bytes_with_progress,
+)
+
+from .consts import LATEX_CONFIG_FP
+from .utils import data_dir
+
 
 logger = logging.getLogger(__name__)
+
+
+def download_checkpoints(out_dl_dir):
+    # adapted from pix2tex.model.checkpoints.get_latest_checkpoint
+    tag = 'v0.0.1'  # get_latest_tag()
+    logger.info('download weights %s to path %s', tag, out_dl_dir)
+    os.makedirs(out_dl_dir, exist_ok=True)
+    weights = (
+        'https://github.com/lukas-blecher/LaTeX-OCR/releases/download/%s/weights.pth'
+        % tag
+    )
+    resizer = (
+        'https://github.com/lukas-blecher/LaTeX-OCR/releases/download/%s/image_resizer.pth'
+        % tag
+    )
+    for url, name in zip([weights, resizer], ['weights.pth', 'image_resizer.pth']):
+        if not os.path.exists(os.path.join(out_dl_dir, name)):
+            file = download_as_bytes_with_progress(url, name)
+            open(os.path.join(out_dl_dir, name), "wb").write(file)
+            logger.info(f'save {name} to path {out_dl_dir}')
 
 
 def minmax_size(
@@ -58,32 +87,33 @@ class LatexOCR(object):
     last_pic = None
 
     @in_model_path()
-    def __init__(self, arguments=None):
+    def __init__(self, arguments: Optional[Dict[str, Any]] = None):
         """Initialize a LatexOCR model
 
         Args:
             arguments (Union[Namespace, Munch], optional): Special model parameters. Defaults to None.
         """
         if arguments is None:
-            arguments = Munch(
-                {
-                    'config': 'settings/config.yaml',
-                    'checkpoint': 'checkpoints/weights.pth',
-                    'no_cuda': True,
-                    'no_resize': False,
-                }
-            )
+            arguments = {
+                'config': LATEX_CONFIG_FP,
+                'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
+                # 'no_cuda': True,
+                'no_resize': False,
+                'device': 'cpu',
+            }
+
+        arguments = Munch(arguments)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         with open(arguments.config, 'r') as f:
             params = yaml.load(f, Loader=yaml.FullLoader)
         self.args = parse_args(Munch(params))
         self.args.update(**vars(arguments))
         self.args.wandb = False
-        self.args.device = (
-            'cuda' if torch.cuda.is_available() and not self.args.no_cuda else 'cpu'
-        )
-        if not os.path.exists(self.args.checkpoint):
-            download_checkpoints()
+        # self.args.device = (
+        #     'cuda' if torch.cuda.is_available() and not self.args.no_cuda else 'cpu'
+        # )
+        # if not os.path.exists(self.args.checkpoint):
+        download_checkpoints(os.path.dirname(arguments.checkpoint))
         self.model = get_model(self.args)
         self.model.load_state_dict(
             torch.load(self.args.checkpoint, map_location=self.args.device)
