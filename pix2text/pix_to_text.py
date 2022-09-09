@@ -5,7 +5,7 @@ import os
 from glob import glob
 import logging
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Optional, Union
 from copy import deepcopy
 
 from PIL import Image
@@ -18,7 +18,7 @@ from .utils import data_dir, get_model_file
 logger = logging.getLogger(__name__)
 
 
-default_configs = {
+DEFAULT_CONFIGS = {
     'clf': {
         'base_model_name': 'mobilenet_v2',
         'categories': IMAGE_TYPES,
@@ -37,6 +37,10 @@ default_configs = {
         'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
         'no_resize': False,
     },
+    'thresholds': {
+        'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
+        'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
+    },
 }
 
 
@@ -51,11 +55,15 @@ class Pix2Text(object):
         general_config: Dict[str, Any] = None,
         english_config: Dict[str, Any] = None,
         formula_config: Dict[str, Any] = None,
+        thresholds: Dict[str, Any] = None,
         device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
+        **kwargs,
     ):
         if device.lower() == 'gpu':
             device = 'cuda'
         self.device = device
+        thresholds = thresholds or DEFAULT_CONFIGS['thresholds']
+        self.thresholds = deepcopy(thresholds)
 
         (
             clf_config,
@@ -84,12 +92,12 @@ class Pix2Text(object):
                 _conf = _def_val
             return _conf
 
-        clf_config = _to_default(clf_config, default_configs['clf'])
-        general_config = _to_default(general_config, default_configs['general'])
+        clf_config = _to_default(clf_config, DEFAULT_CONFIGS['clf'])
+        general_config = _to_default(general_config, DEFAULT_CONFIGS['general'])
         general_config['context'] = device
-        english_config = _to_default(english_config, default_configs['english'])
+        english_config = _to_default(english_config, DEFAULT_CONFIGS['english'])
         english_config['context'] = device
-        formula_config = _to_default(formula_config, default_configs['formula'])
+        formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
         formula_config['device'] = device
         return clf_config, general_config, english_config, formula_config
 
@@ -120,38 +128,48 @@ class Pix2Text(object):
 
     @classmethod
     def from_config(cls, total_configs: Optional[dict] = None, device: str = 'cpu'):
-        total_configs = total_configs or default_configs
+        total_configs = total_configs or DEFAULT_CONFIGS
         return cls(
             clf_config=total_configs.get('clf', dict()),
             general_config=total_configs.get('general', dict()),
             english_config=total_configs.get('english', dict()),
             formula_config=total_configs.get('formula', dict()),
+            thresholds=total_configs.get('thresholds', DEFAULT_CONFIGS['thresholds']),
             device=device,
         )
 
     def __call__(self, img):
         return self.recognize(img)
 
-    def recognize(self, img) -> Tuple[str, str]:
+    def recognize(self, img: Union[str, Path]) -> Dict[str, Any]:
+        """
+
+        Args:
+            img (str): an image path
+
+        Returns: dict, with keys:
+           `image_type`: 图像类别；
+           `text`: 识别出的文字或Latex公式
+
+        """
         res = self.image_clf.predict_images([img])[0]
         logger.debug('CLF Result: %s', res)
         image_type = res[0]
-        if res[1] < 0.65 and res[0] == 'formula':
+        if res[1] < self.thresholds['formula2general'] and res[0] == 'formula':
             image_type = 'general'
-        if res[1] < 0.75 and res[0] == 'english':
+        if res[1] < self.thresholds['english2general'] and res[0] == 'english':
             image_type = 'general'
         if image_type == 'formula':
             result = self._latex(img)
         else:
             result = self._ocr(img, image_type)
 
-        return image_type, result
+        return {'image_type': image_type, 'text': result}
 
     def _ocr(self, image, image_type):
         ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr
         result = ocr_model.ocr(image)
         texts = [_one['text'] for _one in result]
-        # logger.info(f'\tOCR results: {pformat(texts)}\n')
         result = '\n'.join(texts)
         return result
 

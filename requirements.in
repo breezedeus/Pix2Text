@@ -1,0 +1,9 @@
+--index-url https://pypi.doubanio.com/simple --extra-index-url https://pypi.org/simple
+
+click
+torch
+torchvision
+numpy
+pillow>=5.3.0
+cnocr>=2.2.2
+pix2tex

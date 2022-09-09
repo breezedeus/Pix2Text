@@ -23,7 +23,7 @@ exec(
 required = [
     "click",
     "tqdm",
-    "cnocr>=2.2.1",
+    "cnocr>=2.2.2",
     "pix2tex",
 ]
 extras_require = {
@@ -33,6 +33,7 @@ extras_require = {
 
 entry_points = """
 [console_scripts]
+p2t = pix2text.cli:cli
 """
 
 setup(
