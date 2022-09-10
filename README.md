@@ -16,6 +16,7 @@
 </div>
 
 <div align="center">
+
 [English](./README_en.md) | 中文
 </div>
 
@@ -60,7 +61,11 @@ print(out_text)
 
 
 
-其中返回结果 `out_text` 是个 `dict`，其中 key `image_type` 表示图片分类类别，而 key `text` 表示识别的结果。如上面的调用返回以下结果：
+返回结果 `out_text` 是个 `dict`，其中 key `image_type` 表示图片分类类别，而 key `text` 表示识别的结果。
+
+
+
+以下是一些示例图片的识别结果：
 
 <table>
 <tr>
@@ -120,7 +125,83 @@ print(out_text)
 
 
 
-## Install
+## 安装
+
+嗯，顺利的话一行命令即可。
+
+```bash
+pip install pix2text
+```
+
+安装速度慢的话，可以指定国内的安装源，如使用豆瓣源：
+
+```bash
+pip install pix2text -i https://pypi.doubanio.com/simple
+```
 
 
 
+如果是初次使用**OpenCV**，那估计安装都不会很顺利，bless。
+
+**Pix2Text** 主要依赖 [**CnOCR>=2.2.2**](https://github.com/breezedeus/cnocr) ，以及 [**LaTeX-OCR**](https://github.com/lukas-blecher/LaTeX-OCR) 。如果安装过程遇到问题，也可参考它们的安装说明文档。
+
+
+
+> **Warning** 
+>
+> 如果电脑中从未安装过 `PyTorch`，`OpenCV` python包，初次安装可能会遇到不少问题，但一般都是常见问题，可以自行百度/Google解决。
+
+
+
+## HTTP服务
+
+ **Pix2Text** 加入了基于 FastAPI 的HTTP服务。开启服务需要安装几个额外的包，可以使用以下命令安装：
+
+```bash
+pip install pix2text[serve]
+```
+
+
+
+安装完成后，可以通过以下命令启动HTTP服务（**`-p`** 后面的数字是**端口**，可以根据需要自行调整）：
+
+```bash
+p2t serve -p 8503
+```
+
+
+
+服务开启后，可以使用以下方式调用服务。
+
+
+
+### 命令行
+
+比如待识别文件为 `docs/examples/english.jpg`，如下使用 curl 调用服务：
+
+```bash
+> curl -F image=@docs/examples/english.jpg http://0.0.0.0:8503/pix2text
+```
+
+
+
+### Python
+
+使用如下方式调用服务：
+
+```python
+import requests
+
+image_fp = 'docs/examples/english.jpg'
+r = requests.post(
+    'http://0.0.0.0:8503/pix2text', files={'image': (image_fp, open(image_fp, 'rb'), 'image/png')},
+)
+out = r.json()['results']
+print(out)
+```
+
+
+
+### 其他语言
+
+请参照 curl 的调用方式自行实现。
