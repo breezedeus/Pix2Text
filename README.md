@@ -62,31 +62,50 @@ print(out_text)
 
 其中返回结果 `out_text` 是个 `dict`，其中 key `image_type` 表示图片分类类别，而 key `text` 表示识别的结果。如上面的调用返回以下结果：
 
+<table>
+<tr>
+<td> 图片 </td> <td> Pix2Text识别结果 </td>
+</tr>
+<tr>
+<td>
+<img src="./docs/examples/formula.jpg" alt="formula" width="350px"/> 
+</td>
+<td>
 
-
-
-| 图片      | OCR结果           |
-| ------------ | --------------- |
-| <img src="./docs/examples/formula.jpg" alt="formula" width="350px"/>| 
 ```json
 {'image_type': 'formula',
  'text': '\\mathcal{L}_{\\mathrm{eyelid}}~\\longrightarrow\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}\\cal{M}_{v}^{\\mathrm{(eyelid}})\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)'}
 ```
-|
-| <img src="./docs/examples/english.jpg" alt="english" width="350px"/> | 
+</td>
+</tr>
+<tr>
+<td>
+ <img src="./docs/examples/english.jpg" alt="english" width="350px"/> 
+</td>
+<td>
+
 ```json
 {'image_type': 'english',
  'text': 'python scripts/screenshot_daemon_with_server\n'
          '2-get_model:178usemodel:/Users/king/.cr\n'
          'enet_lite_136-fc-epoch=039-complete_match_er'}
 ```
-|
-| <img src="./docs/examples/general.jpg" alt="general" width="350px"/> | 
+</td>
+</tr>
+<tr>
+<td>
+ <img src="./docs/examples/general.jpg" alt="general" width="350px"/> 
+</td>
+<td>
+
 ```json
 {'image_type': 'general',
  'text': '618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天'}
 ```
-|
+</td>
+</tr>
+</table>
+
 
 
 
