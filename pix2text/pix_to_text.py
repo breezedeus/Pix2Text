@@ -191,6 +191,6 @@ if __name__ == '__main__':
     logger = set_logger(log_level='DEBUG')
 
     p2t = Pix2Text()
-    img = 'examples/english.jpg'
+    img = 'docs/examples/english.jpg'
     out = p2t.recognize(Image.open(img))
     logger.info(out)
