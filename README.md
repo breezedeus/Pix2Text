@@ -68,39 +68,39 @@ print(out_text)
 </tr>
 <tr>
 <td>
-<img src="./docs/examples/formula.jpg" alt="formula" width="350px"/> 
+<img src="./docs/examples/formula.jpg" alt="formula" width="30%"/> 
 </td>
 <td>
 
 ```json
-{'image_type': 'formula',
- 'text': '\\mathcal{L}_{\\mathrm{eyelid}}~\\longrightarrow\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}\\cal{M}_{v}^{\\mathrm{(eyelid}})\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)'}
+{"image_type": "formula",
+ "text": "\\mathcal{L}_{\\mathrm{eyelid}}~\\longrightarrow\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}\\cal{M}_{v}^{\\mathrm{(eyelid}})\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)"}
 ```
 </td>
 </tr>
 <tr>
 <td>
- <img src="./docs/examples/english.jpg" alt="english" width="350px"/> 
+ <img src="./docs/examples/english.jpg" alt="english" width="30%"/> 
 </td>
 <td>
 
 ```json
-{'image_type': 'english',
- 'text': 'python scripts/screenshot_daemon_with_server\n'
-         '2-get_model:178usemodel:/Users/king/.cr\n'
-         'enet_lite_136-fc-epoch=039-complete_match_er'}
+{"image_type": "english",
+ "text": "python scripts/screenshot_daemon_with_server\n"
+         "2-get_model:178usemodel:/Users/king/.cr\n"
+         "enet_lite_136-fc-epoch=039-complete_match_er"}
 ```
 </td>
 </tr>
 <tr>
 <td>
- <img src="./docs/examples/general.jpg" alt="general" width="350px"/> 
+ <img src="./docs/examples/general.jpg" alt="general" width="30%"/> 
 </td>
 <td>
 
 ```json
-{'image_type': 'general',
- 'text': '618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天'}
+{"image_type": "general",
+ "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天"}
 ```
 </td>
 </tr>
