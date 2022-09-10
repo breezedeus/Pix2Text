@@ -48,7 +48,8 @@ Pix2Text首先利用**图片分类模型**来判断图片类型，然后基于�
 
 ## 使用说明
 
-安装好后，调用很简单，以下是示例：
+
+调用很简单，以下是示例：
 
 ```python
 from pix2text import Pix2Text
@@ -121,7 +122,21 @@ print(out_text)
 
 
 
+### 模型下载
 
+安装好 Pix2Text 后，首次使用时系统会**自动下载** 模型文件，并存于 `~/.pix2text`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
+
+
+
+> **Note**
+>
+> 如果已成功运行上面的示例，说明模型已完成自动下载，可忽略本节后续内容。
+
+
+
+对于**分类模型**，系统会自动下载模型zip文件并对其解压，然后把解压后的模型相关目录放于`~/.pix2text`目录中。如果系统无法自动成功下载zip文件，则需要手动从 **[cnstd-cnocr-models/pix2text](https://huggingface.co/breezedeus/cnstd-cnocr-models/tree/main/models/pix2text/0.1)** 下载此zip文件并把它放于 `~/.pix2text`目录。如果下载太慢，也可以从 [百度云盘](https://pan.baidu.com/s/10E_NAAWHnbcCu7tw3vnbjg?pwd=p2t0) 下载， 提取码为 ` p2t0`。
+
+对于  **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** ，系统同样会自动下载模型文件并把它们存放于`~/.pix2text/formula`目录中。如果系统无法自动成功下载这些模型文件，则需从  [百度云盘](https://pan.baidu.com/s/1KgFLm6iTRK0Zn8fvu2aDzQ?pwd=p2t0) 下载文件 `weights.pth` 和 `image_resizer.pth`， 并把它们存放于`~/.pix2text/formula`目录中；提取码为 ` p2t0`。
 
 
 
