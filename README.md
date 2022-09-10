@@ -78,8 +78,8 @@ print(out_text)
  "text": "\\mathcal{L}_{\\mathrm{eyelid}}~\\longrightarrow"
  "\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}"
  "\\cal{M}_{v}^{\\mathrm{(eyelid}})"
- "\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}"
- "\\right|\\right|^{2}\\right)"}
+ "\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,"
+ "\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)"}
 ```
 </td>
 </tr>
@@ -107,8 +107,8 @@ print(out_text)
 
 ```json
 {"image_type": "general",
- "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了"
-          "\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天"}
+ "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n"
+          "100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天"}
 ```
 </td>
 </tr>
