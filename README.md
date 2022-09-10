@@ -69,20 +69,24 @@ print(out_text)
 <tr>
 <td>
 
-<img src="./docs/examples/formula.jpg" alt="formula"> 
+<img src="./docs/examples/formula.jpg" alt="formula"  width="30%"> 
 </td>
 <td>
 
 ```json
 {"image_type": "formula",
- "text": "\\mathcal{L}_{\\mathrm{eyelid}}~\\longrightarrow\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}\\cal{M}_{v}^{\\mathrm{(eyelid}})\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)"}
+ "text": "\\mathcal{L}_{\\mathrm{eyelid}}~\\longrightarrow"
+ "\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}"
+ "\\cal{M}_{v}^{\\mathrm{(eyelid}})"
+ "\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}"
+ "\\right|\\right|^{2}\\right)"}
 ```
 </td>
 </tr>
 <tr>
 <td>
 
- <img src="./docs/examples/english.jpg" alt="english"> 
+ <img src="./docs/examples/english.jpg" alt="english"  width="30%"> 
 </td>
 <td>
 
@@ -97,13 +101,14 @@ print(out_text)
 <tr>
 <td>
 
- <img src="./docs/examples/general.jpg" alt="general"> 
+ <img src="./docs/examples/general.jpg" alt="general" width="30%"> 
 </td>
 <td>
 
 ```json
 {"image_type": "general",
- "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天"}
+ "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了"
+          "\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天"}
 ```
 </td>
 </tr>
