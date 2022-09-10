@@ -69,7 +69,7 @@ print(out_text)
 <tr>
 <td>
 
-<img src="./docs/examples/formula.jpg" alt="formula" width="30%"/> 
+<img src="./docs/examples/formula.jpg" alt="formula" width="30%"> 
 </td>
 <td>
 
@@ -82,7 +82,7 @@ print(out_text)
 <tr>
 <td>
 
- <img src="./docs/examples/english.jpg" alt="english" width="30%"/> 
+ <img src="./docs/examples/english.jpg" alt="english" width="30%"> 
 </td>
 <td>
 
@@ -97,7 +97,7 @@ print(out_text)
 <tr>
 <td>
 
- <img src="./docs/examples/general.jpg" alt="general" width="30%"/> 
+ <img src="./docs/examples/general.jpg" alt="general" width="30%"> 
 </td>
 <td>
 
