@@ -10,7 +10,7 @@
 ![last-commit](https://img.shields.io/github/last-commit/breezedeus/pix2text)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
-[🛀🏻 在线Demo](https://huggingface.co/spaces/breezedeus/cnocr) |
+[🛀🏻 在线Demo](https://huggingface.co/spaces/breezedeus/pix2text) |
 [💬 交流群](https://cnocr.readthedocs.io/zh/latest/contact/)
 
 </div>
@@ -43,6 +43,16 @@ Pix2Text首先利用**图片分类模型**来判断图片类型，然后基于�
 后续图片类型会依据应用需要做进一步的细分。
 
 
+
+欢迎扫码加小助手为好友，备注 `p2t`，小助手会定期统一邀请大家入群：
+
+<div align="center">
+  <img src="https://huggingface.co/datasets/breezedeus/cnocr-wx-qr-code/resolve/main/wx-qr-code.JPG" alt="微信群二维码" width="300px"/>
+</div>
+
+
+
+作者也维护 **知识星球** [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，这里面的提问会较快得到作者的回复，欢迎加入。**知识星球私享群**也会陆续发布一些P2T/CnOCR/CnSTD相关的私有资料，包括[**更详细的训练教程**](https://articles.zsxq.com/id_u6b4u0wrf46e.html)，**未公开的模型**，**不同应用场景的调用代码**，使用过程中遇到的难题解答等。本群也会发布OCR/STD相关的最新研究资料。
 
 
 
