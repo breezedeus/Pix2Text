@@ -1,6 +1,7 @@
 <div align="center">
   <img src="./docs/figs/p2t.jpg" width="250px"/>
   <div>&nbsp;</div>
+
 [![license](https://img.shields.io/github/license/breezedeus/pix2text)](./LICENSE)
 [![PyPI version](https://badge.fury.io/py/pix2text.svg)](https://badge.fury.io/py/pix2text)
 [![forks](https://img.shields.io/github/forks/breezedeus/pix2text)](https://github.com/breezedeus/pix2text)
