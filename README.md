@@ -1,7 +1,6 @@
 <div align="center">
   <img src="./docs/figs/p2t.jpg" width="250px"/>
   <div>&nbsp;</div>
-
 [![license](https://img.shields.io/github/license/breezedeus/pix2text)](./LICENSE)
 [![PyPI version](https://badge.fury.io/py/pix2text.svg)](https://badge.fury.io/py/pix2text)
 [![forks](https://img.shields.io/github/forks/breezedeus/pix2text)](https://github.com/breezedeus/pix2text)
@@ -175,6 +174,135 @@ pip install pix2text -i https://pypi.doubanio.com/simple
 > **Warning** 
 >
 > 如果电脑中从未安装过 `PyTorch`，`OpenCV` python包，初次安装可能会遇到不少问题，但一般都是常见问题，可以自行百度/Google解决。
+
+
+
+## 接口说明
+
+### 类初始化
+
+主类为 [**Pix2Text**](pix2text/pix_to_text.py) ，其初始化函数如下：
+
+```python
+class Pix2Text(object):
+    def __init__(
+        self,
+        *,
+        clf_config: Dict[str, Any] = None,
+        general_config: Dict[str, Any] = None,
+        english_config: Dict[str, Any] = None,
+        formula_config: Dict[str, Any] = None,
+        thresholds: Dict[str, Any] = None,
+        device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
+        **kwargs,
+    ):
+```
+
+其中的各参数说明如下：
+* `clf_config` (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置：
+	```python
+	{
+        'base_model_name': 'mobilenet_v2',
+        'categories': IMAGE_TYPES,
+        'transform_configs': {
+            'crop_size': [150, 450],
+            'resize_size': 160,
+            'resize_max_size': 1000,
+        },
+	      'model_dir': Path(data_dir()) / 'clf',
+	      'model_fp': None  # 如果指定，直接使用此模型文件
+	}
+	```
+	
+* `general_config` (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置：
+
+  ```python
+  {}
+  ```
+
+* `english_config` (dict): 英文模型对应的配置信息；默认为 `None`，表示使用默认配置：
+
+  ```py
+  {'det_model_name': 'en_PP-OCRv3_det', 'rec_model_name': 'en_PP-OCRv3'}
+  ```
+
+* `formula_config` (dict): 公式识别模型对应的配置信息；默认为 `None`，表示使用默认配置：
+
+  ```python
+  {
+          'config': LATEX_CONFIG_FP,
+          'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
+          'no_resize': False
+  }
+  ```
+
+* `thresholds` (dict): 识别阈值对应的配置信息；默认为 `None`，表示使用默认配置：
+
+  ```py
+  {
+          'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
+          'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
+  }
+  ```
+
+* `device` (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`
+
+* `**kwargs` (): 预留的其他参数；目前未被使用
+
+
+
+### 识别类函数
+
+通过调用类 **`Pix2Text`** 的类函数**`.recognize()`**完成对指定图片的文字或Latex识别。类函数`.recognize()`说明如下：
+
+```py
+    def recognize(self, img: Union[str, Path, Image.Image]) -> Dict[str, Any]:
+        """
+
+        Args:
+            img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+
+        Returns: a dict, with keys:
+           `image_type`: 图像类别；
+           `text`: 识别出的文字或Latex公式
+
+        """
+```
+
+
+
+其中的输入参数说明如下：
+
+* `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
+
+
+
+返回结果说明如下：
+
+* `image_type`：识别出的图像类别；取值为 `formula`、`english` 或者 `general` ；
+* `text`：识别出的文字或Latex公式 。
+
+如前面给出的一个示例结果：
+
+```json
+{"image_type": "general",
+ "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n"
+          "100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天"}
+```
+
+
+
+`Pix2Text` 类也实现了 `__call__()` 函数，其功能与 `.recognize()` 函数完全相同。所以才会有以下的调用方式：
+
+```python
+from pix2text import Pix2Text
+
+img_fp = './docs/examples/formula.jpg'
+p2t = Pix2Text()
+out_text = p2t(img_fp)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
+print(out_text)
+```
+
 
 
 

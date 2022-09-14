@@ -60,6 +60,17 @@ class Pix2Text(object):
         device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
         **kwargs,
     ):
+        """
+
+        Args:
+            clf_config (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置
+            general_config (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置
+            english_config (dict): 英文模型对应的配置信息；默认为 `None`，表示使用默认配置
+            formula_config (dict): 公式识别模型对应的配置信息；默认为 `None`，表示使用默认配置
+            thresholds (dict): 识别阈值对应的配置信息；默认为 `None`，表示使用默认配置
+            device (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`
+            **kwargs (): 预留的其他参数；目前未被使用
+        """
         if device.lower() == 'gpu':
             device = 'cuda'
         self.device = device
