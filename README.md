@@ -254,7 +254,7 @@ class Pix2Text(object):
 
 ### 识别类函数
 
-通过调用类 **`Pix2Text`** 的类函数**`.recognize()`**完成对指定图片的文字或Latex识别。类函数`.recognize()`说明如下：
+通过调用类 **`Pix2Text`** 的类函数 `.recognize()` 完成对指定图片的文字或Latex识别。类函数 `.recognize()` 说明如下：
 
 ```py
     def recognize(self, img: Union[str, Path, Image.Image]) -> Dict[str, Any]:
