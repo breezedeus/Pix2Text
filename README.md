@@ -202,7 +202,7 @@ class Pix2Text(object):
 其中的各参数说明如下：
 * `clf_config` (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置：
 	```python
-	{
+  {
         'base_model_name': 'mobilenet_v2',
         'categories': IMAGE_TYPES,
         'transform_configs': {
@@ -210,9 +210,9 @@ class Pix2Text(object):
             'resize_size': 160,
             'resize_max_size': 1000,
         },
-	      'model_dir': Path(data_dir()) / 'clf',
-	      'model_fp': None  # 如果指定，直接使用此模型文件
-	}
+        'model_dir': Path(data_dir()) / 'clf',
+        'model_fp': None  # 如果指定，直接使用此模型文件
+  }
 	```
 	
 * `general_config` (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置：
