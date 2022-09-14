@@ -231,9 +231,9 @@ class Pix2Text(object):
 
   ```python
   {
-          'config': LATEX_CONFIG_FP,
-          'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
-          'no_resize': False
+      'config': LATEX_CONFIG_FP,
+      'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
+      'no_resize': False
   }
   ```
 
@@ -241,8 +241,8 @@ class Pix2Text(object):
 
   ```py
   {
-          'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
-          'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
+      'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
+      'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
   }
   ```
 
