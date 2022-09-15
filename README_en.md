@@ -128,7 +128,7 @@ After installing Pix2Text, the system will **automatically download** the model 
 >
 > If you have successfully run the above example, the model has completed its automatic download and you can ignore the subsequent contents of this section.
 
-For the **classification model**, the system will automatically download the model zip file and unzip it, then put the unzipped model directory under the `~/.pix2text` directory. If the system cannot download the zip file successfully, you need manually download it from **[cnstd-cnocr-models/pix2text](https://huggingface.co/breezedeus/cnstd-cnocr-models/tree/main/models/ pix2text/0.1)** to download the zip file and put it in the `~/.pix2text` directory. If the downloading process is very slow, you can also download it from [Baidu Cloud Drive](https://pan.baidu.com/s/10E_NAAWHnbcCu7tw3vnbjg?pwd=p2t0) with the extraction code ` p2t0`.
+For the **classification model**, the system will automatically download the model zip file and unzip it, then put the unzipped model directory under the `~/.pix2text` directory. If the system cannot download the zip file successfully, you need manually download it from **[cnstd-cnocr-models/pix2text](https://huggingface.co/breezedeus/cnstd-cnocr-models/tree/main/models/pix2text/0.1)** to download the zip file and put it in the `~/.pix2text` directory. If the downloading process is very slow, you can also download it from [Baidu Cloud Drive](https://pan.baidu.com/s/10E_NAAWHnbcCu7tw3vnbjg?pwd=p2t0) with the extraction code ` p2t0`.
 
 For **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)**, the system will also automatically download the model files and store them in the `~/.pix2text/formula` directory. If the system cannot download the model files automatically, you need to download the files `weights.pth` and `image_resizer.pth` from [Baidu Cloud](https://pan.baidu.com/s/1KgFLm6iTRK0Zn8fvu2aDzQ?pwd=p2t0) and store them in the `~/.pix2text/formula` directory; the extraction code is ` p2t0`.
 
@@ -271,7 +271,7 @@ An example given earlier.
 ```
 
 
-The `Pix2Text` class also implements the `__call__()` function, which does exactly the same thing as the `.recognize()` function. That's why the following calls are legal.
+The `Pix2Text` class also implements the `__call__()` function, which does exactly the same thing as the `.recognize()` function. That's why the following invocation is legal.
 
 ```python
 from pix2text import Pix2Text
