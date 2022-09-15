@@ -241,8 +241,8 @@ class Pix2Text(object):
 
   ```py
   {
-      'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
-      'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
+      'formula2general': 0.65,  # 如果识别为 `formula` 类型，但得分小于此阈值，则改为 `general` 类型
+      'english2general': 0.75,  # 如果识别为 `english` 类型，但得分小于此阈值，则改为 `general` 类型
   }
   ```
 
@@ -331,7 +331,7 @@ p2t serve -p 8503
 
 ### 命令行
 
-比如待识别文件为 `docs/examples/english.jpg`，如下使用 curl 调用服务：
+比如待识别文件为 `docs/examples/english.jpg`，如下使用 `curl` 调用服务：
 
 ```bash
 > curl -F image=@docs/examples/english.jpg http://0.0.0.0:8503/pix2text
@@ -358,7 +358,7 @@ print(out)
 
 ### 其他语言
 
-请参照 curl 的调用方式自行实现。
+请参照 `curl` 的调用方式自行实现。
 
 
 
