@@ -23,7 +23,7 @@
 
 
 # Pix2Text
-**Pix2Text** is expected to be a **free Python open source** alternative for **[Mathpix](https://mathpix.com/)**, accomplishing similar functionality to Mathpix. Currently Pix2Text can recognize **Math Formulas**, **English**, or **Chinese Texts** in screenshot images. The following is the procedure.
+**Pix2Text** is expected to be an **open source Python** alternative for **[Mathpix](https://mathpix.com/)**, accomplishing similar functionality to Mathpix. Currently Pix2Text can recognize **Math Formulas**, **English**, or **Chinese Texts** in screenshot images. The following is the procedure.
 
 <div align="center">
   <img src="./docs/figs/arch-flow-en.jpg" alt="Pix2Text Flow" width="800px"/>
