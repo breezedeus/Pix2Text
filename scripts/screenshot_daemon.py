@@ -18,8 +18,8 @@ SCREENSHOT_DIR = os.getenv(
 )
 
 thresholds = {
-    'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
-    'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
+    'formula2general': 0.65,  # 如果识别为 `formula` 类型，但得分小于此阈值，则改为 `general` 类型
+    'english2general': 0.75,  # 如果识别为 `english` 类型，但得分小于此阈值，则改为 `general` 类型
 }
 P2T = Pix2Text(thresholds=thresholds)
 
