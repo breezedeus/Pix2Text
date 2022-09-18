@@ -47,7 +47,7 @@ Pix2Text首先利用**图片分类模型**来判断图片类型，然后基于�
 欢迎扫码加小助手为好友，备注 `p2t`，小助手会定期统一邀请大家入群：
 
 <div align="center">
-  <img src="https://huggingface.co/datasets/breezedeus/cnocr-wx-qr-code/resolve/main/wx-qr-code.JPG" alt="微信群二维码" width="300px"/>
+  <img src="./docs/figs/wx-qr-code.JPG" alt="微信群二维码" width="300px"/>
 </div>
 
 

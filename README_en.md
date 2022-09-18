@@ -42,7 +42,7 @@ In the future the image types will be further subdivided according to the applic
 Welcome to scan the following code to add our assistant as a friend, note `p2t`, our assistant will regularly invite you to join the Wechat Group.
 
 <div align="center">
-  <img src="https://huggingface.co/datasets/breezedeus/cnocr-wx-qr-code/resolve/main/wx-qr-code.JPG" alt="Wechat Group" width="300px"/>
+  <img src="./docs/figs/wx-qr-code.JPG" alt="Wechat Group" width="300px"/>
 </div>
 
 The author also maintains **Planet of Knowledge** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), welcome to join. The **Planet of Knowledge Private Group** will release some P2T/CnOCR/CnSTD related private materials one after another, including [**more detailed training tutorials**](https://articles.zsxq.com/id_u6b4u0wrf46e.html), **non-public models**, answers to problems encountered during usage, etc. This group also releases the latest research materials related to OCR/STD.
