@@ -115,6 +115,7 @@ def render_html(newest_fp, image_type, text, out_html_fp):
 
   <body class="with-footer">
     <div class="container">
+    <h1 align="center"><a href="https://github.com/breezedeus/pix2text">Pix2Text</a>: a free tool like Mathpix</h1>
     <h2 align="center">Screenshot</h2>
     <div class="img-container">
     """
