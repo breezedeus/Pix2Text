@@ -1,6 +1,12 @@
 # coding: utf-8
 # Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
 
+COLOR_MAPPING = {
+    'general': '#009933',
+    'english': '#3399ff',
+    'formula': '#ff8000'
+}
+
 def render_html(newest_fp, image_type, text, out_html_fp):
     html_str = """
 <!DOCTYPE html>
@@ -79,11 +85,21 @@ def render_html(newest_fp, image_type, text, out_html_fp):
       }
       .btn {
         font-size: 16px;
+        padding: 4px 2px;
+        border: none;
+        border-radius: 4px;
+        font-weight: bolder;
+        cursor: pointer;
+        color: rgb(62, 59, 59);
+        background-color: #b3b3cc
+      }
+      .img-type {
+        font-size: 16px;
         padding: 4px 6px;
         border: none;
         border-radius: 4px;
-        cursor: pointer;
-        color: rgb(62, 59, 59)
+        font-weight: bolder;
+        color: #ffffff
       }
       .cp {
         background-color: #f07878;
@@ -99,18 +115,21 @@ def render_html(newest_fp, image_type, text, out_html_fp):
 
   <body class="with-footer">
     <div class="container">
-    <h2 align="center">待解析图片</h2>
+    <h2 align="center">Screenshot</h2>
     <div class="img-container">
     """
     html_str += fr'<img src="{newest_fp}" />' + '\n </div>'
     html_str += """
-    <button class="refresh btn" onClick="document.location.reload()">🔄 刷新</button>
+    <button class="refresh btn" onClick="document.location.reload()">🔄 Refresh</button>
     </div>
     <hr />
 
-    <h2 align="center">解析结果</h2>
+    <h2 align="center">Results</h2>
     """
-    html_str += fr'<b>Image Type: </b> <div style="background:#ff9900;font-weight:bolder"> {image_type} </div>' + '\n'
+
+    html_str += r'<strong>Image Type: </strong>' \
+                fr'<div class="img-type" style="background:{COLOR_MAPPING[image_type]}"> ' \
+                fr'{image_type} </div>' + '\n'
 
     if image_type == 'formula':
         html_str += '<div id="latex"></div>'
@@ -127,9 +146,9 @@ def render_html(newest_fp, image_type, text, out_html_fp):
 
     html_str += """
           <div class="col">
-        <button class="btn cp" type="button" onclick="copyTex()">复制</button>
-        <button class="btn cpd" type="button" onclick="copyTexD()">$复制$</button>
-        <button class="btn cpdd" type="button" onclick="copyTexDD()">$$复制$$</button>
+        <button class="btn" type="button" onclick="copyTex()">Copy</button>
+        <button class="btn" type="button" onclick="copyTexD()">$Copy$</button>
+        <button class="btn" type="button" onclick="copyTexDD()">$$Copy$$</button>
       </div>
     </div>
 
