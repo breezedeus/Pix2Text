@@ -394,7 +394,9 @@ print(out)
 <div align="center">
   <img src="./docs/figs/html.jpg" alt="微信群二维码" width="700px"/>
 </div>
+
 > **Note**
+> 
 > 感谢我的同事帮忙完成了此页面的大部分工作。这个页面还有很大改进空间，欢迎对前端熟悉的朋友帮忙提PR优化此页面。
 
 
