@@ -306,7 +306,6 @@ print(out_text)
 
 
 
-
 ## HTTP服务
 
  **Pix2Text** 加入了基于 FastAPI 的HTTP服务。开启服务需要安装几个额外的包，可以使用以下命令安装：
@@ -362,7 +361,42 @@ print(out)
 
 
 
+## 脚本运行
 
+脚本 [scripts/screenshot_daemon.py](scripts/screenshot_daemon.py) 实现了自动对截屏图片调用 Pixe2Text 进行公式或者文字识别。这个功能是如何实现的呢？
+
+
+
+**以下是具体的运行流程（请先安装好 Pix2Text）：**
+
+1. 找一个喜欢的截屏软件，这个软件只要**支持把截屏图片存储在指定文件夹**即可。比如Mac下免费的 **Xnip** 就很好用。
+
+2. 除了安装Pix2Text外，还需要额外安装一个Python包 **pyperclip**，利用它把识别结果复制进系统的剪切板：
+
+   ```bash
+   $ pip install pyperclip
+   ```
+
+3. 下载脚本文件 [scripts/screenshot_daemon.py](scripts/screenshot_daemon.py) 到本地，编辑此文件 `"SCREENSHOT_DIR"` 所在行（第 `17` 行），把路径改为你的截屏图片所存储的目录。
+
+4. 运行此脚本：
+
+   ```bash
+   $ python scripts/screenshot_daemon.py
+   ```
+
+好了，现在就用你的截屏软件试试效果吧。截屏后的识别结果会写入当前文件夹的 **`out-text.html`** 文件，只要在浏览器中打开此文件即可看到效果。
+
+
+
+更详细使用介绍可参考视频：《[Pix2Text: 替代 Mathpix 的免费 Python 开源工具](https://www.bilibili.com/video/BV12e4y1871U)》。
+
+<div align="center">
+  <img src="./docs/figs/html.jpg" alt="微信群二维码" width="700px"/>
+</div>
+> **Note**
+>
+> 感谢我的同事帮忙完成了此页面的大部分工作。这个页面还有很大改进空间，欢迎对前端熟悉的朋友帮忙提PR优化此页面。
 
 
 
