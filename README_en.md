@@ -336,6 +336,48 @@ print(out)
 Please refer to the `curl` format for your own implementation.
 
 
+## Use Script
+
+Script [scripts/screenshot_daemon.py](scripts/screenshot_daemon.py) automatically invokes Pixe2Text to recognize formulas or texts on screenshot images. How does this work?
+
+
+
+**Here's the process (please install Pix2Text first):**
+
+1. Find one favorite screenshot tool that **supports storing screenshot images in a specified folder**. For example, the free **Xnip** for Mac works very well.
+
+2. In addition to installing Pix2Text, you need to install an additional Python package **pyperclip**, which you can use to copy the recognition results into the system clipboard: 
+
+   ```bash
+   $ pip install pyperclip
+   ```
+
+3. Download the script file [scripts/screenshot_daemon.py](scripts/screenshot_daemon.py) to your computer, edit the line where `"SCREENSHOT_DIR"` is located (line `17`) and change the path to the directory where your screenshot images are stored.
+
+4. Run this script.
+
+   ```bash
+   $ python scripts/screenshot_daemon.py
+   ```
+
+
+OK, now try the result with your screenshot tool. The result of the screenshot will be written to the **`out-text.html`** file in the current folder, just open this file in your browser and you will see the result.
+
+
+
+For a more detailed introduction, please refer to the video: "[Pix2Text: A Free Python Open Source Tool to Replace Mathpix](https://www.bilibili.com/video/BV12e4y1871U)".
+
+
+<div align="center">
+  <img src="./docs/figs/html.jpg" alt="Wechat QR code" width="700px"/>
+</div>
+
+
+> **Note**
+> 
+> Thanks to my colleague for helping with most of the work on this html page. There is still a lot of room for improvement, and I welcome those who are familiar with the front-end programming to help optimize this page by PR.
+
+
 
 
 ## A cup of coffee for the author
