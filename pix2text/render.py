@@ -4,7 +4,8 @@
 COLOR_MAPPING = {
     'general': '#009933',
     'english': '#3399ff',
-    'formula': '#ff8000'
+    'formula': '#ff8000',
+    'hybrid': '#009999',
 }
 
 def render_html(newest_fp, image_type, text, out_html_fp):
@@ -132,7 +133,7 @@ def render_html(newest_fp, image_type, text, out_html_fp):
                 fr'<div class="img-type" style="background:{COLOR_MAPPING[image_type]}"> ' \
                 fr'{image_type} </div>' + '\n'
 
-    if image_type == 'formula':
+    if image_type in ('formula', 'hybrid'):
         html_str += '<div id="latex"></div>'
 
     html_str += """

@@ -45,13 +45,33 @@ def recognize(screenshot_dir, delta_interval):
             logger.info('image type: %s, image text: %s', image_type, result)
             if result:
                 pc.copy(result)
-            render_html(newest_fp, image_type, result, out_html_fp='out-text.html')
+            render_html('./analysis_res.jpg', image_type, result, out_html_fp='out-text.html')
         time.sleep(1)
 
 
 def _recognize_newest(newest_fp):
-    res = P2T.recognize(newest_fp)
-    return res['image_type'], res['text']
+    res = P2T.recognize(newest_fp, use_layout=False, save_analysis_res='./analysis_res.jpg')
+    if len(res) == 1:
+        return res[0]['type'], res[0]['text']
+    elif len(res) > 1:
+        box_types = set([info['type'] for info in res])
+        if len(box_types) > 1:
+            image_type = 'hybrid'
+            if any([info['type'] == 'formula' for info in res]):
+                text = []
+                for info in res:
+                    if info['type'] == 'formula':
+                        text.append(info['text'])
+                    else:
+                        text.append(r'\text{' + info['text'] + r'}')
+                text = '\n\n'.join(text)
+        else:
+            image_type = list(box_types)[0]
+            text = '\n\n'.join([info['text'] for info in res])
+
+        return image_type, text
+
+    return 'general', ''
 
 
 if __name__ == '__main__':

@@ -5,13 +5,16 @@ import os
 from glob import glob
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List
 from copy import deepcopy
 
 from PIL import Image
 import numpy as np
 import torch
 from cnocr import CnOcr, ImageClassifier
+from cnstd import LayoutAnalyzer, save_layout_img
+from cnstd.yolov7.consts import CATEGORIES
+from cnstd.yolov7.general import xyxy24p
 
 from .consts import IMAGE_TYPES, LATEX_CONFIG_FP, MODEL_VERSION, CLF_MODEL_URL_FMT
 from .latex_ocr import LatexOCR
@@ -21,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_CONFIGS = {
+    'layout': {},
     'clf': {
         'base_model_name': 'mobilenet_v2',
         'categories': IMAGE_TYPES,
@@ -52,6 +56,7 @@ class Pix2Text(object):
     def __init__(
         self,
         *,
+        layout_config: Dict[str, Any] = None,
         clf_config: Dict[str, Any] = None,
         general_config: Dict[str, Any] = None,
         english_config: Dict[str, Any] = None,
@@ -63,6 +68,7 @@ class Pix2Text(object):
         """
 
         Args:
+            layout_config (dict): 版面分析模型对应的配置信息；默认为 `None`，表示使用默认配置
             clf_config (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置
             general_config (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置
             english_config (dict): 英文模型对应的配置信息；默认为 `None`，表示使用默认配置
@@ -78,13 +84,22 @@ class Pix2Text(object):
         self.thresholds = deepcopy(thresholds)
 
         (
+            layout_config,
             clf_config,
             general_config,
             english_config,
             formula_config,
         ) = self._prepare_configs(
-            clf_config, general_config, english_config, formula_config, device
+            layout_config,
+            clf_config,
+            general_config,
+            english_config,
+            formula_config,
+            device,
         )
+
+        self.layout = LayoutAnalyzer(**layout_config)
+
         _clf_config = deepcopy(clf_config)
         _clf_config.pop('model_dir')
         _clf_config.pop('model_fp')
@@ -97,13 +112,21 @@ class Pix2Text(object):
         self._assert_and_prepare_clf_model(clf_config)
 
     def _prepare_configs(
-        self, clf_config, general_config, english_config, formula_config, device
+        self,
+        layout_config,
+        clf_config,
+        general_config,
+        english_config,
+        formula_config,
+        device,
     ):
         def _to_default(_conf, _def_val):
             if _conf is None:
                 _conf = _def_val
             return _conf
 
+        layout_config = _to_default(layout_config, DEFAULT_CONFIGS['layout'])
+        layout_config['device'] = device
         clf_config = _to_default(clf_config, DEFAULT_CONFIGS['clf'])
         general_config = _to_default(general_config, DEFAULT_CONFIGS['general'])
         general_config['context'] = device
@@ -111,7 +134,7 @@ class Pix2Text(object):
         english_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
         formula_config['device'] = device
-        return clf_config, general_config, english_config, formula_config
+        return layout_config, clf_config, general_config, english_config, formula_config
 
     def _assert_and_prepare_clf_model(self, clf_config):
         model_file_prefix = '{}-{}'.format(
@@ -142,6 +165,7 @@ class Pix2Text(object):
     def from_config(cls, total_configs: Optional[dict] = None, device: str = 'cpu'):
         total_configs = total_configs or DEFAULT_CONFIGS
         return cls(
+            layout_config=total_configs.get('layout', dict()),
             clf_config=total_configs.get('clf', dict()),
             general_config=total_configs.get('general', dict()),
             english_config=total_configs.get('english', dict()),
@@ -150,26 +174,51 @@ class Pix2Text(object):
             device=device,
         )
 
-    def __call__(self, img: Union[str, Path, Image.Image]) -> Dict[str, Any]:
-        return self.recognize(img)
+    def __call__(self, img: Union[str, Path, Image.Image], **kwargs) -> List[Dict[str, Any]]:
+        return self.recognize(img, **kwargs)
 
-    def recognize(self, img: Union[str, Path, Image.Image]) -> Dict[str, Any]:
+    def recognize(self, img: Union[str, Path, Image.Image], use_layout=True, **kwargs) -> List[Dict[str, Any]]:
         """
+        对图片先做版面分析，然后再识别每块中包含的信息。在版面分析未识别出内容时，则把整个图片作为整体进行识别。
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
 
-        Returns: a dict, with keys:
-           `image_type`: 图像类别；
+        Returns: a list of dicts, with keys:
+           `type`: 图像类别；
            `text`: 识别出的文字或Latex公式
+           `postion`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+
+        """
+        out = None
+        if use_layout:
+            out = self.recognize_by_layout(img, **kwargs)
+        if not out:
+            out = self.recognize_by_clf(img, **kwargs)
+        return out
+
+    def recognize_by_clf(self, img: Union[str, Path, Image.Image], **kwargs) -> List[Dict[str, Any]]:
+        """
+        把整张图片作为一整块进行识别。
+
+        Args:
+            img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+
+        Returns: a list of dicts, with keys:
+           `type`: 图像类别；
+           `text`: 识别出的文字或Latex公式
+           `postion`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
 
         """
         if isinstance(img, Image.Image):
-            _img = torch.tensor(np.asarray(img.convert('RGB')))
-            res = self.image_clf.predict_images([_img])[0]
+            img0 = img.convert('RGB')
         else:
-            res = self.image_clf.predict_images([img])[0]
+            img0 = Image.open(img).convert('RGB')
+        width, height = img0.size
+        _img = torch.tensor(np.asarray(img0))
+        res = self.image_clf.predict_images([_img])[0]
         logger.debug('CLF Result: %s', res)
+
         image_type = res[0]
         if res[1] < self.thresholds['formula2general'] and res[0] == 'formula':
             image_type = 'general'
@@ -180,7 +229,57 @@ class Pix2Text(object):
         else:
             result = self._ocr(img, image_type)
 
-        return {'image_type': image_type, 'text': result}
+        box = xyxy24p([0, 0, width, height], np.array)
+
+        if kwargs.get('save_analysis_res'):
+            out = [{'type': image_type, 'score': res[1], 'box': box}]
+            save_layout_img(img0, IMAGE_TYPES, out, kwargs.get('save_analysis_res'))
+
+        return [{'type': image_type, 'text': result, 'position': box}]
+
+    def recognize_by_layout(self, img: Union[str, Path, Image.Image], **kwargs) -> List[Dict[str, Any]]:
+        """
+        对图片先做版面分析，然后再识别每块中包含的信息。
+
+        Args:
+            img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+
+        Returns: a list of dicts, with keys:
+           `type`: 图像类别；
+           `text`: 识别出的文字或Latex公式
+           `postion`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+
+        """
+        if isinstance(img, Image.Image):
+            img0 = img.convert('RGB')
+        else:
+            img0 = Image.open(img).convert('RGB')
+        layout_out = self.layout(img0.copy(), resized_shape=500)
+        logger.debug('Layout Analysis Result: %s', layout_out)
+
+        out = []
+        for box_info in layout_out:
+            box = box_info['box']
+            xmin, ymin, xmax, ymax = int(box[0][0]), int(box[0][1]), int(box[2][0]), int(box[2][1])
+            crop_patch = img0.crop((xmin, ymin, xmax, ymax))
+            if box_info['type'] == 'Equation':
+                image_type = 'formula'
+                patch_out = self._latex(crop_patch)
+            else:
+                crop_patch = torch.tensor(np.asarray(crop_patch))
+                res = self.image_clf.predict_images([crop_patch])[0]
+                image_type = res[0]
+                if res[0] == 'formula':
+                    image_type = 'general'
+                elif res[1] < self.thresholds['english2general'] and res[0] == 'english':
+                    image_type = 'general'
+                patch_out = self._ocr(crop_patch, image_type)
+            out.append({'type': image_type, 'text': patch_out, 'position': box})
+
+        if kwargs.get('save_analysis_res'):
+            save_layout_img(img0, CATEGORIES, layout_out, kwargs.get('save_analysis_res'))
+
+        return out
 
     def _ocr(self, image, image_type):
         ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr

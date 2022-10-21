@@ -30,10 +30,15 @@ def cli():
     default='cpu',
 )
 @click.option("-i", "--img-file-or-dir", required=True, help="输入图片的文件路径或者指定的文件夹")
-def predict(
-    device, img_file_or_dir,
-):
+@click.option(
+    "-l",
+    "--log-level",
+    default='INFO',
+    help="Log Level, such as `INFO`, `DEBUG`. Default: `INFO`",
+)
+def predict(device, img_file_or_dir, log_level):
     """模型预测"""
+    logger = set_logger(log_level=log_level)
     p2t = Pix2Text(device=device)
 
     fp_list = []
@@ -45,7 +50,7 @@ def predict(
 
     for fp in fp_list:
         out = p2t.recognize(fp)
-        logger.info(f'In image {fp}, Out Text {pformat(out)}')
+        logger.info(f'In image: {fp}, Out Text: {pformat(out)}')
 
 
 @cli.command('serve')
