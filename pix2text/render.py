@@ -121,7 +121,7 @@ def render_html(newest_fp, image_type, text, out_html_fp):
     """
     html_str += fr'<img src="{newest_fp}" />' + '\n </div>'
     html_str += """
-    <button class="refresh btn" onClick="document.location.reload()">🔄 Refresh</button>
+    <button class="refresh btn" onClick="document.location.reload()">Refresh</button>
     </div>
     <hr />
 
