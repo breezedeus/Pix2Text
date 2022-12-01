@@ -13,6 +13,7 @@ from typing import Union
 from tqdm import tqdm
 from PIL import Image
 import numpy as np
+from numpy import random
 import torch
 from torch import Tensor
 from torchvision.utils import save_image
@@ -251,3 +252,29 @@ def save_img(img: Union[Tensor, np.ndarray], path):
     save_image(img, path)
 
     # Image.fromarray(img).save(path)
+
+
+def save_layout_img(img0, categories, one_out, save_path):
+    import cv2
+    from cnstd.yolov7.plots import plot_one_box
+
+    """可视化版面分析结果。"""
+    if isinstance(img0, Image.Image):
+        img0 = cv2.cvtColor(np.asarray(img0.convert('RGB')), cv2.COLOR_RGB2BGR)
+
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
+    for one_box in one_out:
+        _type = one_box['type']
+        box = one_box['position']
+        xyxy = [box[0, 0], box[0, 1], box[2, 0], box[2, 1]]
+        label = f'{_type}'
+        plot_one_box(
+            xyxy,
+            img0,
+            label=label,
+            color=colors[categories.index(_type)],
+            line_thickness=1,
+        )
+
+    cv2.imwrite(save_path, img0)
+    logger.info(f" The image with the result is saved in: {save_path}")
