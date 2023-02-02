@@ -31,7 +31,6 @@ logger = logging.getLogger(__name__)
 def download_checkpoints(out_dl_dir):
     # adapted from pix2tex.model.checkpoints.get_latest_checkpoint
     tag = 'v0.0.1'  # get_latest_tag()
-    logger.info('download weights %s to path %s', tag, out_dl_dir)
     os.makedirs(out_dl_dir, exist_ok=True)
     weights = (
         'https://github.com/lukas-blecher/LaTeX-OCR/releases/download/%s/weights.pth'
@@ -44,8 +43,11 @@ def download_checkpoints(out_dl_dir):
     for url, name in zip([weights, resizer], ['weights.pth', 'image_resizer.pth']):
         if not os.path.exists(os.path.join(out_dl_dir, name)):
             file = download_as_bytes_with_progress(url, name)
+            logger.info('downloading file %s to path %s', name, out_dl_dir)
             open(os.path.join(out_dl_dir, name), "wb").write(file)
             logger.info(f'save {name} to path {out_dl_dir}')
+        else:
+            logger.info(f'use model {name} from path {out_dl_dir}')
 
 
 def minmax_size(
