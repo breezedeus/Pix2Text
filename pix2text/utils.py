@@ -11,7 +11,7 @@ import requests
 from typing import Union
 
 from tqdm import tqdm
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 from numpy import random
 import torch
@@ -239,7 +239,9 @@ def read_img(path: Union[str, Path]) -> torch.Tensor:
 
     Returns: RGB torch.Tensor, with shape [Channel, Height, Width]
     """
-    img = np.asarray(Image.open(path).convert('RGB'))
+    img = Image.open(path)
+    img = ImageOps.exif_transpose(img)  # 识别旋转后的图片（pillow不会自动识别）
+    img = np.asarray(img.convert('RGB'))
     return torch.tensor(img.transpose((2, 0, 1)))
 
 
@@ -254,7 +256,7 @@ def save_img(img: Union[Tensor, np.ndarray], path):
     # Image.fromarray(img).save(path)
 
 
-def save_layout_img(img0, categories, one_out, save_path):
+def save_layout_img(img0, categories, one_out, save_path, key='position'):
     import cv2
     from cnstd.yolov7.plots import plot_one_box
 
@@ -265,7 +267,7 @@ def save_layout_img(img0, categories, one_out, save_path):
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
     for one_box in one_out:
         _type = one_box['type']
-        box = one_box['position']
+        box = one_box[key]
         xyxy = [box[0, 0], box[0, 1], box[2, 0], box[2, 1]]
         label = f'{_type}'
         plot_one_box(

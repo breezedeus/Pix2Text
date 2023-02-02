@@ -15,7 +15,7 @@ from cnocr import CnOcr, ImageClassifier
 from cnstd import LayoutAnalyzer
 from cnstd.yolov7.consts import CATEGORY_DICT
 from cnstd.yolov7.layout_analyzer import sort_boxes
-from cnstd.yolov7.general import xyxy24p, box_cond_overlap
+from cnstd.yolov7.general import xyxy24p, box_partial_overlap
 
 from .consts import IMAGE_TYPES, LATEX_CONFIG_FP, MODEL_VERSION, CLF_MODEL_URL_FMT
 from .latex_ocr import LatexOCR
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_CONFIGS = {
-    'layout': {},
+    'layout': {'model_name': 'mfd'},
     'clf': {
         'base_model_name': 'mobilenet_v2',
         'categories': IMAGE_TYPES,
@@ -44,7 +44,7 @@ DEFAULT_CONFIGS = {
         'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
         'no_resize': False,
     },
-    'thresholds': {
+    'thresholds': {  # 用于clf场景
         'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
         'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
     },
@@ -181,13 +181,15 @@ class Pix2Text(object):
         return self.recognize(img, **kwargs)
 
     def recognize(
-        self, img: Union[str, Path, Image.Image], use_layout=True, **kwargs
+        self, img: Union[str, Path, Image.Image], use_analyzer: bool = True, **kwargs
     ) -> List[Dict[str, Any]]:
         """
         对图片先做版面分析，然后再识别每块中包含的信息。在版面分析未识别出内容时，则把整个图片作为整体进行识别。
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            use_analyzer (bool): whether to use the analyzer (MFD or Layout) to analyze the image
+            **kwargs: unused currently
 
         Returns: a list of dicts, with keys:
            `type`: 图像类别；
@@ -196,8 +198,8 @@ class Pix2Text(object):
 
         """
         out = None
-        if use_layout:
-            if self.layout._model_type == 'mfd':
+        if use_analyzer:
+            if self.layout._model_name == 'mfd':
                 out = self.recognize_by_mfd(img, **kwargs)
             else:
                 out = self.recognize_by_layout(img, **kwargs)
@@ -242,7 +244,7 @@ class Pix2Text(object):
         box = xyxy24p([0, 0, width, height], np.array)
 
         if kwargs.get('save_analysis_res'):
-            out = [{'type': image_type, 'score': res[1], 'box': box}]
+            out = [{'type': image_type, 'score': res[1], 'position': box}]
             save_layout_img(img0, IMAGE_TYPES, out, kwargs.get('save_analysis_res'))
 
         return [{'type': image_type, 'text': result, 'position': box}]
@@ -251,10 +253,13 @@ class Pix2Text(object):
         self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
         """
-        对图片先做版面分析，然后再识别每块中包含的信息。
+        对图片先做MFD 或 版面分析，然后再识别每块中包含的信息。
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            kwargs ():
+                * embed_sep (tuple): embedding latex的前后缀
+                * isolated_sep (tuple): isolated latex的前后缀
 
         Returns: a list of dicts, with keys:
            `type`: 图像类别；
@@ -262,14 +267,20 @@ class Pix2Text(object):
            `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
 
         """
+        # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
+        # 具体参考：cnstd.yolov7.layout_analyzer.LayoutAnalyzer._preprocess_images 中的 `letterbox` 行
+        resized_shape = kwargs.get('mfd_resized_shape', 700)
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
             img0 = Image.open(img).convert('RGB')
-        layout_out = self.layout(img0.copy(), resized_shape=500)
+        w, h = img0.size
+        ratio = resized_shape / w
+        resized_shape = (int(h * ratio), resized_shape)  # (H, W)
+        layout_out = self.layout(img0.copy(), resized_shape=resized_shape)
         logger.debug('MFD Result: %s', layout_out)
         embed_sep = kwargs.get('embed_sep', (' $', '$ '))
-        isolated_sep = kwargs.get('isolated_sep', ('$$', '$$'))
+        isolated_sep = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
 
         mf_out = []
         for box_info in layout_out:
@@ -284,11 +295,10 @@ class Pix2Text(object):
             patch_out = self._latex(crop_patch)
             sep = isolated_sep if box_info['type'] == 'isolated' else embed_sep
             text = sep[0] + patch_out + sep[1]
-            mf_out.append(
-                {'type': box_info['type'], 'text': text, 'position': box}
-            )
+            mf_out.append({'type': box_info['type'], 'text': text, 'position': box})
 
         img = np.array(img0.copy())
+        # 把公式部分mask掉，然后对其他部分进行OCR
         for box_info in layout_out:
             if box_info['type'] == 'isolated':
                 box = box_info['box']
@@ -307,6 +317,7 @@ class Pix2Text(object):
             )
 
         def _split_line_image(line_box, embed_mfs):
+            # 利用embedding formula所在位置，把单行文字图片切割成多个小段，之后这些小段会分别扔进OCR进行文字识别
             line_box = line_box[0]
             if not embed_mfs:
                 return [{'position': line_box.int().tolist(), 'type': 'text'}]
@@ -317,8 +328,10 @@ class Pix2Text(object):
             xmax, ymin, ymax = int(line_box[2]), int(line_box[1]), int(line_box[-1])
             for mf in embed_mfs:
                 _xmax = min(xmax, int(mf['position'][0]) + 1)
-                if start < _xmax:
-                    outs.append({'position': [start, ymin, _xmax, ymax], 'type': 'text'})
+                if start + 8 < _xmax:
+                    outs.append(
+                        {'position': [start, ymin, _xmax, ymax], 'type': 'text'}
+                    )
                 outs.append(mf)
                 start = int(mf['position'][2])
             if start < xmax:
@@ -332,7 +345,7 @@ class Pix2Text(object):
             for box_info in mf_out:
                 if box_info['type'] == 'embedding':
                     box2 = _to_iou_box(box_info['position'])
-                    if float(box_cond_overlap(line_box, box2).squeeze()) > 0.8:
+                    if float(box_partial_overlap(line_box, box2).squeeze()) > 0.3:
                         embed_mfs.append(
                             {
                                 'position': box2[0].int().tolist(),
@@ -362,7 +375,7 @@ class Pix2Text(object):
             )
 
         outs = sort_boxes(outs, key='position')
-        print(outs)
+        logger.info(outs)
 
         if kwargs.get('save_analysis_res'):
             save_layout_img(
@@ -386,7 +399,7 @@ class Pix2Text(object):
         Returns: a list of dicts, with keys:
            `type`: 图像类别；
            `text`: 识别出的文字或Latex公式
-           `postion`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+           `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
 
         """
         if isinstance(img, Image.Image):
@@ -424,14 +437,21 @@ class Pix2Text(object):
 
         if kwargs.get('save_analysis_res'):
             save_layout_img(
-                img0, CATEGORY_DICT['layout'], layout_out, kwargs.get('save_analysis_res')
+                img0,
+                CATEGORY_DICT['layout'],
+                layout_out,
+                kwargs.get('save_analysis_res'),
+                key='box',
             )
 
         return out
 
     def _ocr_for_single_line(self, image, image_type):
         ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr
-        result = ocr_model.ocr_for_single_line(image)
+        try:
+            result = ocr_model.ocr_for_single_line(image)
+        except:
+            return ''
         return result['text']
 
     def _ocr(self, image, image_type):
