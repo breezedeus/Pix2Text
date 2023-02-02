@@ -23,7 +23,7 @@ exec(
 required = [
     "click",
     "tqdm",
-    "numpy",
+    "numpy<1.24",
     "opencv-python",
     "torch",
     "torchvision",
