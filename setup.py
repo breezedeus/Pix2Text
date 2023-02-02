@@ -23,6 +23,10 @@ exec(
 required = [
     "click",
     "tqdm",
+    "numpy",
+    "opencv-python",
+    "torch",
+    "torchvision",
     "cnstd>=1.2.1",
     "cnocr>=2.2.2",
     "pix2tex",
