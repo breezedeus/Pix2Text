@@ -175,25 +175,30 @@ class LatexOCR(object):
                 r, w, h = 1, input_image.size[0], input_image.size[1]
                 for _ in range(10):
                     h = int(h * r)  # height to resize
-                    img = pad(
-                        minmax_size(
-                            input_image.resize(
-                                (w, h),
-                                Image.Resampling.BILINEAR
-                                if r > 1
-                                else Image.Resampling.LANCZOS,
-                            ),
-                            self.args.max_dimensions,
-                            self.args.min_dimensions,
+                    try:
+                        img = pad(
+                            minmax_size(
+                                input_image.resize(
+                                    (w, h),
+                                    Image.Resampling.BILINEAR
+                                    if r > 1
+                                    else Image.Resampling.LANCZOS,
+                                ),
+                                self.args.max_dimensions,
+                                self.args.min_dimensions,
+                            )
                         )
-                    )
-                    t = test_transform(image=np.array(img.convert('RGB')))['image'][
-                        :1
-                    ].unsqueeze(0)
-                    w = (
-                        self.image_resizer(t.to(self.args.device)).argmax(-1).item() + 1
-                    ) * 32
-                    logger.info((r, img.size, (w, int(input_image.size[1] * r))))
+                        t = test_transform(image=np.array(img.convert('RGB')))['image'][
+                            :1
+                        ].unsqueeze(0)
+                        w = (
+                            self.image_resizer(t.to(self.args.device)).argmax(-1).item() + 1
+                        ) * 32
+                        logger.debug((r, img.size, (w, int(input_image.size[1] * r))))
+                    except Exception as e:
+                        logger.warning(e)
+                        break
+
                     if w == img.size[0]:
                         break
                     r = w / img.size[0]
