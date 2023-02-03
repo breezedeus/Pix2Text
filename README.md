@@ -99,6 +99,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 <td>
 
 <div style="width:600px">
+
 ```json
 [{"position": array([[         22,          29],
        [       1055,          29],
@@ -132,6 +133,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 </td>
 <td>
 <div style="width:600px">
+
 ```json
 [{"position": array([[         12,          19],
        [        749,          19],
