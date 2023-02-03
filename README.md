@@ -87,9 +87,10 @@ only_text = '\n'.join([out['text'] for out in outs])
 
 ## 示例
 
-<table>
+<table style="table-layout: fixed">
 <tr>
-<td> 图片 </td> <td> Pix2Text识别结果 </td>
+<th width="300px"> 图片 </th> 
+<th width="600px"> Pix2Text识别结果 </th>
 </tr>
 <tr>
 <td>
