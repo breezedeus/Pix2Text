@@ -98,6 +98,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 </td>
 <td>
 
+<div style="width:600px">
 ```json
 [{"position": array([[         22,          29],
        [       1055,          29],
@@ -121,6 +122,7 @@ only_text = '\n'.join([out['text'] for out in outs])
   "text": "其中之利用 Gumbel-Softmax从 $z\\sim q(z|x)$ 中抽样得到， $p(z)$ 是个等概率的多项式分布。",
   "type": "text-embed"}]
 ```
+</div>
 </td>
 </tr>
 <tr>
@@ -129,7 +131,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 <img src="./docs/examples/formula.jpg" alt="formula"  width="300px"> 
 </td>
 <td>
-
+<div style="width:600px">
 ```json
 [{"position": array([[         12,          19],
        [        749,          19],
@@ -140,6 +142,7 @@ only_text = '\n'.join([out['text'] for out in outs])
           "$$",
   "type": "isolated"}]
 ```
+</div>
 </td>
 </tr>
 <tr>
