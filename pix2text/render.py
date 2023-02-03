@@ -6,6 +6,9 @@ COLOR_MAPPING = {
     'english': '#3399ff',
     'formula': '#ff8000',
     'hybrid': '#009999',
+    'text': '#3399ff',
+    'isolated': '#ff8000',
+    'text-embed': '#009999',
 }
 
 def render_html(newest_fp, image_type, text, out_html_fp):
