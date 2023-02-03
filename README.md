@@ -87,49 +87,73 @@ only_text = '\n'.join([out['text'] for out in outs])
 
 ## 示例
 
-<table style="table-layout: fixed">
+<table>
 <tr>
-<th width="300px"> 图片 </th> 
-<th width="600px"> Pix2Text识别结果 </th>
+<th> 图片 </th> 
+<th> Pix2Text识别结果 </th>
 </tr>
 <tr>
 <td>
 
-<img src="./docs/examples/mixed.jpg" alt="mixed"  width="300px"> 
+<img src="./docs/examples/mixed.jpg" alt="mixed"> 
 
 </td>
 <td>
 
-<div style="width: 600px">
+```json
+[{"position": array([[         22,          29],
+       [       1055,          29],
+       [       1055,          56],
+       [         22,          56]], dtype=float32),
+  "text": "JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散",
+  "type": "text"},
+ {"position": array([[        629,         124],
+       [       1389,         124],
+       [       1389,         183],
+       [        629,         183]]),
+  "text": "$$\n"
+          "-{\\cal E}_{z\\sim q(z|x)}[\\log(p(x\\mid z))]+{\\cal K}{\\cal "
+          "L}(q(z\\mid x)||p(z))\n"
+          "$$",
+  "type": "isolated"},
+ {"position": array([[         20,         248],
+       [       1297,         248],
+       [       1297,         275],
+       [         20,         275]], dtype=float32),
+  "text": "其中之利用 Gumbel-Softmax从 $z\\sim q(z|x)$ 中抽样得到，"
+  " $p(z)$ 是个等概率的多项式分布。",
+  "type": "text-embed"}]
+```
 
-JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散
-$$
--{\cal E}_{z\sim q(z|x)}[\log(p(x\mid z))]+{\cal K}{\cal L}(q(z\mid x)||p(z))
-$$
-其中之利用 Gumbel-Softmax从 $z\sim q(z|x)$ 中抽样得到， $p(z)$ 是个等概率的多项式分布。
+</td>
+</tr>
+<tr>
+<td>
 
+<img src="./docs/examples/formula.jpg" alt="formula"> 
+</td>
+<td>
+
+```json
+[{"position": array([[         12,          19],
+       [        749,          19],
+       [        749,         150],
+       [         12,         150]]),
+  "text": "$$\n"
+          "\\mathcal{L}_{\\mathrm{eyelid}}~\\equiv~\\sum_{t=1}^{T}"
+          "\\sum_{v=1}^{V}\\mathcal{N}_{U}^{\\mathrm{(eyelid)}}"
+          "\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,"
+          "\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)\n"
+          "$$",
+  "type": "isolated"}]
+```
 </div>
 </td>
 </tr>
 <tr>
 <td>
 
-<img src="./docs/examples/formula.jpg" alt="formula"  width="300px"> 
-</td>
-<td>
-<div style="width: 60%">
-
-$$
-\mathcal{L}_{\mathrm{eyelid}}\stackrel{T}{=\sum_{t=1}^{\infty}\sum_{v=1}^{\infty}\mathcal{N}_{W}(\mathrm{eyelid}\,)\,\left(\left|\left|\hat{h}_{t,v}\,-\,\mathcal{x}_{t,v}\right|\right|^{2}\right)}
-$$
-
-</div>
-</td>
-</tr>
-<tr>
-<td>
-
- <img src="./docs/examples/english.jpg" alt="english"  width="300px"> 
+ <img src="./docs/examples/english.jpg" alt="english"> 
 </td>
 <td>
 
@@ -157,7 +181,8 @@ $$
        [        800,           0],
        [        800,         800],
        [          0,         800]]),
-  "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天",
+  "text": "618\n开门红提前购\n很贵\n买贵返差"
+  "\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天",
   "type": "general"}]
 ```
 </td>
