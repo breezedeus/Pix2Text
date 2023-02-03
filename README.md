@@ -72,7 +72,7 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，我们
 from pix2text import Pix2Text
 
 img_fp = './docs/examples/formula.jpg'
-p2t = Pix2Text(layout_config=dict(model_name='mfd'))
+p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
 outs = p2t(img_fp, resized_shape=600)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
@@ -94,7 +94,6 @@ only_text = '\n'.join([out['text'] for out in outs])
 </tr>
 <tr>
 <td>
-
 <img src="./docs/examples/mixed.jpg" alt="mixed"> 
 
 </td>
@@ -250,7 +249,7 @@ class Pix2Text(object):
     def __init__(
         self,
         *,
-        layout_config: Dict[str, Any] = None,
+        analyzer_config: Dict[str, Any] = None,
         clf_config: Dict[str, Any] = None,
         general_config: Dict[str, Any] = None,
         english_config: Dict[str, Any] = None,
@@ -262,7 +261,7 @@ class Pix2Text(object):
 ```
 
 其中的各参数说明如下：
-* `layout_config` (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置（使用**MFD** Analyzer）：
+* `analyzer_config` (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置（使用**MFD** Analyzer）：
 	
   ```python
   {
@@ -363,7 +362,7 @@ class Pix2Text(object):
 from pix2text import Pix2Text
 
 img_fp = './docs/examples/formula.jpg'
-p2t = Pix2Text(layout_config=dict(model_name='mfd'))
+p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
 outs = p2t(img_fp, resized_shape=600)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
@@ -450,27 +449,39 @@ Options:
 
 ### 命令行
 
-比如待识别文件为 `docs/examples/english.jpg`，如下使用 `curl` 调用服务：
+比如待识别文件为 `docs/examples/mixed.jpg`，如下使用 `curl` 调用服务：
 
 ```bash
-$ curl -F image=@docs/examples/english.jpg http://0.0.0.0:8503/pix2text
+$ curl -F image=@docs/examples/mixed.jpg --form 'use_analyzer=true' --form 'resized_shape=600' http://0.0.0.0:8503/pix2text
 ```
 
 
 
 ### Python
 
-使用如下方式调用服务：
+使用如下方式调用服务，参考文件 [scripts/try_service.py](scripts/try_service.py)：
 
 ```python
 import requests
 
-image_fp = 'docs/examples/english.jpg'
-r = requests.post(
-    'http://0.0.0.0:8503/pix2text', files={'image': (image_fp, open(image_fp, 'rb'), 'image/png')},
-)
-out = r.json()['results']
-print(out)
+url = 'http://0.0.0.0:8503/pix2text'
+
+image_fp = 'docs/examples/mixed.jpg'
+data = {
+    "use_analyzer": True,
+    "resized_shape": 600,
+    "embed_sep": " $,$ ",
+    "isolated_sep": "$$\n, \n$$"
+}
+files = {
+    "image": (image_fp, open(image_fp, 'rb'))
+}
+
+r = requests.post(url, data=data, files=files)
+
+outs = r.json()['results']
+only_text = '\n'.join([out['text'] for out in outs])
+print(f'{only_text=}')
 ```
 
 
