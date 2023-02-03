@@ -69,7 +69,7 @@ class Pix2Text(object):
         """
 
         Args:
-            layout_config (dict): 版面分析模型对应的配置信息；默认为 `None`，表示使用默认配置
+            layout_config (dict): Analyzer模型对应的配置信息；默认为 `None`，表示使用默认配置
             clf_config (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置
             general_config (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置
             english_config (dict): 英文模型对应的配置信息；默认为 `None`，表示使用默认配置
@@ -188,8 +188,12 @@ class Pix2Text(object):
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
-            use_analyzer (bool): whether to use the analyzer (MFD or Layout) to analyze the image
-            **kwargs: unused currently
+            use_analyzer (bool): whether to use the analyzer (MFD or Layout) to analyze the image; Default: `True`
+            kwargs ():
+                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
+                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
+                * embed_sep (tuple): embedding latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `(' $', '$ ')`
+                * isolated_sep (tuple): isolated latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `('$$\n', '\n$$')`
 
         Returns: a list of dicts, with keys:
            `type`: 图像类别；
@@ -258,8 +262,10 @@ class Pix2Text(object):
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             kwargs ():
-                * embed_sep (tuple): embedding latex的前后缀
-                * isolated_sep (tuple): isolated latex的前后缀
+                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
+                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
+                * embed_sep (tuple): embedding latex的前后缀；默认值为 `(' $', '$ ')`
+                * isolated_sep (tuple): isolated latex的前后缀；默认值为 `('$$\n', '\n$$')`
 
         Returns: a list of dicts, with keys:
            `type`: 图像类别；
@@ -269,7 +275,7 @@ class Pix2Text(object):
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
         # 具体参考：cnstd.yolov7.layout_analyzer.LayoutAnalyzer._preprocess_images 中的 `letterbox` 行
-        resized_shape = kwargs.get('mfd_resized_shape', 700)
+        resized_shape = kwargs.get('resized_shape', 700)
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
@@ -375,7 +381,7 @@ class Pix2Text(object):
             )
 
         outs = sort_boxes(outs, key='position')
-        logger.info(outs)
+        logger.debug(outs)
 
         if kwargs.get('save_analysis_res'):
             save_layout_img(
@@ -395,6 +401,9 @@ class Pix2Text(object):
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            kwargs ():
+                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
+                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
 
         Returns: a list of dicts, with keys:
            `type`: 图像类别；
@@ -406,7 +415,8 @@ class Pix2Text(object):
             img0 = img.convert('RGB')
         else:
             img0 = Image.open(img).convert('RGB')
-        layout_out = self.layout(img0.copy(), resized_shape=500)
+        resized_shape = kwargs.get('resized_shape', 500)
+        layout_out = self.layout(img0.copy(), resized_shape=resized_shape)
         logger.debug('Layout Analysis Result: %s', layout_out)
 
         out = []
