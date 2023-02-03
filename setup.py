@@ -23,7 +23,12 @@ exec(
 required = [
     "click",
     "tqdm",
-    "cnocr>=2.2.2",
+    "numpy<1.24",
+    "opencv-python",
+    "cnocr>=2.2.2.1",
+    "cnstd>=1.2.1",
+    "torch",
+    "torchvision",
     "pix2tex",
 ]
 extras_require = {

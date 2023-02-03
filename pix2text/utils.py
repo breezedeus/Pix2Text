@@ -11,8 +11,9 @@ import requests
 from typing import Union
 
 from tqdm import tqdm
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
+from numpy import random
 import torch
 from torch import Tensor
 from torchvision.utils import save_image
@@ -230,15 +231,26 @@ def read_tsv_file(fp, sep='\t', img_folder=None, mode='eval'):
     return (img_fp_list, labels_list) if mode != 'test' else (img_fp_list, None)
 
 
-def read_img(path: Union[str, Path]) -> torch.Tensor:
+def read_img(
+    path: Union[str, Path], return_type='Tensor'
+) -> Union[Image.Image, np.ndarray, torch.Tensor]:
     """
 
     Args:
         path (str): image file path
+        return_type (str): 返回类型；
+            支持 `Tensor`，返回 torch.Tensor；`ndarray`，返回 np.ndarray；`Image`，返回 `Image.Image`
 
-    Returns: RGB torch.Tensor, with shape [Channel, Height, Width]
+    Returns: RGB Image.Image, or np.ndarray / torch.Tensor, with shape [Channel, Height, Width]
     """
-    img = np.asarray(Image.open(path).convert('RGB'))
+    assert return_type in ('Tensor', 'ndarray', 'Image')
+    img = Image.open(path)
+    img = ImageOps.exif_transpose(img).convert('RGB')  # 识别旋转后的图片（pillow不会自动识别）
+    if return_type == 'Image':
+        return img
+    img = np.array(img)
+    if return_type == 'ndarray':
+        return img
     return torch.tensor(img.transpose((2, 0, 1)))
 
 
@@ -251,3 +263,29 @@ def save_img(img: Union[Tensor, np.ndarray], path):
     save_image(img, path)
 
     # Image.fromarray(img).save(path)
+
+
+def save_layout_img(img0, categories, one_out, save_path, key='position'):
+    import cv2
+    from cnstd.yolov7.plots import plot_one_box
+
+    """可视化版面分析结果。"""
+    if isinstance(img0, Image.Image):
+        img0 = cv2.cvtColor(np.asarray(img0.convert('RGB')), cv2.COLOR_RGB2BGR)
+
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
+    for one_box in one_out:
+        _type = one_box['type']
+        box = one_box[key]
+        xyxy = [box[0, 0], box[0, 1], box[2, 0], box[2, 1]]
+        label = f'{_type}'
+        plot_one_box(
+            xyxy,
+            img0,
+            label=label,
+            color=colors[categories.index(_type)],
+            line_thickness=1,
+        )
+
+    cv2.imwrite(save_path, img0)
+    logger.info(f" The image with the result is saved in: {save_path}")

@@ -1,9 +1,11 @@
 --index-url https://pypi.doubanio.com/simple --extra-index-url https://pypi.org/simple
 
 click
+numpy<1.24
 torch
 torchvision
-numpy
 pillow>=5.3.0
-cnocr>=2.2.2
-pix2tex
+opencv-python
+cnstd>=1.2.1
+cnocr>=2.2.2.1
+pix2tex==0.0.29
