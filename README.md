@@ -93,8 +93,10 @@ only_text = '\n'.join([out['text'] for out in outs])
 </tr>
 <tr>
 <td>
+<div style="width: 400px">
 
 <img src="./docs/examples/mixed.jpg" alt="mixed"  width="300px"> 
+</div>
 </td>
 <td>
 
