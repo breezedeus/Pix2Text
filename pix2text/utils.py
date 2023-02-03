@@ -231,17 +231,26 @@ def read_tsv_file(fp, sep='\t', img_folder=None, mode='eval'):
     return (img_fp_list, labels_list) if mode != 'test' else (img_fp_list, None)
 
 
-def read_img(path: Union[str, Path]) -> torch.Tensor:
+def read_img(
+    path: Union[str, Path], return_type='Tensor'
+) -> Union[Image.Image, np.ndarray, torch.Tensor]:
     """
 
     Args:
         path (str): image file path
+        return_type (str): 返回类型；
+            支持 `Tensor`，返回 torch.Tensor；`ndarray`，返回 np.ndarray；`Image`，返回 `Image.Image`
 
-    Returns: RGB torch.Tensor, with shape [Channel, Height, Width]
+    Returns: RGB Image.Image, or np.ndarray / torch.Tensor, with shape [Channel, Height, Width]
     """
+    assert return_type in ('Tensor', 'ndarray', 'Image')
     img = Image.open(path)
-    img = ImageOps.exif_transpose(img)  # 识别旋转后的图片（pillow不会自动识别）
-    img = np.asarray(img.convert('RGB'))
+    img = ImageOps.exif_transpose(img).convert('RGB')  # 识别旋转后的图片（pillow不会自动识别）
+    if return_type == 'Image':
+        return img
+    img = np.array(img)
+    if return_type == 'ndarray':
+        return img
     return torch.tensor(img.transpose((2, 0, 1)))
 
 

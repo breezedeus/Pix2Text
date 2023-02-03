@@ -22,7 +22,7 @@ thresholds = {
     'formula2general': 0.65,  # 如果识别为 `formula` 类型，但得分小于此阈值，则改为 `general` 类型
     'english2general': 0.75,  # 如果识别为 `english` 类型，但得分小于此阈值，则改为 `general` 类型
 }
-config = dict(layout=dict(model_name='mfd'), thresholds=thresholds)
+config = dict(analyzer=dict(model_name='mfd'), thresholds=thresholds)
 P2T = Pix2Text.from_config(config)
 
 

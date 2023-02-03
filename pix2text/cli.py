@@ -76,7 +76,7 @@ def predict(
     """模型预测"""
     logger = set_logger(log_level=log_level)
 
-    p2t = Pix2Text(layout_config=dict(model_name=analyzer_name), device=device)
+    p2t = Pix2Text(analyzer_config=dict(model_name=analyzer_name), device=device)
 
     fp_list = []
     if os.path.isfile(img_file_or_dir):
@@ -99,7 +99,7 @@ def predict(
             save_analysis_res=analysis_res,
         )
         res = '\n'.join([o['text'] for o in out])
-        logger.info(f'In image: {fp}\nOut Text: {pformat(out)}\nTexts: {res}')
+        logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n\t{res}')
 
 
 @cli.command('serve')

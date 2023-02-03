@@ -19,13 +19,13 @@ from cnstd.yolov7.general import xyxy24p, box_partial_overlap
 
 from .consts import IMAGE_TYPES, LATEX_CONFIG_FP, MODEL_VERSION, CLF_MODEL_URL_FMT
 from .latex_ocr import LatexOCR
-from .utils import data_dir, get_model_file, save_layout_img
+from .utils import data_dir, read_img, get_model_file, save_layout_img
 
 logger = logging.getLogger(__name__)
 
 
 DEFAULT_CONFIGS = {
-    'layout': {'model_name': 'mfd'},
+    'analyzer': {'model_name': 'mfd'},
     'clf': {
         'base_model_name': 'mobilenet_v2',
         'categories': IMAGE_TYPES,
@@ -57,7 +57,7 @@ class Pix2Text(object):
     def __init__(
         self,
         *,
-        layout_config: Dict[str, Any] = None,
+        analyzer_config: Dict[str, Any] = None,
         clf_config: Dict[str, Any] = None,
         general_config: Dict[str, Any] = None,
         english_config: Dict[str, Any] = None,
@@ -69,7 +69,7 @@ class Pix2Text(object):
         """
 
         Args:
-            layout_config (dict): Analyzer模型对应的配置信息；默认为 `None`，表示使用默认配置
+            analyzer_config (dict): Analyzer模型对应的配置信息；默认为 `None`，表示使用默认配置
             clf_config (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置
             general_config (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置
             english_config (dict): 英文模型对应的配置信息；默认为 `None`，表示使用默认配置
@@ -85,13 +85,13 @@ class Pix2Text(object):
         self.thresholds = deepcopy(thresholds)
 
         (
-            layout_config,
+            analyzer_config,
             clf_config,
             general_config,
             english_config,
             formula_config,
         ) = self._prepare_configs(
-            layout_config,
+            analyzer_config,
             clf_config,
             general_config,
             english_config,
@@ -99,7 +99,7 @@ class Pix2Text(object):
             device,
         )
 
-        self.layout = LayoutAnalyzer(**layout_config)
+        self.analyzer = LayoutAnalyzer(**analyzer_config)
 
         _clf_config = deepcopy(clf_config)
         _clf_config.pop('model_dir')
@@ -114,7 +114,7 @@ class Pix2Text(object):
 
     def _prepare_configs(
         self,
-        layout_config,
+        analyzer_config,
         clf_config,
         general_config,
         english_config,
@@ -126,8 +126,8 @@ class Pix2Text(object):
                 _conf = _def_val
             return _conf
 
-        layout_config = _to_default(layout_config, DEFAULT_CONFIGS['layout'])
-        layout_config['device'] = device
+        analyzer_config = _to_default(analyzer_config, DEFAULT_CONFIGS['analyzer'])
+        analyzer_config['device'] = device
         clf_config = _to_default(clf_config, DEFAULT_CONFIGS['clf'])
         general_config = _to_default(general_config, DEFAULT_CONFIGS['general'])
         general_config['context'] = device
@@ -135,7 +135,7 @@ class Pix2Text(object):
         english_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
         formula_config['device'] = device
-        return layout_config, clf_config, general_config, english_config, formula_config
+        return analyzer_config, clf_config, general_config, english_config, formula_config
 
     def _assert_and_prepare_clf_model(self, clf_config):
         model_file_prefix = '{}-{}'.format(
@@ -166,7 +166,7 @@ class Pix2Text(object):
     def from_config(cls, total_configs: Optional[dict] = None, device: str = 'cpu'):
         total_configs = total_configs or DEFAULT_CONFIGS
         return cls(
-            layout_config=total_configs.get('layout', dict()),
+            analyzer_config=total_configs.get('analyzer', dict()),
             clf_config=total_configs.get('clf', dict()),
             general_config=total_configs.get('general', dict()),
             english_config=total_configs.get('english', dict()),
@@ -203,7 +203,7 @@ class Pix2Text(object):
         """
         out = None
         if use_analyzer:
-            if self.layout._model_name == 'mfd':
+            if self.analyzer._model_name == 'mfd':
                 out = self.recognize_by_mfd(img, **kwargs)
             else:
                 out = self.recognize_by_layout(img, **kwargs)
@@ -229,7 +229,7 @@ class Pix2Text(object):
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
-            img0 = Image.open(img).convert('RGB')
+            img0 = read_img(img, return_type='Image')
         width, height = img0.size
         _img = torch.tensor(np.asarray(img0))
         res = self.image_clf.predict_images([_img])[0]
@@ -279,17 +279,17 @@ class Pix2Text(object):
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
-            img0 = Image.open(img).convert('RGB')
+            img0 = read_img(img, return_type='Image')
         w, h = img0.size
         ratio = resized_shape / w
         resized_shape = (int(h * ratio), resized_shape)  # (H, W)
-        layout_out = self.layout(img0.copy(), resized_shape=resized_shape)
-        logger.debug('MFD Result: %s', layout_out)
+        analyzer_outs = self.analyzer(img0.copy(), resized_shape=resized_shape)
+        logger.debug('MFD Result: %s', analyzer_outs)
         embed_sep = kwargs.get('embed_sep', (' $', '$ '))
         isolated_sep = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
 
         mf_out = []
-        for box_info in layout_out:
+        for box_info in analyzer_outs:
             box = box_info['box']
             xmin, ymin, xmax, ymax = (
                 int(box[0][0]),
@@ -305,7 +305,7 @@ class Pix2Text(object):
 
         img = np.array(img0.copy())
         # 把公式部分mask掉，然后对其他部分进行OCR
-        for box_info in layout_out:
+        for box_info in analyzer_outs:
             if box_info['type'] == 'isolated':
                 box = box_info['box']
                 xmin, ymin = max(0, int(box[0][0]) - 1), max(0, int(box[0][1]) - 1)
@@ -414,9 +414,9 @@ class Pix2Text(object):
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
-            img0 = Image.open(img).convert('RGB')
+            img0 = read_img(img, return_type='Image')
         resized_shape = kwargs.get('resized_shape', 500)
-        layout_out = self.layout(img0.copy(), resized_shape=resized_shape)
+        layout_out = self.analyzer(img0.copy(), resized_shape=resized_shape)
         logger.debug('Layout Analysis Result: %s', layout_out)
 
         out = []
@@ -473,7 +473,7 @@ class Pix2Text(object):
 
     def _latex(self, image):
         if isinstance(image, (str, Path)):
-            image = Image.open(image)
+            image = read_img(image, return_type='Image')
         out = self.latex_model(image)
         return str(out)
 
@@ -485,5 +485,6 @@ if __name__ == '__main__':
 
     p2t = Pix2Text()
     img = 'docs/examples/english.jpg'
-    out = p2t.recognize(Image.open(img))
+    img = read_img(img, return_type='Image')
+    out = p2t.recognize(img)
     logger.info(out)
