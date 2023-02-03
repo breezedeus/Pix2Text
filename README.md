@@ -100,7 +100,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 </td>
 <td>
 
-```json
+```python
 [{"position": array([[         22,          29],
        [       1055,          29],
        [       1055,          56],
@@ -134,14 +134,15 @@ only_text = '\n'.join([out['text'] for out in outs])
 </td>
 <td>
 
-```json
+```python
 [{"position": array([[         12,          19],
        [        749,          19],
        [        749,         150],
        [         12,         150]]),
   "text": "$$\n"
-          "\\mathcal{L}_{\\mathrm{eyelid}}~\\equiv~\\sum_{t=1}^{T}"
-          "\\sum_{v=1}^{V}\\mathcal{N}_{U}^{\\mathrm{(eyelid)}}"
+          "\\mathcal{L}_{\\mathrm{eyelid}}~\\equiv~"
+          "\\sum_{t=1}^{T}\\sum_{v=1}^{V}"
+          "\\mathcal{N}_{U}^{\\mathrm{(eyelid)}}"
           "\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,"
           "\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)\n"
           "$$",
@@ -157,7 +158,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 </td>
 <td>
 
-```json
+```python
 [{"position": array([[          0,           0],
        [        710,           0],
        [        710,         116],
@@ -176,7 +177,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 </td>
 <td>
 
-```json
+```python
 [{"position": array([[          0,           0],
        [        800,           0],
        [        800,         800],
