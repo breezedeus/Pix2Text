@@ -25,10 +25,10 @@ required = [
     "tqdm",
     "numpy<1.24",
     "opencv-python",
+    "cnocr>=2.2.2.1",
+    "cnstd>=1.2.1",
     "torch",
     "torchvision",
-    "cnstd>=1.2.1",
-    "cnocr>=2.2.2",
     "pix2tex",
 ]
 extras_require = {

@@ -1,4 +1,5 @@
 package:
+	rm -rf build
 	python setup.py sdist bdist_wheel
 
 VERSION = 0.2
