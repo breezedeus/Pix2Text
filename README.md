@@ -112,8 +112,8 @@ only_text = '\n'.join([out['text'] for out in outs])
        [       1389,         183],
        [        629,         183]]),
   "text": "$$\n"
-          "-{\\cal E}_{z\\sim q(z|x)}[\\log(p(x\\mid z))]+{\\cal K}{\\cal "
-          "L}(q(z\\mid x)||p(z))\n"
+          "-{\\cal E}_{z\\sim q(z|x)}[\\log(p(x\\mid z))]"
+          "+{\\cal K}{\\cal L}(q(z\\mid x)||p(z))\n"
           "$$",
   "type": "isolated"},
  {"position": array([[         20,         248],
