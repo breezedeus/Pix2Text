@@ -94,87 +94,87 @@ only_text = '\n'.join([out['text'] for out in outs])
 <tr>
 <td>
 
-<img src="./docs/examples/mixed.jpg" alt="mixed"> 
+<img src="./docs/examples/mixed.jpg" alt="mixed"  width="300px"> 
 </td>
 <td>
 
 ```json
-[{'position': array([[         22,          29],
+[{"position": array([[         22,          29],
        [       1055,          29],
        [       1055,          56],
        [         22,          56]], dtype=float32),
-  'text': 'JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散',
-  'type': 'text'},
- {'position': array([[        629,         124],
+  "text": "JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散",
+  "type": "text"},
+ {"position": array([[        629,         124],
        [       1389,         124],
        [       1389,         183],
        [        629,         183]]),
-  'text': '$$\n'
-          '-{\\cal E}_{z\\sim q(z|x)}[\\log(p(x\\mid z))]+{\\cal K}{\\cal '
-          'L}(q(z\\mid x)||p(z))\n'
-          '$$',
-  'type': 'isolated'},
- {'position': array([[         20,         248],
+  "text": "$$\n"
+          "-{\\cal E}_{z\\sim q(z|x)}[\\log(p(x\\mid z))]+{\\cal K}{\\cal "
+          "L}(q(z\\mid x)||p(z))\n"
+          "$$",
+  "type": "isolated"},
+ {"position": array([[         20,         248],
        [       1297,         248],
        [       1297,         275],
        [         20,         275]], dtype=float32),
-  'text': '其中之利用 Gumbel-Softmax从 $z\\sim q(z|x)$ 中抽样得到， $p(z)$ 是个等概率的多项式分布。',
-  'type': 'text-embed'}]
+  "text": "其中之利用 Gumbel-Softmax从 $z\\sim q(z|x)$ 中抽样得到， $p(z)$ 是个等概率的多项式分布。",
+  "type": "text-embed"}]
 ```
 </td>
 </tr>
 <tr>
 <td>
 
-<img src="./docs/examples/formula.jpg" alt="formula"> 
+<img src="./docs/examples/formula.jpg" alt="formula"  width="300px"> 
 </td>
 <td>
 
 ```json
-[{'position': array([[         12,          19],
+[{"position": array([[         12,          19],
        [        749,          19],
        [        749,         150],
        [         12,         150]]),
-  'text': '$$\n'
-          '\\mathcal{L}_{\\mathrm{eyelid}}~\\equiv~\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}_{U}^{\\mathrm{(eyelid)}}\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)\n'
-          '$$',
-  'type': 'isolated'}]
+  "text": "$$\n"
+          "\\mathcal{L}_{\\mathrm{eyelid}}~\\equiv~\\sum_{t=1}^{T}\\sum_{v=1}^{V}\\mathcal{N}_{U}^{\\mathrm{(eyelid)}}\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)\n"
+          "$$",
+  "type": "isolated"}]
 ```
 </td>
 </tr>
 <tr>
 <td>
 
- <img src="./docs/examples/english.jpg" alt="english"> 
+ <img src="./docs/examples/english.jpg" alt="english"  width="300px"> 
 </td>
 <td>
 
 ```json
-[{'position': array([[          0,           0],
+[{"position": array([[          0,           0],
        [        710,           0],
        [        710,         116],
        [          0,         116]]),
-  'text': 'python scripts/screenshot_daemon_with_server\n'
-          '2-get_model:178usemodel:/Users/king/.cr\n'
-          'enet_lite_136-fc-epoch=039-complete_match_er',
-  'type': 'english'}]
+  "text": "python scripts/screenshot_daemon_with_server\n"
+          "2-get_model:178usemodel:/Users/king/.cr\n"
+          "enet_lite_136-fc-epoch=039-complete_match_er",
+  "type": "english"}]
 ```
 </td>
 </tr>
 <tr>
 <td>
 
- <img src="./docs/examples/general.jpg" alt="general"> 
+ <img src="./docs/examples/general.jpg" alt="general"  width="300px"> 
 </td>
 <td>
 
 ```json
-[{'position': array([[          0,           0],
+[{"position": array([[          0,           0],
        [        800,           0],
        [        800,         800],
        [          0,         800]]),
-  'text': '618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天',
-  'type': 'general'}]
+  "text": "618\n开门红提前购\n很贵\n买贵返差\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天",
+  "type": "general"}]
 ```
 </td>
 </tr>
@@ -256,7 +256,7 @@ class Pix2Text(object):
 	
   ```python
   {
-        'model_name': 'mfd'
+        'model_name': 'mfd'  # 可以取值为 'mfd'（MFD），或者 'layout'（版面分析）
 	}
 	```
 	
@@ -339,8 +339,8 @@ class Pix2Text(object):
 返回结果为列表（`list`），列表中的每个元素为`dict`，包含如下 `key`：
 
 * `type`：识别出的图像类别；
-  * 当开启Analyzer时（`use_analyzer==True`），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `text-embed`（文本行中包含了嵌入式的数学公式） ；
-  * 当未开启Analyzer时（`use_analyzer==False`），取值为`formula`（纯数学公式）、`english`（纯英文文字）、`general`（纯文字，可能包含中英文）
+  * 当开启Analyzer时（`use_analyzer==True`），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `text-embed`（文本行中包含了嵌入式的数学公式）；
+  * 当未开启Analyzer时（`use_analyzer==False`），取值为`formula`（纯数学公式）、`english`（纯英文文字）、`general`（纯文字，可能包含中英文）；
 
 * `text`：识别出的文字或Latex表达式；
 * `position`：所在块的位置信息，`np.ndarray`, with shape of `[4, 2]`。
