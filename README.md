@@ -98,7 +98,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 </td>
 <td>
 
-<div style="width:600px">
+<div style="width: 60%">
 
 ```json
 [{"position": array([[         22,          29],
@@ -132,7 +132,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 <img src="./docs/examples/formula.jpg" alt="formula"  width="300px"> 
 </td>
 <td>
-<div style="width:600px">
+<div style="width: 60%">
 
 ```json
 [{"position": array([[         12,          19],
