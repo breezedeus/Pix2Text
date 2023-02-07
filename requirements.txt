@@ -46,7 +46,7 @@ einops==0.4.1
     # via
     #   pix2tex
     #   x-transformers
-entmax==1.0
+entmax==1.1
     # via x-transformers
 filelock==3.8.0
     # via
@@ -276,6 +276,7 @@ torch==1.12.1
     #   -r requirements.in
     #   cnocr
     #   cnstd
+    #   entmax
     #   pix2tex
     #   pytorch-lightning
     #   timm
