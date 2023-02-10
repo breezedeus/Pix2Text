@@ -24,11 +24,11 @@
 # Pix2Text (P2T)
 
 
-【Update 2023.02.10： **P2T 网页版** 开放免费试用】
+【Update 2023.02.10： **[P2T网页版](https://p2t.behye.com)** 开放免费试用】
 
-* P2T作为Python包，对于不熟悉Python的朋友还是太不友好，所以我们也开发了 [P2T网页版](https://p2t.behye.com) 。
+* P2T作为Python包，对于不熟悉Python的朋友还是太不友好，所以我们也开发了 [P2T网页版](https://p2t.behye.com)。
   限于服务器资源有限，网页版前期只开放少量 key 供有需要的朋友使用，优先在校师生（MathPix 每月要5美元，对在校生来说还是蛮贵的）。
-  更多信息：[Pix2Text (P2T) 新版发布，离Mathpix又近了一大步 - 知乎](https://zhuanlan.zhihu.com/p/604999678) 。
+* 更多信息：[Pix2Text (P2T) 新版发布，离Mathpix又近了一大步 - 知乎](https://zhuanlan.zhihu.com/p/604999678) 。
 
 【Update 2023.02.03：**V0.2** 发布】
 
