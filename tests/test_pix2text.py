@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from pix2text import Pix2Text
+from pix2text.latex_ocr import post_post_process_latex
 
 
 def test_mfd():
@@ -17,3 +18,9 @@ def test_mfd():
         save_analysis_res='./analysis_res.jpg',
     )
     print(res)
+
+
+def test_post_post_process():
+    latex = r'\log(p(x\mid q(x)))+||\mathrm{sg}\left[z_{e}(x)\right]-e||_{2}^{2}+\beta\left||z_{e}(x)-\mathrm{sg}[e]|_{2}^{2}'
+    out = post_post_process_latex(latex)
+    # 其他的测试字符串 latex
