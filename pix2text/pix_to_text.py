@@ -19,7 +19,14 @@ from cnstd.yolov7.general import xyxy24p, box_partial_overlap
 
 from .consts import IMAGE_TYPES, LATEX_CONFIG_FP, MODEL_VERSION, CLF_MODEL_URL_FMT
 from .latex_ocr import LatexOCR
-from .utils import data_dir, read_img, get_model_file, save_layout_img
+from .utils import (
+    data_dir,
+    read_img,
+    get_model_file,
+    save_layout_img,
+    is_valid_box,
+    rotated_box_to_horizontal,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +142,13 @@ class Pix2Text(object):
         english_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
         formula_config['device'] = device
-        return analyzer_config, clf_config, general_config, english_config, formula_config
+        return (
+            analyzer_config,
+            clf_config,
+            general_config,
+            english_config,
+            formula_config,
+        )
 
     def _assert_and_prepare_clf_model(self, clf_config):
         model_file_prefix = '{}-{}'.format(
@@ -324,7 +337,11 @@ class Pix2Text(object):
 
         outs = [box_info for box_info in mf_out if box_info['type'] == 'isolated']
         for crop_img_info in box_infos['detected_texts']:
-            line_box = _to_iou_box(crop_img_info['box'])
+            # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
+            hor_box = rotated_box_to_horizontal(crop_img_info['box'])
+            if not is_valid_box(hor_box, min_height=8, min_width=2):
+                continue
+            line_box = _to_iou_box(hor_box)
             embed_mfs = []
             for box_info in mf_out:
                 if box_info['type'] == 'embedding':
@@ -354,7 +371,7 @@ class Pix2Text(object):
                 {
                     'type': 'text-embed' if embed_mfs else 'text',
                     'text': text,
-                    'position': crop_img_info['box'],
+                    'position': hor_box,
                 }
             )
 
@@ -385,9 +402,7 @@ class Pix2Text(object):
         for mf in embed_mfs:
             _xmax = min(xmax, int(mf['position'][0]) + 1)
             if start + 8 < _xmax:
-                outs.append(
-                    {'position': [start, ymin, _xmax, ymax], 'type': 'text'}
-                )
+                outs.append({'position': [start, ymin, _xmax, ymax], 'type': 'text'})
             outs.append(mf)
             start = int(mf['position'][2])
         if start < xmax:
