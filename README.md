@@ -34,6 +34,8 @@
 
 * 利用 **[CnSTD](https://github.com/breezedeus/cnstd)** 新版的**数学公式检测**（**Mathematical Formula Detection**，简称 **MFD**）能力，**P2T V0.2** 支持**识别既包含文字又包含公式的混合图片**。
 
+了解更多：[RELEASE.md](./RELEASE.md) 。
+
 ---
 
 
