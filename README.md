@@ -11,7 +11,7 @@
 ![last-commit](https://img.shields.io/github/last-commit/breezedeus/pix2text)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
-[🛀🏻 在线Demo](https://huggingface.co/spaces/breezedeus/pix2text) |
+[👩🏻‍💻网页版](https://p2t.behye.com) |
 [💬 交流群](https://cnocr.readthedocs.io/zh/latest/contact/)
 
 </div>
@@ -24,11 +24,11 @@
 # Pix2Text (P2T)
 
 
-【Update 2023.02.10： **[P2T网页版](https://p2t.behye.com)** 开放免费试用】
+【Update 2023.02.10： **[P2T网页版](https://p2t.behye.com)** 开放免费使用】
 
-* P2T作为Python包，对于不熟悉Python的朋友还是太不友好，所以我们也开发了 [P2T网页版](https://p2t.behye.com)。
-  限于服务器资源有限，网页版前期只开放少量 key 供有需要的朋友使用，优先在校师生（MathPix 每月要5美元，对在校生来说还是蛮贵的）。
-* 更多信息：[Pix2Text (P2T) 新版发布，离Mathpix又近了一大步 - 知乎](https://zhuanlan.zhihu.com/p/604999678) 。
+* P2T作为Python包，对于不熟悉Python的朋友还是太不友好，所以我们也开发了 [P2T网页版](https://p2t.behye.com)，可直接免费使用，欢迎帮忙推荐分享。
+* 视频介绍：[Pix2Text 新版和网页版发布，离Mathpix又近了一大步_bilibili](https://www.bilibili.com/video/BV1U24y1q7n3) 。
+* 文字版介绍：[Pix2Text (P2T) 新版发布，离Mathpix又近了一大步 - 知乎](https://zhuanlan.zhihu.com/p/604999678) 。
 
 【Update 2023.02.03：**V0.2** 发布】
 
@@ -398,13 +398,15 @@ Options:
                                   analyzer]
   -a, --analyzer-name [mfd|layout]
                                   使用哪个Analyzer，MFD还是版面分析  [default: mfd]
+  -t, --analyzer-type TEXT        Analyzer使用哪个模型，'yolov7_tiny' or 'yolov7'
+                                  [default: yolov7_tiny]
   -d, --device TEXT               使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`
                                   [default: cpu]
-  --resized-shape INTEGER         把图片宽度resize到此大小再进行处理  [default: 700]
+  --resized-shape INTEGER         把图片宽度resize到此大小再进行处理  [default: 600]
   -i, --img-file-or-dir TEXT      输入图片的文件路径或者指定的文件夹  [required]
-  --save-analysis-res TEXT        把解析结果存储到此文件或目录中（如果"--img-file-or-dir"
-                                  为文件/文件夹，则"--save-analysis-res"
-                                  也应该是文件/文件夹）。取值为 `None` 表示不存储 [default: None]
+  --save-analysis-res TEXT        把解析结果存储到此文件或目录中（如果'--img-file-or-
+                                  dir'为文件/文件夹，则'--save-analysis-
+                                  res'也应该是文件/文件夹）。取值为 `None` 表示不存储
   -l, --log-level TEXT            Log Level, such as `INFO`, `DEBUG`
                                   [default: INFO]
   -h, --help                      Show this message and exit.
