@@ -14,7 +14,7 @@ import torch
 from cnocr import CnOcr, ImageClassifier
 from cnstd import LayoutAnalyzer
 from cnstd.yolov7.consts import CATEGORY_DICT
-from cnstd.yolov7.layout_analyzer import sort_boxes
+from cnstd.utils.utils import sort_boxes
 from cnstd.yolov7.general import xyxy24p, box_partial_overlap
 
 from .consts import IMAGE_TYPES, LATEX_CONFIG_FP, MODEL_VERSION, CLF_MODEL_URL_FMT
@@ -322,28 +322,6 @@ class Pix2Text(object):
                 0
             )
 
-        def _split_line_image(line_box, embed_mfs):
-            # 利用embedding formula所在位置，把单行文字图片切割成多个小段，之后这些小段会分别扔进OCR进行文字识别
-            line_box = line_box[0]
-            if not embed_mfs:
-                return [{'position': line_box.int().tolist(), 'type': 'text'}]
-            embed_mfs.sort(key=lambda x: x['position'][0])
-
-            outs = []
-            start = int(line_box[0])
-            xmax, ymin, ymax = int(line_box[2]), int(line_box[1]), int(line_box[-1])
-            for mf in embed_mfs:
-                _xmax = min(xmax, int(mf['position'][0]) + 1)
-                if start + 8 < _xmax:
-                    outs.append(
-                        {'position': [start, ymin, _xmax, ymax], 'type': 'text'}
-                    )
-                outs.append(mf)
-                start = int(mf['position'][2])
-            if start < xmax:
-                outs.append({'position': [start, ymin, xmax, ymax], 'type': 'text'})
-            return outs
-
         outs = [box_info for box_info in mf_out if box_info['type'] == 'isolated']
         for crop_img_info in box_infos['detected_texts']:
             line_box = _to_iou_box(crop_img_info['box'])
@@ -360,7 +338,7 @@ class Pix2Text(object):
                             }
                         )
 
-            ocr_boxes = _split_line_image(line_box, embed_mfs)
+            ocr_boxes = self._split_line_image(line_box, embed_mfs)
 
             text = []
             for box in ocr_boxes:
@@ -391,6 +369,29 @@ class Pix2Text(object):
                 kwargs.get('save_analysis_res'),
             )
 
+        return outs
+
+    @classmethod
+    def _split_line_image(cls, line_box, embed_mfs):
+        # 利用embedding formula所在位置，把单行文字图片切割成多个小段，之后这些小段会分别扔进OCR进行文字识别
+        line_box = line_box[0]
+        if not embed_mfs:
+            return [{'position': line_box.int().tolist(), 'type': 'text'}]
+        embed_mfs.sort(key=lambda x: x['position'][0])
+
+        outs = []
+        start = int(line_box[0])
+        xmax, ymin, ymax = int(line_box[2]), int(line_box[1]), int(line_box[-1])
+        for mf in embed_mfs:
+            _xmax = min(xmax, int(mf['position'][0]) + 1)
+            if start + 8 < _xmax:
+                outs.append(
+                    {'position': [start, ymin, _xmax, ymax], 'type': 'text'}
+                )
+            outs.append(mf)
+            start = int(mf['position'][2])
+        if start < xmax:
+            outs.append({'position': [start, ymin, xmax, ymax], 'type': 'text'})
         return outs
 
     def recognize_by_layout(

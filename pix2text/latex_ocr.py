@@ -114,6 +114,7 @@ def match_left_right(left_str, right_str):
     match_pairs = [
         ('', ''),
         ('(', ')'),
+        ('\{', '.'),  # 大括号那种
         ('⟮', '⟯'),
         ('[', ']'),
         ('⟨', '⟩'),
