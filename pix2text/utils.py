@@ -289,3 +289,31 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
 
     cv2.imwrite(save_path, img0)
     logger.info(f" The image with the result is saved in: {save_path}")
+
+
+def rotated_box_to_horizontal(box):
+    """将旋转框转换为水平矩形。
+
+    :param box: [4, 2]，左上角、右上角、右下角、左下角的坐标
+    """
+    xmin = min(box[:, 0])
+    xmax = max(box[:, 0])
+    ymin = min(box[:, 1])
+    ymax = max(box[:, 1])
+    return np.array([[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]])
+
+
+def is_valid_box(box, min_height=8, min_width=2) -> bool:
+    """判断box是否有效。
+    :param box: [4, 2]，左上角、右上角、右下角、左下角的坐标
+    :param min_height: 最小高度
+    :param min_width: 最小宽度
+    :return: bool, 是否有效
+    """
+    return (
+        box[0, 0] + min_width <= box[1, 0]
+        and box[1, 1] + min_height <= box[2, 1]
+        and box[2, 0] >= box[3, 0] + min_width
+        and box[3, 1] >= box[0, 1] + min_height
+
+    )
