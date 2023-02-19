@@ -92,7 +92,7 @@ def find_all_left_or_right(latex, left_or_right='left'):
         # 如 "\left \big("
         while latex[end - 1] in ('\\', ' '):
             end += 1
-            while latex[end].isalpha():
+            while end < len(latex) and latex[end].isalpha():
                 end += 1
         ori_str = latex[start + prefix_len : end].strip()
         # FIXME: ori_str中可能出现多个 '\left'，此时需要分隔开
