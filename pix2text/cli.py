@@ -37,6 +37,14 @@ def cli():
     show_default=True,
 )
 @click.option(
+    "-t",
+    "--analyzer-type",
+    type=str,
+    default='yolov7_tiny',
+    help="Analyzer使用哪个模型，'yolov7_tiny' or 'yolov7'",
+    show_default=True,
+)
+@click.option(
     "-d",
     "--device",
     help="使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`",
@@ -45,7 +53,10 @@ def cli():
     show_default=True,
 )
 @click.option(
-    "--resized-shape", help="把图片宽度resize到此大小再进行处理", type=int, default=700,
+    "--resized-shape",
+    help="把图片宽度resize到此大小再进行处理",
+    type=int,
+    default=600,
     show_default=True,
 )
 @click.option("-i", "--img-file-or-dir", required=True, help="输入图片的文件路径或者指定的文件夹")
@@ -53,8 +64,8 @@ def cli():
     "--save-analysis-res",
     default=None,
     help="把解析结果存储到此文件或目录中"
-         "（如果'--img-file-or-dir'为文件/文件夹，则'--save-analysis-res'也应该是文件/文件夹）。"
-         "取值为 `None` 表示不存储",
+    "（如果'--img-file-or-dir'为文件/文件夹，则'--save-analysis-res'也应该是文件/文件夹）。"
+    "取值为 `None` 表示不存储",
     show_default=True,
 )
 @click.option(
@@ -67,6 +78,7 @@ def cli():
 def predict(
     use_analyzer,
     analyzer_name,
+    analyzer_type,
     device,
     resized_shape,
     img_file_or_dir,
@@ -76,7 +88,10 @@ def predict(
     """模型预测"""
     logger = set_logger(log_level=log_level)
 
-    p2t = Pix2Text(analyzer_config=dict(model_name=analyzer_name), device=device)
+    p2t = Pix2Text(
+        analyzer_config=dict(model_name=analyzer_name, model_type=analyzer_type),
+        device=device,
+    )
 
     fp_list = []
     if os.path.isfile(img_file_or_dir):
@@ -88,7 +103,9 @@ def predict(
         fp_list = [os.path.join(img_file_or_dir, fn) for fn in fn_list]
         if save_analysis_res:
             os.makedirs(save_analysis_res, exist_ok=True)
-            save_analysis_res = [os.path.join(save_analysis_res, 'analysis-' + fn) for fn in fn_list]
+            save_analysis_res = [
+                os.path.join(save_analysis_res, 'analysis-' + fn) for fn in fn_list
+            ]
 
     for idx, fp in enumerate(fp_list):
         analysis_res = save_analysis_res[idx] if save_analysis_res is not None else None
@@ -104,12 +121,10 @@ def predict(
 
 @cli.command('serve')
 @click.option(
-    '-H', '--host', type=str, default='0.0.0.0', help='server host',
-    show_default=True,
+    '-H', '--host', type=str, default='0.0.0.0', help='server host', show_default=True,
 )
 @click.option(
-    '-p', '--port', type=int, default=8503, help='server port',
-    show_default=True,
+    '-p', '--port', type=int, default=8503, help='server port', show_default=True,
 )
 @click.option(
     '--reload',

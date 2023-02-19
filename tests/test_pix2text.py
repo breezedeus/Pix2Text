@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from pix2text import Pix2Text
+from pix2text.latex_ocr import post_post_process_latex
 
 
 def test_mfd():
@@ -17,3 +18,19 @@ def test_mfd():
         save_analysis_res='./analysis_res.jpg',
     )
     print(res)
+
+
+def test_post_post_process():
+    latex = r'\log(p(x\mid q(x)))+||\mathrm{sg}\left[z_{e}(x)\right]-e||_{2}^{2}+\beta\left||z_{e}(x)-\mathrm{sg}[e]|_{2}^{2}'  # noqa: E501
+    out = post_post_process_latex(latex)
+    print(f'{latex}\n->\n{out}\n')
+    # 以下是其他的测试字符串来测试此接口功能是否符合预期
+    latex = r'(a+b)^2 +（a-b）^2'
+    out = post_post_process_latex(latex)
+    print(f'{latex}\n->\n{out}\n')
+
+    # 下面这个Latex是正确的，不应该被修改
+    latex = r'\left\{\begin{array}{ll}1 & \text { if } x>0 \\0 & \text { if } x \leq 0\end{array}\right.'
+    out = post_post_process_latex(latex)
+    assert out == latex
+    print(f'{latex}\n==\n{out}\n')
