@@ -2,7 +2,7 @@ package:
 	rm -rf build
 	python setup.py sdist bdist_wheel
 
-VERSION = 0.2.2
+VERSION = 0.2.2.1
 upload:
 	python -m twine upload  dist/pix2text-$(VERSION)* --verbose
 
