@@ -52,9 +52,10 @@ async def ocr(
     image = read_img(image, return_type='Image')
     embed_sep = embed_sep.split(',')
     isolated_sep = isolated_sep.split(',')
+    use_analyzer = use_analyzer.lower() != 'false' if isinstance(use_analyzer, str) else use_analyzer
 
     params = dict(
-        use_analyzer=use_analyzer.lower() != 'false', resized_shape=int(resized_shape),
+        use_analyzer=use_analyzer, resized_shape=int(resized_shape),
     )
     if len(embed_sep) == 2:
         params['embed_sep'] = embed_sep
