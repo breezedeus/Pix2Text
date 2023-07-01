@@ -18,9 +18,16 @@ IMAGE_TYPES = ('general', 'english', 'formula')
 LATEX_CONFIG_FP = Path(__file__).parent.absolute() / 'latex_config.yaml'
 
 # 模型下载根地址
-ROOT_URL = (
-    'https://huggingface.co/breezedeus/cnstd-cnocr-models/resolve/main/models/pix2text/%s/'
-    % MODEL_VERSION
-)
+HF_HUB_REPO_ID = "breezedeus/cnstd-cnocr-models"
+HF_HUB_SUBFOLDER = "models/pix2text/%s" % MODEL_VERSION
 
-CLF_MODEL_URL_FMT = ROOT_URL + '%s.zip'
+
+def format_hf_hub_url(url: str) -> dict:
+    return {
+        'repo_id': HF_HUB_REPO_ID,
+        'subfolder': HF_HUB_SUBFOLDER,
+        'filename': url,
+    }
+
+
+CLF_MODEL_URL_FMT = '%s.zip'
