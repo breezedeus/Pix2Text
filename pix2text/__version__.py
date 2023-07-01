@@ -1,4 +1,4 @@
 # coding: utf-8
-# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
 
-__version__ = '0.2.2.1'
+__version__ = '0.2.3'
