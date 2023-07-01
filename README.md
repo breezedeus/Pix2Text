@@ -22,17 +22,26 @@
 </div>
 
 # Pix2Text (P2T)
+## Update 2023.07.03：发布 V1.2.3
+
+主要变更：
+* 优化了对检测出的boxes的排序逻辑，以及对混合图片的处理逻辑，使得最终识别效果更符合直觉。
+* 修复了模型文件自动下载的功能。HuggingFace似乎对下载文件的逻辑做了调整，导致之前版本的自动下载失败，当前版本已修复。但由于HuggingFace国内被墙，国内下载仍需 **梯子（VPN）**。
+* 更新了各个依赖包的版本号。
+
+## Update 2023.06.20：发布新版 MFD 模型
+
+主要变更：
+* 基于新标注的数据，重新训练了 **MFD YoloV7** 模型，目前新模型已部署到 [P2T网页版](https://p2t.behye.com) 。具体说明见：[Pix2Text (P2T) 新版公式检测模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-20230613) 。
+* 之前的 MFD YoloV7 模型已开放给星球会员下载，具体说明见：[P2T YoloV7 数学公式检测模型开放给星球会员下载 | Breezedeus.com](https://www.breezedeus.com/article/p2t-yolov7-for-zsxq-20230619) 。
 
 
-【Update 2023.02.10： **[P2T网页版](https://p2t.behye.com)** 开放免费使用】
+## Update 2023.02.10： **[P2T网页版](https://p2t.behye.com)** 开放免费使用
 
 * P2T作为Python包，对于不熟悉Python的朋友还是太不友好，所以我们也开发了 [P2T网页版](https://p2t.behye.com)，可直接免费使用，欢迎帮忙推荐分享。
 * 视频介绍：[Pix2Text 新版和网页版发布，离Mathpix又近了一大步_bilibili](https://www.bilibili.com/video/BV1U24y1q7n3) 。
 * 文字版介绍：[Pix2Text (P2T) 新版发布，离Mathpix又近了一大步 - 知乎](https://zhuanlan.zhihu.com/p/604999678) 。
 
-【Update 2023.02.03：**V0.2** 发布】
-
-* 利用 **[CnSTD](https://github.com/breezedeus/cnstd)** 新版的**数学公式检测**（**Mathematical Formula Detection**，简称 **MFD**）能力，**P2T V0.2** 支持**识别既包含文字又包含公式的混合图片**。
 
 了解更多：[RELEASE.md](./RELEASE.md) 。
 
