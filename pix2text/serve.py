@@ -41,7 +41,7 @@ async def root():
 async def ocr(
     image: UploadFile,
     use_analyzer: str = Form(default=True),
-    resized_shape: str = Form(default=600),
+    resized_shape: str = Form(default=608),
     embed_sep: str = Form(default=' $,$ '),
     isolated_sep: str = Form(default='$$\n, \n$$'),
 ) -> Dict[str, Any]:
