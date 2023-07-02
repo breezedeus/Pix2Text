@@ -12,6 +12,7 @@ import click
 
 from pix2text import set_logger, Pix2Text
 from pix2text.consts import LATEX_CONFIG_FP
+from pix2text.utils import merge_line_texts
 
 _CONTEXT_SETTINGS = {"help_option_names": ['-h', '--help']}
 logger = set_logger(log_level=logging.INFO)
@@ -142,14 +143,8 @@ def predict(
             resized_shape=resized_shape,
             save_analysis_res=analysis_res,
         )
-        out_texts = []
-        for o in out:
-            if len(out_texts) <= o['line_number']:
-                out_texts.append([])
-            out_texts[o['line_number']].append(o['text'])
-        # res = '\n'.join([''.join([x['text'] for x in o]) for o in out])
-        res = '\n'.join([''.join(o) for o in out_texts])
-        logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n\t{res}')
+        res = merge_line_texts(out, auto_line_break=True)
+        logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n{res}')
 
 
 @cli.command('serve')

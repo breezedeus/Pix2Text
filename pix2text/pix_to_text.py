@@ -7,7 +7,7 @@ import logging
 from itertools import chain
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from PIL import Image
 import numpy as np
@@ -18,7 +18,7 @@ from cnstd import LayoutAnalyzer
 from cnstd.yolov7.consts import CATEGORY_DICT
 
 # from cnstd.utils.utils import sort_boxes
-from .utils import sort_boxes
+from .utils import sort_boxes, rotated_box_to_horizontal, is_valid_box, list2box
 from cnstd.yolov7.general import xyxy24p, box_partial_overlap
 
 from .consts import (
@@ -337,12 +337,44 @@ class Pix2Text(object):
                 )
                 img[ymin:ymax, xmin:xmax, :] = 255
 
-        text_out = self.general_ocr.ocr(img)
-        for t_info in text_out:
-            t_info.pop('score')
-            t_info['type'] = 'text'
+        box_infos = self.general_ocr.det_model.detect(img)
 
-        outs = mf_out + text_out
+        def _to_iou_box(ori):
+            return torch.tensor([ori[0][0], ori[0][1], ori[2][0], ori[2][1]]).unsqueeze(
+                0
+            )
+
+        total_text_boxes = []
+        for crop_img_info in box_infos['detected_texts']:
+            # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
+            hor_box = rotated_box_to_horizontal(crop_img_info['box'])
+            if not is_valid_box(hor_box, min_height=8, min_width=2):
+                continue
+            line_box = _to_iou_box(hor_box)
+            embed_mfs = []
+            for box_info in mf_out:
+                if box_info['type'] == 'embedding':
+                    box2 = _to_iou_box(box_info['position'])
+                    if float(box_partial_overlap(line_box, box2).squeeze()) > 0.7:
+                        embed_mfs.append(
+                            {
+                                'position': box2[0].int().tolist(),
+                                'text': box_info['text'],
+                                'type': box_info['type'],
+                            }
+                        )
+
+            ocr_boxes = self._split_line_image(line_box, embed_mfs)
+            total_text_boxes.extend(ocr_boxes)
+
+        outs = copy(mf_out)
+        for box in total_text_boxes:
+            crop_patch = torch.tensor(np.asarray(img0.crop(box['position'])))
+            part_res = self._ocr_for_single_line(crop_patch, 'general')
+            if part_res['text']:
+                box['position'] = list2box(*box['position'])
+                box['text'] = part_res['text']
+                outs.append(box)
 
         outs = sort_boxes(outs, key='position')
         logger.debug(outs)
@@ -386,7 +418,6 @@ class Pix2Text(object):
             _xmax = min(xmax, int(mf['position'][0]) + 1)
             if start + 8 < _xmax:
                 outs.append({'position': [start, ymin, _xmax, ymax], 'type': 'text'})
-            outs.append(mf)
             start = int(mf['position'][2])
         if start < xmax:
             outs.append({'position': [start, ymin, xmax, ymax], 'type': 'text'})
@@ -458,10 +489,9 @@ class Pix2Text(object):
     def _ocr_for_single_line(self, image, image_type):
         ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr
         try:
-            result = ocr_model.ocr_for_single_line(image)
+            return ocr_model.ocr_for_single_line(image)
         except:
-            return ''
-        return result['text']
+            return {'text': '', 'score': 0.0}
 
     def _ocr(self, image, image_type):
         ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr
