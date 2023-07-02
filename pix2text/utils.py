@@ -3,11 +3,12 @@
 
 import hashlib
 import os
+import re
 from functools import cmp_to_key
 from pathlib import Path
 import logging
 import platform
-from typing import Union, List
+from typing import Union, List, Any, Dict
 
 from PIL import Image, ImageOps
 import numpy as np
@@ -213,7 +214,12 @@ def is_valid_box(box, min_height=8, min_width=2) -> bool:
         and box[1, 1] + min_height <= box[2, 1]
         and box[2, 0] >= box[3, 0] + min_width
         and box[3, 1] >= box[0, 1] + min_height
+    )
 
+
+def list2box(xmin, ymin, xmax, ymax):
+    return np.array(
+        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype=float
     )
 
 
@@ -258,12 +264,17 @@ def sort_and_filter_line_boxes(line_boxes, key):
         return line_boxes
 
     allowed_max_overlay_x = 20
+
     def find_right_box(anchor):
-        allowed_max = min(allowed_max_overlay_x, (anchor[key][2, 0]-anchor[key][0, 0]) * 0.5)
+        anchor_width = anchor[key][2, 0] - anchor[key][0, 0]
+        allowed_max = min(
+            max(allowed_max_overlay_x, anchor_width * 0.5), anchor_width * 0.95
+        )
         right_boxes = [
             l_box
             for l_box in line_boxes[1:]
-            if l_box['line_number'] < 0 and l_box[key][0, 0] >= anchor[key][2, 0] - allowed_max
+            if l_box['line_number'] < 0
+            and l_box[key][0, 0] >= anchor[key][2, 0] - allowed_max
         ]
         if not right_boxes:
             return None
@@ -276,11 +287,15 @@ def sort_and_filter_line_boxes(line_boxes, key):
         return right_boxes[0]
 
     def find_left_box(anchor):
-        allowed_max = min(allowed_max_overlay_x, (anchor[key][2, 0]-anchor[key][0, 0]) * 0.5)
+        anchor_width = anchor[key][2, 0] - anchor[key][0, 0]
+        allowed_max = min(
+            max(allowed_max_overlay_x, anchor_width * 0.5), anchor_width * 0.95
+        )
         left_boxes = [
             l_box
             for l_box in line_boxes[1:]
-            if l_box['line_number'] < 0 and l_box[key][2, 0] <= anchor[key][0, 0] + allowed_max
+            if l_box['line_number'] < 0
+            and l_box[key][2, 0] <= anchor[key][0, 0] + allowed_max
         ]
         if not left_boxes:
             return None
@@ -341,3 +356,97 @@ def sort_boxes(boxes: List[dict], key='position') -> List[List[dict]]:
         lines.append(line_boxes)
 
     return lines
+
+
+def is_chinese(ch):
+    """
+    判断一个字符是否为中文字符
+    """
+    return '\u4e00' <= ch <= '\u9fff'
+
+
+def smart_join(str_list):
+    """
+    对字符串列表进行拼接，如果相邻的两个字符串都是中文或包含空白符号，则不加空格；其他情况则加空格
+    """
+
+    def contain_whitespace(s):
+        if re.search(r'\s', s):
+            return True
+        else:
+            return False
+
+    res = str_list[0]
+    for i in range(1, len(str_list)):
+        if (is_chinese(res[-1]) and is_chinese(str_list[i][0])) or contain_whitespace(
+            res[-1] + str_list[i][0]
+        ):
+            res += str_list[i]
+        else:
+            res += ' ' + str_list[i]
+    return res
+
+
+def merge_line_texts(
+    out: List[Dict[str, Any]], auto_line_break: bool = True, line_sep='\n'
+) -> str:
+    """
+    把 Pix2Text.recognize_by_mfd() 的返回结果，合并成单个字符串
+    Args:
+        out (List[Dict[str, Any]]):
+        auto_line_break: 基于box位置自动判断是否该换行
+
+    Returns: 合并后的字符串
+
+    """
+    out_texts = []
+    line_margin_list = []  # 每行的最左边和左右边的x坐标
+    isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
+    for o in out:
+        if len(out_texts) <= o['line_number']:
+            out_texts.append([])
+            line_margin_list.append([0, 0])
+            isolated_included.append(False)
+        out_texts[o['line_number']].append(o['text'])
+        line_margin_list[o['line_number']][1] = max(
+            line_margin_list[o['line_number']][1], float(o['position'][2, 0])
+        )
+        line_margin_list[o['line_number']][0] = min(
+            line_margin_list[o['line_number']][0], float(o['position'][0, 0])
+        )
+        if o['type'] == 'isolated':
+            isolated_included[o['line_number']] = True
+
+    line_text_list = [smart_join(o) for o in out_texts]
+
+    if not auto_line_break:
+        return line_sep.join(line_text_list)
+
+    line_lengths = [rx - lx for lx, rx in line_margin_list]
+    line_length_thrsh = max(line_lengths) * 0.3
+
+    lines = np.array(
+        [
+            margin
+            for idx, margin in enumerate(line_margin_list)
+            if isolated_included[idx] or line_lengths[idx] >= line_length_thrsh
+        ]
+    )
+    min_x, max_x = lines.max(axis=0)
+
+    indentation_thrsh = (max_x - min_x) * 0.1
+    res_line_texts = [''] * len(line_text_list)
+    for idx, txt in enumerate(line_text_list):
+        if isolated_included[idx]:
+            res_line_texts[idx] = line_sep + txt + line_sep
+            continue
+
+        tmp = txt
+        if line_margin_list[idx][0] > min_x + indentation_thrsh:
+            tmp = line_sep + txt
+        if line_margin_list[idx][1] < max_x - indentation_thrsh:
+            tmp = tmp + line_sep
+        res_line_texts[idx] = tmp
+
+    out = smart_join(res_line_texts)
+    return out.replace(line_sep + line_sep, line_sep)  # 把 '\n\n' 替换为 '\n'
