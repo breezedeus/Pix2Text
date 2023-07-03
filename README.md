@@ -355,7 +355,7 @@ class Pix2Text(object):
   ```python
   {
       'config': LATEX_CONFIG_FP,
-      'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
+      'model_fp': Path(data_dir()) / 'formula' / 'weights.pth',
       'no_resize': False
   }
   ```
@@ -404,16 +404,14 @@ class Pix2Text(object):
 * `type`：识别出的图像类别；
   * 当开启Analyzer时（`use_analyzer==True`），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `embedding`（行内的数学公式）；
   
-    >  Warning
-    > 对于 **MFD Analyzer** ，此取值从 P2T **v0.2.3** 开始与之前不同。
+    >  注意：对于 **MFD Analyzer** ，此取值从 P2T **v0.2.3** 开始与之前不同。
   * 当未开启Analyzer时（`use_analyzer==False`），取值为`formula`（纯数学公式）、`english`（纯英文文字）、`general`（纯文字，可能包含中英文）；
   
 * `text`：识别出的文字或Latex表达式；
 * `position`：所在块的位置信息，`np.ndarray`, with shape of `[4, 2]`；
 * `line_number`：仅在使用 **MFD Analyzer** 时，才会包含此字段。此字段为 Box 所在的行号（第一行 **`line_number=0`**），值相同的 Box 表示它们在同一行。
 
-  > Warning
-  > 此取值从 P2T **v0.2.3** 开始才有，之前版本没有此 `key`。
+  > 注意：此取值从 P2T **v0.2.3** 开始才有，之前版本没有此 `key`。
 
 
 
