@@ -17,7 +17,6 @@ from cnstd.utils import get_model_file
 from cnstd import LayoutAnalyzer
 from cnstd.yolov7.consts import CATEGORY_DICT
 
-# from cnstd.utils.utils import sort_boxes
 from .utils import sort_boxes, rotated_box_to_horizontal, is_valid_box, list2box
 from cnstd.yolov7.general import xyxy24p, box_partial_overlap
 
@@ -55,7 +54,7 @@ DEFAULT_CONFIGS = {
     'english': {'det_model_name': 'en_PP-OCRv3_det', 'rec_model_name': 'en_PP-OCRv3'},
     'formula': {
         'config': LATEX_CONFIG_FP,
-        'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
+        'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
         'no_resize': False,
     },
     'thresholds': {  # 用于clf场景

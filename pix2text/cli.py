@@ -111,11 +111,7 @@ def predict(
 
     formula_config = None
     if latex_ocr_model_fp is not None:
-        formula_config = {
-            'config': LATEX_CONFIG_FP,
-            'checkpoint': latex_ocr_model_fp,
-            'no_resize': False,
-        }
+        formula_config = {'model_fp': latex_ocr_model_fp}
     p2t = Pix2Text(
         analyzer_config=analyzer_config, formula_config=formula_config, device=device,
     )
