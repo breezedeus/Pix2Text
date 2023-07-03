@@ -1,5 +1,5 @@
 # coding: utf-8
-# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
 
 import os
 import logging
@@ -10,7 +10,8 @@ from pprint import pformat
 
 import click
 
-from pix2text import set_logger, Pix2Text
+from pix2text import set_logger, Pix2Text, merge_line_texts
+from pix2text.consts import LATEX_CONFIG_FP
 
 _CONTEXT_SETTINGS = {"help_option_names": ['-h', '--help']}
 logger = set_logger(log_level=logging.INFO)
@@ -45,6 +46,20 @@ def cli():
     show_default=True,
 )
 @click.option(
+    "--analyzer-model-fp",
+    type=str,
+    default=None,
+    help="Analyzer检测模型的文件路径。Default：`None`，表示使用默认模型",
+    show_default=True,
+)
+@click.option(
+    "--latex-ocr-model-fp",
+    type=str,
+    default=None,
+    help="Latex-OCR 数学公式识别模型的文件路径。Default：`None`，表示使用默认模型",
+    show_default=True,
+)
+@click.option(
     "-d",
     "--device",
     help="使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`",
@@ -56,7 +71,7 @@ def cli():
     "--resized-shape",
     help="把图片宽度resize到此大小再进行处理",
     type=int,
-    default=600,
+    default=608,
     show_default=True,
 )
 @click.option("-i", "--img-file-or-dir", required=True, help="输入图片的文件路径或者指定的文件夹")
@@ -79,6 +94,8 @@ def predict(
     use_analyzer,
     analyzer_name,
     analyzer_type,
+    analyzer_model_fp,
+    latex_ocr_model_fp,
     device,
     resized_shape,
     img_file_or_dir,
@@ -88,9 +105,15 @@ def predict(
     """模型预测"""
     logger = set_logger(log_level=log_level)
 
+    analyzer_config = dict(model_name=analyzer_name, model_type=analyzer_type)
+    if analyzer_model_fp is not None:
+        analyzer_config['model_fp'] = analyzer_model_fp
+
+    formula_config = None
+    if latex_ocr_model_fp is not None:
+        formula_config = {'model_fp': latex_ocr_model_fp}
     p2t = Pix2Text(
-        analyzer_config=dict(model_name=analyzer_name, model_type=analyzer_type),
-        device=device,
+        analyzer_config=analyzer_config, formula_config=formula_config, device=device,
     )
 
     fp_list = []
@@ -115,8 +138,8 @@ def predict(
             resized_shape=resized_shape,
             save_analysis_res=analysis_res,
         )
-        res = '\n'.join([o['text'] for o in out])
-        logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n\t{res}')
+        res = merge_line_texts(out, auto_line_break=True)
+        logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n{res}')
 
 
 @cli.command('serve')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
 
 import os
 from setuptools import find_packages, setup
@@ -23,10 +23,10 @@ exec(
 required = [
     "click",
     "tqdm",
-    "numpy<1.24",
+    "numpy",
     "opencv-python",
-    "cnocr>=2.2.2.2",
-    "cnstd>=1.2.2",
+    "cnocr>=2.2.3.1",
+    "cnstd>=1.2.3.2",
     "torch",
     "torchvision",
     "pix2tex",
@@ -44,7 +44,8 @@ p2t = pix2text.cli:cli
 setup(
     name=PACKAGE_NAME,
     version=about['__version__'],
-    description="Python3 package to extract text information from images",
+    description="An open-source Python3 tool for Optical Character Recognition (OCR) "
+    "and LaTeX expression extraction from images, a Free Alternative to Mathpix",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='breezedeus',
@@ -54,14 +55,7 @@ setup(
     platforms=["Mac", "Linux", "Windows"],
     packages=find_packages(),
     include_package_data=True,
-    data_files=[
-        (
-            '',
-            [
-                'pix2text/latex_config.yaml',
-            ],
-        )
-    ],
+    data_files=[('', ['pix2text/latex_config.yaml',],)],
     entry_points=entry_points,
     install_requires=required,
     extras_require=extras_require,
@@ -74,9 +68,10 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: Implementation',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
 )

@@ -1,31 +1,37 @@
 # coding: utf-8
-# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
 
 import os
 from glob import glob
 import logging
+from itertools import chain
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from PIL import Image
 import numpy as np
 import torch
 from cnocr import CnOcr, ImageClassifier
+from cnstd.utils import get_model_file
 from cnstd import LayoutAnalyzer
 from cnstd.yolov7.consts import CATEGORY_DICT
-from cnstd.utils.utils import sort_boxes
+
+from .utils import sort_boxes, rotated_box_to_horizontal, is_valid_box, list2box
 from cnstd.yolov7.general import xyxy24p, box_partial_overlap
 
-from .consts import IMAGE_TYPES, LATEX_CONFIG_FP, MODEL_VERSION, CLF_MODEL_URL_FMT
+from .consts import (
+    IMAGE_TYPES,
+    LATEX_CONFIG_FP,
+    MODEL_VERSION,
+    CLF_MODEL_URL_FMT,
+    format_hf_hub_url,
+)
 from .latex_ocr import LatexOCR
 from .utils import (
     data_dir,
     read_img,
-    get_model_file,
     save_layout_img,
-    is_valid_box,
-    rotated_box_to_horizontal,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,7 +54,7 @@ DEFAULT_CONFIGS = {
     'english': {'det_model_name': 'en_PP-OCRv3_det', 'rec_model_name': 'en_PP-OCRv3'},
     'formula': {
         'config': LATEX_CONFIG_FP,
-        'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
+        'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
         'no_resize': False,
     },
     'thresholds': {  # 用于clf场景
@@ -168,7 +174,7 @@ class Pix2Text(object):
             )
         elif len(fps) < 1:
             logger.warning('no .ckpt file is found in %s' % model_dir)
-            url = CLF_MODEL_URL_FMT % clf_config['base_model_name']
+            url = format_hf_hub_url(CLF_MODEL_URL_FMT % clf_config['base_model_name'])
             get_model_file(url, model_dir)  # download the .zip file and unzip
             fps = glob(os.path.join(model_dir, model_file_prefix) + '*.ckpt')
 
@@ -275,20 +281,22 @@ class Pix2Text(object):
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             kwargs ():
-                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
+                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `608`
                 * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
                 * embed_sep (tuple): embedding latex的前后缀；默认值为 `(' $', '$ ')`
                 * isolated_sep (tuple): isolated latex的前后缀；默认值为 `('$$\n', '\n$$')`
 
-        Returns: a list of dicts, with keys:
-           `type`: 图像类别；
+        Returns: a list of ordered (top to bottom, left to right) dicts,
+            with each dict representing one detected box, containing keys:
+           `type`: 图像类别；Optional: 'text', 'isolated', 'embedding'
            `text`: 识别出的文字或Latex公式
            `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+           `line_number`: box 所在行号（第一行 `line_number==0`），值相同的box表示它们在同一行
 
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
         # 具体参考：cnstd.yolov7.layout_analyzer.LayoutAnalyzer._preprocess_images 中的 `letterbox` 行
-        resized_shape = kwargs.get('resized_shape', 700)
+        resized_shape = kwargs.get('resized_shape', 608)
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
@@ -319,7 +327,7 @@ class Pix2Text(object):
         img = np.array(img0.copy())
         # 把公式部分mask掉，然后对其他部分进行OCR
         for box_info in analyzer_outs:
-            if box_info['type'] == 'isolated':
+            if box_info['type'] in ('isolated', 'embedding'):
                 box = box_info['box']
                 xmin, ymin = max(0, int(box[0][0]) - 1), max(0, int(box[0][1]) - 1)
                 xmax, ymax = (
@@ -335,7 +343,7 @@ class Pix2Text(object):
                 0
             )
 
-        outs = [box_info for box_info in mf_out if box_info['type'] == 'isolated']
+        total_text_boxes = []
         for crop_img_info in box_infos['detected_texts']:
             # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
             hor_box = rotated_box_to_horizontal(crop_img_info['box'])
@@ -346,7 +354,7 @@ class Pix2Text(object):
             for box_info in mf_out:
                 if box_info['type'] == 'embedding':
                     box2 = _to_iou_box(box_info['position'])
-                    if float(box_partial_overlap(line_box, box2).squeeze()) > 0.3:
+                    if float(box_partial_overlap(line_box, box2).squeeze()) > 0.7:
                         embed_mfs.append(
                             {
                                 'position': box2[0].int().tolist(),
@@ -356,36 +364,42 @@ class Pix2Text(object):
                         )
 
             ocr_boxes = self._split_line_image(line_box, embed_mfs)
+            total_text_boxes.extend(ocr_boxes)
 
-            text = []
-            for box in ocr_boxes:
-                if box['type'] == 'text':
-                    crop_patch = torch.tensor(np.asarray(img0.crop(box['position'])))
-                    part_text = self._ocr_for_single_line(crop_patch, 'general')
-                else:
-                    part_text = box['text']
-                text.append(part_text)
-            text = ''.join(text)
-
-            outs.append(
-                {
-                    'type': 'text-embed' if embed_mfs else 'text',
-                    'text': text,
-                    'position': hor_box,
-                }
-            )
+        outs = copy(mf_out)
+        for box in total_text_boxes:
+            crop_patch = torch.tensor(np.asarray(img0.crop(box['position'])))
+            part_res = self._ocr_for_single_line(crop_patch, 'general')
+            if part_res['text']:
+                box['position'] = list2box(*box['position'])
+                box['text'] = part_res['text']
+                outs.append(box)
 
         outs = sort_boxes(outs, key='position')
         logger.debug(outs)
+        outs = self._post_process(outs)
 
+        outs = list(chain(*outs))
         if kwargs.get('save_analysis_res'):
             save_layout_img(
                 img0,
-                ('isolated', 'text', 'text-embed'),
+                ('text', 'isolated', 'embedding'),
                 outs,
                 kwargs.get('save_analysis_res'),
             )
 
+        return outs
+
+    @classmethod
+    def _post_process(cls, outs):
+        for line_boxes in outs:
+            if (
+                len(line_boxes) > 1
+                and line_boxes[-1]['type'] == 'text'
+                and line_boxes[-2]['type'] != 'text'
+            ):
+                if line_boxes[-1]['text'].lower() == 'o':
+                    line_boxes[-1]['text'] = '。'
         return outs
 
     @classmethod
@@ -403,7 +417,6 @@ class Pix2Text(object):
             _xmax = min(xmax, int(mf['position'][0]) + 1)
             if start + 8 < _xmax:
                 outs.append({'position': [start, ymin, _xmax, ymax], 'type': 'text'})
-            outs.append(mf)
             start = int(mf['position'][2])
         if start < xmax:
             outs.append({'position': [start, ymin, xmax, ymax], 'type': 'text'})
@@ -475,10 +488,9 @@ class Pix2Text(object):
     def _ocr_for_single_line(self, image, image_type):
         ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr
         try:
-            result = ocr_model.ocr_for_single_line(image)
+            return ocr_model.ocr_for_single_line(image)
         except:
-            return ''
-        return result['text']
+            return {'text': '', 'score': 0.0}
 
     def _ocr(self, image, image_type):
         ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr

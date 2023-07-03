@@ -3,7 +3,6 @@
 #
 # credit to: pix2tex, lukas-blecher/LaTeX-OCR
 # Adapted from https://github.com/lukas-blecher/LaTeX-OCR/blob/main/pix2tex/cli.py
-
 from typing import Tuple, Optional, Dict, Any
 import logging
 import yaml
@@ -28,10 +27,10 @@ from .utils import data_dir
 logger = logging.getLogger(__name__)
 
 
-def download_checkpoints(out_dl_dir):
+def download_checkpoints(args):
     # adapted from pix2tex.model.checkpoints.get_latest_checkpoint
+    ckpt_list = [args.mfr_checkpoint, args.resizer_checkpoint]
     tag = 'v0.0.1'  # get_latest_tag()
-    os.makedirs(out_dl_dir, exist_ok=True)
     weights = (
         'https://github.com/lukas-blecher/LaTeX-OCR/releases/download/%s/weights.pth'
         % tag
@@ -40,14 +39,21 @@ def download_checkpoints(out_dl_dir):
         'https://github.com/lukas-blecher/LaTeX-OCR/releases/download/%s/image_resizer.pth'
         % tag
     )
-    for url, name in zip([weights, resizer], ['weights.pth', 'image_resizer.pth']):
-        if not os.path.exists(os.path.join(out_dl_dir, name)):
+    for idx, (url, fp) in enumerate(zip([weights, resizer], ckpt_list)):
+        name = os.path.basename(url)
+        if not os.path.exists(fp):
+            if os.path.basename(fp) != name:
+                logger.warning(f'can not find file {fp}, download {name} from {url} instead')
+                fp = os.path.join(os.path.dirname(fp), name)
+                if idx == 0:
+                    args.mfr_checkpoint = fp
+                else:
+                    args.resizer_checkpoint = fp
+            os.makedirs(os.path.dirname(fp), exist_ok=True)
             file = download_as_bytes_with_progress(url, name)
-            logger.info('downloading file %s to path %s', name, out_dl_dir)
-            open(os.path.join(out_dl_dir, name), "wb").write(file)
-            logger.info(f'save {name} to path {out_dl_dir}')
-        else:
-            logger.info(f'use model {name} from path {out_dl_dir}')
+            logger.info('downloading file %s to path %s', name, fp)
+            open(fp, "wb").write(file)
+            logger.info(f'save {name} to path {fp}')
 
 
 def minmax_size(
@@ -206,14 +212,19 @@ class LatexOCR(object):
         Args:
             arguments (Union[Namespace, Munch], optional): Special model parameters. Defaults to None.
         """
-        if arguments is None:
-            arguments = {
-                'config': LATEX_CONFIG_FP,
-                'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
-                # 'no_cuda': True,
-                'no_resize': False,
-                'device': 'cpu',
-            }
+        def_arguments = {
+            'config': LATEX_CONFIG_FP,
+            'mfr_checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
+            'resizer_checkpoint': Path(data_dir()) / 'formula' / 'image_resizer.pth',
+            # 'no_cuda': True,
+            'no_resize': False,
+            'device': 'cpu',
+        }
+        if arguments is not None:
+            if 'model_fp' in arguments:
+                arguments['mfr_checkpoint'] = arguments.pop('model_fp')
+            def_arguments.update(arguments)
+        arguments = def_arguments
 
         arguments = Munch(arguments)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -225,18 +236,16 @@ class LatexOCR(object):
         # self.args.device = (
         #     'cuda' if torch.cuda.is_available() and not self.args.no_cuda else 'cpu'
         # )
-        # if not os.path.exists(self.args.checkpoint):
-        download_checkpoints(os.path.dirname(arguments.checkpoint))
+        download_checkpoints(self.args)
+
         self.model = get_model(self.args)
         self.model.load_state_dict(
-            torch.load(self.args.checkpoint, map_location=self.args.device)
+            torch.load(self.args.mfr_checkpoint, map_location=self.args.device)
         )
+        logger.info(f'use model: {self.args.mfr_checkpoint}')
         self.model.eval()
 
-        if (
-            'image_resizer.pth' in os.listdir(os.path.dirname(self.args.checkpoint))
-            and not arguments.no_resize
-        ):
+        if not self.args.no_resize and os.path.isfile(self.args.resizer_checkpoint):
             self.image_resizer = ResNetV2(
                 layers=[2, 3, 3],
                 num_classes=max(self.args.max_dimensions) // 32,
@@ -249,12 +258,11 @@ class LatexOCR(object):
             ).to(self.args.device)
             self.image_resizer.load_state_dict(
                 torch.load(
-                    os.path.join(
-                        os.path.dirname(self.args.checkpoint), 'image_resizer.pth'
-                    ),
+                    self.args.resizer_checkpoint,
                     map_location=self.args.device,
                 )
             )
+            logger.info(f'use model: {self.args.resizer_checkpoint}')
             self.image_resizer.eval()
         self.tokenizer = PreTrainedTokenizerFast(tokenizer_file=self.args.tokenizer)
 

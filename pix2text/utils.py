@@ -1,16 +1,15 @@
 # coding: utf-8
-# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
 
 import hashlib
 import os
+import re
+from functools import cmp_to_key
 from pathlib import Path
 import logging
 import platform
-import zipfile
-import requests
-from typing import Union
+from typing import Union, List, Any, Dict
 
-from tqdm import tqdm
 from PIL import Image, ImageOps
 import numpy as np
 from numpy import random
@@ -110,106 +109,6 @@ def check_sha1(filename, sha1_hash):
     return sha1.hexdigest()[0:l] == sha1_hash[0:l]
 
 
-def download(url, path=None, overwrite=False, sha1_hash=None):
-    """Download an given URL
-    Parameters
-    ----------
-    url : str
-        URL to download
-    path : str, optional
-        Destination path to store downloaded file. By default stores to the
-        current directory with same name as in url.
-    overwrite : bool, optional
-        Whether to overwrite destination file if already exists.
-    sha1_hash : str, optional
-        Expected sha1 hash in hexadecimal digits. Will ignore existing file when hash is specified
-        but doesn't match.
-    Returns
-    -------
-    str
-        The file path of the downloaded file.
-    """
-    if path is None:
-        fname = url.split('/')[-1]
-    else:
-        path = os.path.expanduser(path)
-        if os.path.isdir(path):
-            fname = os.path.join(path, url.split('/')[-1])
-        else:
-            fname = path
-
-    if (
-        overwrite
-        or not os.path.exists(fname)
-        or (sha1_hash and not check_sha1(fname, sha1_hash))
-    ):
-        dirname = os.path.dirname(os.path.abspath(os.path.expanduser(fname)))
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
-
-        logger.info('Downloading %s from %s...' % (fname, url))
-        r = requests.get(url, stream=True)
-        if r.status_code != 200:
-            raise RuntimeError("Failed downloading url %s" % url)
-        total_length = r.headers.get('content-length')
-        with open(fname, 'wb') as f:
-            if total_length is None:  # no content length header
-                for chunk in r.iter_content(chunk_size=1024):
-                    if chunk:  # filter out keep-alive new chunks
-                        f.write(chunk)
-            else:
-                total_length = int(total_length)
-                for chunk in tqdm(
-                    r.iter_content(chunk_size=1024),
-                    total=int(total_length / 1024.0 + 0.5),
-                    unit='KB',
-                    unit_scale=False,
-                    dynamic_ncols=True,
-                ):
-                    f.write(chunk)
-
-        if sha1_hash and not check_sha1(fname, sha1_hash):
-            raise UserWarning(
-                'File {} is downloaded but the content hash does not match. '
-                'The repo may be outdated or download may be incomplete. '
-                'If the "repo_url" is overridden, consider switching to '
-                'the default repo.'.format(fname)
-            )
-
-    return fname
-
-
-def get_model_file(url, model_dir):
-    r"""Return location for the downloaded models on local file system.
-
-    This function will download from online model zoo when model cannot be found or has mismatch.
-    The root directory will be created if it doesn't exist.
-
-    Parameters
-    ----------
-    url: str
-    model_dir : str, default $CNOCR_HOME
-        Location for keeping the model parameters.
-
-    Returns
-    -------
-    file_path
-        Path to the requested pretrained model file.
-    """
-    model_dir = os.path.expanduser(model_dir)
-    par_dir = os.path.dirname(model_dir)
-    os.makedirs(par_dir, exist_ok=True)
-
-    zip_file_path = os.path.join(par_dir, os.path.basename(url))
-    if not os.path.exists(zip_file_path):
-        download(url, path=zip_file_path, overwrite=True)
-    with zipfile.ZipFile(zip_file_path) as zf:
-        zf.extractall(par_dir)
-    os.remove(zip_file_path)
-
-    return model_dir
-
-
 def read_tsv_file(fp, sep='\t', img_folder=None, mode='eval'):
     img_fp_list, labels_list = [], []
     num_fields = 2 if mode != 'test' else 1
@@ -265,6 +164,20 @@ def save_img(img: Union[Tensor, np.ndarray], path):
     # Image.fromarray(img).save(path)
 
 
+COLOR_LIST = [
+    [0, 140, 255],  # 深橙色
+    [127, 255, 0],  # 春绿色
+    [255, 144, 30],  # 道奇蓝
+    [180, 105, 255],  # 粉红色
+    [128, 0, 128],  # 紫色
+    [0, 255, 255],  # 黄色
+    [255, 191, 0],  # 深天蓝色
+    [50, 205, 50],  # 石灰绿色
+    [60, 20, 220],  # 猩红色
+    [130, 0, 75]  # 靛蓝色
+]
+
+
 def save_layout_img(img0, categories, one_out, save_path, key='position'):
     import cv2
     from cnstd.yolov7.plots import plot_one_box
@@ -273,7 +186,10 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
     if isinstance(img0, Image.Image):
         img0 = cv2.cvtColor(np.asarray(img0.convert('RGB')), cv2.COLOR_RGB2BGR)
 
-    colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
+    if len(categories) > 10:
+        colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
+    else:
+        colors = COLOR_LIST
     for one_box in one_out:
         _type = one_box['type']
         box = one_box[key]
@@ -315,5 +231,239 @@ def is_valid_box(box, min_height=8, min_width=2) -> bool:
         and box[1, 1] + min_height <= box[2, 1]
         and box[2, 0] >= box[3, 0] + min_width
         and box[3, 1] >= box[0, 1] + min_height
-
     )
+
+
+def list2box(xmin, ymin, xmax, ymax):
+    return np.array(
+        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype=float
+    )
+
+
+def overlap(box1, box2, key='position'):
+    # 计算它们在y轴上的IOU: Interaction / min(height1, height2)
+    # 判断是否有交集
+    box1 = [box1[key][0][0], box1[key][0][1], box1[key][2][0], box1[key][2][1]]
+    box2 = [box2[key][0][0], box2[key][0][1], box2[key][2][0], box2[key][2][1]]
+    if box1[3] <= box2[1] or box2[3] <= box1[1]:
+        return 0
+    # 计算交集的高度
+    y_min = max(box1[1], box2[1])
+    y_max = min(box1[3], box2[3])
+    return (y_max - y_min) / max(1, min(box1[3] - box1[1], box2[3] - box2[1]))
+
+
+def get_same_line_boxes(anchor, total_boxes):
+    line_boxes = [anchor]
+    for box in total_boxes:
+        if box['line_number'] >= 0:
+            continue
+        if max([overlap(box, l_box) for l_box in line_boxes]) > 0.1:
+            line_boxes.append(box)
+    return line_boxes
+
+
+def _compare_box(box1, box2, anchor, key, left_best: bool = True):
+    over1 = overlap(box1, anchor, key)
+    over2 = overlap(box2, anchor, key)
+    if box1[key][2, 0] < box2[key][0, 0] - 3:
+        return -1
+    elif box2[key][2, 0] < box1[key][0, 0] - 3:
+        return 1
+    else:
+        if max(over1, over2) >= 3 * min(over1, over2):
+            return over2 - over1 if left_best else over1 - over2
+        return box1[key][0, 0] - box2[key][0, 0]
+
+
+def sort_and_filter_line_boxes(line_boxes, key):
+    if len(line_boxes) <= 1:
+        return line_boxes
+
+    allowed_max_overlay_x = 20
+
+    def find_right_box(anchor):
+        anchor_width = anchor[key][2, 0] - anchor[key][0, 0]
+        allowed_max = min(
+            max(allowed_max_overlay_x, anchor_width * 0.5), anchor_width * 0.95
+        )
+        right_boxes = [
+            l_box
+            for l_box in line_boxes[1:]
+            if l_box['line_number'] < 0
+            and l_box[key][0, 0] >= anchor[key][2, 0] - allowed_max
+        ]
+        if not right_boxes:
+            return None
+        right_boxes = sorted(
+            right_boxes,
+            key=cmp_to_key(
+                lambda x, y: _compare_box(x, y, anchor, key, left_best=True)
+            ),
+        )
+        return right_boxes[0]
+
+    def find_left_box(anchor):
+        anchor_width = anchor[key][2, 0] - anchor[key][0, 0]
+        allowed_max = min(
+            max(allowed_max_overlay_x, anchor_width * 0.5), anchor_width * 0.95
+        )
+        left_boxes = [
+            l_box
+            for l_box in line_boxes[1:]
+            if l_box['line_number'] < 0
+            and l_box[key][2, 0] <= anchor[key][0, 0] + allowed_max
+        ]
+        if not left_boxes:
+            return None
+        left_boxes = sorted(
+            left_boxes,
+            key=cmp_to_key(
+                lambda x, y: _compare_box(x, y, anchor, key, left_best=False)
+            ),
+        )
+        return left_boxes[-1]
+
+    res_boxes = [line_boxes[0]]
+    anchor = res_boxes[0]
+    line_number = anchor['line_number']
+
+    while True:
+        right_box = find_right_box(anchor)
+        if right_box is None:
+            break
+        right_box['line_number'] = line_number
+        res_boxes.append(right_box)
+        anchor = right_box
+
+    anchor = res_boxes[0]
+    while True:
+        left_box = find_left_box(anchor)
+        if left_box is None:
+            break
+        left_box['line_number'] = line_number
+        res_boxes.insert(0, left_box)
+        anchor = left_box
+
+    return res_boxes
+
+
+def sort_boxes(boxes: List[dict], key='position') -> List[List[dict]]:
+    # 按y坐标排序所有的框
+    boxes.sort(key=lambda box: box[key][0, 1])
+    for box in boxes:
+        box['line_number'] = -1  # 所在行号，-1表示未分配
+
+    def get_anchor():
+        anchor = None
+        for box in boxes:
+            if box['line_number'] == -1:
+                anchor = box
+                break
+        return anchor
+
+    lines = []
+    while True:
+        anchor = get_anchor()
+        if anchor is None:
+            break
+        anchor['line_number'] = len(lines)
+        line_boxes = get_same_line_boxes(anchor, boxes)
+        line_boxes = sort_and_filter_line_boxes(line_boxes, key)
+        lines.append(line_boxes)
+
+    return lines
+
+
+def is_chinese(ch):
+    """
+    判断一个字符是否为中文字符
+    """
+    return '\u4e00' <= ch <= '\u9fff'
+
+
+def smart_join(str_list):
+    """
+    对字符串列表进行拼接，如果相邻的两个字符串都是中文或包含空白符号，则不加空格；其他情况则加空格
+    """
+
+    def contain_whitespace(s):
+        if re.search(r'\s', s):
+            return True
+        else:
+            return False
+
+    res = str_list[0]
+    for i in range(1, len(str_list)):
+        if (is_chinese(res[-1]) and is_chinese(str_list[i][0])) or contain_whitespace(
+            res[-1] + str_list[i][0]
+        ):
+            res += str_list[i]
+        else:
+            res += ' ' + str_list[i]
+    return res
+
+
+def merge_line_texts(
+    out: List[Dict[str, Any]], auto_line_break: bool = True, line_sep='\n'
+) -> str:
+    """
+    把 Pix2Text.recognize_by_mfd() 的返回结果，合并成单个字符串
+    Args:
+        out (List[Dict[str, Any]]):
+        auto_line_break: 基于box位置自动判断是否该换行
+
+    Returns: 合并后的字符串
+
+    """
+    out_texts = []
+    line_margin_list = []  # 每行的最左边和左右边的x坐标
+    isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
+    for o in out:
+        if len(out_texts) <= o['line_number']:
+            out_texts.append([])
+            line_margin_list.append([0, 0])
+            isolated_included.append(False)
+        out_texts[o['line_number']].append(o['text'])
+        line_margin_list[o['line_number']][1] = max(
+            line_margin_list[o['line_number']][1], float(o['position'][2, 0])
+        )
+        line_margin_list[o['line_number']][0] = min(
+            line_margin_list[o['line_number']][0], float(o['position'][0, 0])
+        )
+        if o['type'] == 'isolated':
+            isolated_included[o['line_number']] = True
+
+    line_text_list = [smart_join(o) for o in out_texts]
+
+    if not auto_line_break:
+        return line_sep.join(line_text_list)
+
+    line_lengths = [rx - lx for lx, rx in line_margin_list]
+    line_length_thrsh = max(line_lengths) * 0.3
+
+    lines = np.array(
+        [
+            margin
+            for idx, margin in enumerate(line_margin_list)
+            if isolated_included[idx] or line_lengths[idx] >= line_length_thrsh
+        ]
+    )
+    min_x, max_x = lines.max(axis=0)
+
+    indentation_thrsh = (max_x - min_x) * 0.1
+    res_line_texts = [''] * len(line_text_list)
+    for idx, txt in enumerate(line_text_list):
+        if isolated_included[idx]:
+            res_line_texts[idx] = line_sep + txt + line_sep
+            continue
+
+        tmp = txt
+        if line_margin_list[idx][0] > min_x + indentation_thrsh:
+            tmp = line_sep + txt
+        if line_margin_list[idx][1] < max_x - indentation_thrsh:
+            tmp = tmp + line_sep
+        res_line_texts[idx] = tmp
+
+    out = smart_join(res_line_texts)
+    return out.replace(line_sep + line_sep, line_sep)  # 把 '\n\n' 替换为 '\n'
