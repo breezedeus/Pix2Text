@@ -10,7 +10,7 @@ import glob
 
 import pyperclip as pc
 
-from pix2text import set_logger, Pix2Text, render_html
+from pix2text import set_logger, Pix2Text, merge_line_texts, render_html
 
 logger = set_logger(log_level='DEBUG')
 
@@ -67,7 +67,7 @@ def _recognize_newest(newest_fp):
             image_type = 'hybrid'
         else:
             image_type = list(box_types)[0]
-        text = '\n'.join([info['text'] for info in res])
+        text = merge_line_texts(res, auto_line_break=True)
 
         return image_type, text
 

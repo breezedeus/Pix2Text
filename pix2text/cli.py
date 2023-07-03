@@ -1,5 +1,5 @@
 # coding: utf-8
-# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
 
 import os
 import logging
@@ -10,9 +10,8 @@ from pprint import pformat
 
 import click
 
-from pix2text import set_logger, Pix2Text
+from pix2text import set_logger, Pix2Text, merge_line_texts
 from pix2text.consts import LATEX_CONFIG_FP
-from pix2text.utils import merge_line_texts
 
 _CONTEXT_SETTINGS = {"help_option_names": ['-h', '--help']}
 logger = set_logger(log_level=logging.INFO)

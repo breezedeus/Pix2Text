@@ -384,7 +384,7 @@ class Pix2Text(object):
         if kwargs.get('save_analysis_res'):
             save_layout_img(
                 img0,
-                ('isolated', 'embedding', 'text'),
+                ('text', 'isolated', 'embedding'),
                 outs,
                 kwargs.get('save_analysis_res'),
             )
