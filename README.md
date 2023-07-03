@@ -22,10 +22,12 @@
 </div>
 
 # Pix2Text (P2T)
-## Update 2023.07.03：发布 V1.2.3
+## Update 2023.07.03：发布 V0.2.3
 
 主要变更：
+* 训练了新的**公式识别模型**，供 **[P2T网页版](https://p2t.behye.com)** 使用。新模型精度更高，尤其对**手写公式**和**多行公式**类图片。具体参考：[Pix2Text 新版公式识别模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-20230702) 。
 * 优化了对检测出的boxes的排序逻辑，以及对混合图片的处理逻辑，使得最终识别效果更符合直觉。
+* 优化了识别结果的合并逻辑，自动判断是否该换行，是否分段。
 * 修复了模型文件自动下载的功能。HuggingFace似乎对下载文件的逻辑做了调整，导致之前版本的自动下载失败，当前版本已修复。但由于HuggingFace国内被墙，国内下载仍需 **梯子（VPN）**。
 * 更新了各个依赖包的版本号。
 
@@ -34,7 +36,6 @@
 主要变更：
 * 基于新标注的数据，重新训练了 **MFD YoloV7** 模型，目前新模型已部署到 [P2T网页版](https://p2t.behye.com) 。具体说明见：[Pix2Text (P2T) 新版公式检测模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-20230613) 。
 * 之前的 MFD YoloV7 模型已开放给星球会员下载，具体说明见：[P2T YoloV7 数学公式检测模型开放给星球会员下载 | Breezedeus.com](https://www.breezedeus.com/article/p2t-yolov7-for-zsxq-20230619) 。
-
 
 ## Update 2023.02.10： **[P2T网页版](https://p2t.behye.com)** 开放免费使用
 
@@ -61,9 +62,7 @@
 
 
 
-P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，我们近期也会发布 **P2T网页版**，直接把图片丢进网页就能输出P2T的解析结果。
-
-网页版会提供一些**免费名额**供有需要的朋友使用，优先在校学生（**[MathPix](https://link.zhihu.com/?target=https%3A//mathpix.com/)** 每月要5美元，对在校生来说还是蛮贵的）。
+P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以我们也发布了**可免费使用**的 **[P2T网页版](https://p2t.behye.com)**，直接把图片丢进网页就能输出P2T的解析结果。**网页版会使用最新的模型，效果会比开源模型更好。**
 
 
 
@@ -75,7 +74,7 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，我们
 
 
 
-作者也维护 **知识星球** [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，这里面的提问会较快得到作者的回复，欢迎加入。**知识星球私享群**也会陆续发布一些P2T/CnOCR/CnSTD相关的私有资料，包括[**更详细的训练教程**](https://articles.zsxq.com/id_u6b4u0wrf46e.html)，**未公开的模型**，**不同应用场景的调用代码**，使用过程中遇到的难题解答等。本群也会发布OCR/STD相关的最新研究资料。
+作者也维护 **知识星球** [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，这里面的提问会较快得到作者的回复，欢迎加入。**知识星球私享群**也会陆续发布一些P2T/CnOCR/CnSTD相关的私有资料，包括[**更详细的训练教程**](https://articles.zsxq.com/id_u6b4u0wrf46e.html)，**部分未公开的模型**，**购买付费模型享优惠**，**不同应用场景的调用代码**，使用过程中遇到的难题解答等。星球也会发布P2T/OCR/STD相关的最新研究资料。
 
 
 
@@ -85,19 +84,20 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，我们
 调用很简单，以下是示例：
 
 ```python
-from pix2text import Pix2Text
+from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
 p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
 outs = p2t(img_fp, resized_shape=600)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
-only_text = '\n'.join([out['text'] for out in outs])
+only_text = merge_line_texts(outs, auto_line_break=True)
+print(only_text)
 ```
 
 
 
-返回结果 `out_text` 是个 `dict`，其中 key `position` 表示位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体见下面的[接口说明](#接口说明)。
+返回结果 `outs` 是个 `dict`，其中 key `position` 表示Box位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体见下面的[接口说明](#接口说明)。
 
 
 
@@ -116,28 +116,57 @@ only_text = '\n'.join([out['text'] for out in outs])
 <td>
 
 ```python
-[{"position": array([[         22,          29],
-       [       1055,          29],
-       [       1055,          56],
-       [         22,          56]], dtype=float32),
-  "text": "JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散",
-  "type": "text"},
- {"position": array([[        629,         124],
-       [       1389,         124],
-       [       1389,         183],
-       [        629,         183]]),
-  "text": "$$\n"
-          "-{\\cal E}_{z\\sim q(z|x)}[\\log(p(x\\mid z))]"
-          "+{\\cal K}{\\cal L}(q(z\\mid x)||p(z))\n"
-          "$$",
-  "type": "isolated"},
- {"position": array([[         20,         248],
-       [       1297,         248],
-       [       1297,         275],
-       [         20,         275]], dtype=float32),
-  "text": "其中之利用 Gumbel-Softmax从 $z\\sim q(z|x)$ 中抽样得到，"
-  " $p(z)$ 是个等概率的多项式分布。",
-  "type": "text-embed"}]
+[{'line_number': 0,
+  'position': array([[         22,          31],
+       [       1057,          31],
+       [       1057,          58],
+       [         22,          58]]),
+  'text': 'JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散',
+  'type': 'text'},
+ {'line_number': 1,
+  'position': array([[        625,         121],
+       [       1388,         121],
+       [       1388,         182],
+       [        625,         182]]),
+  'text': '$$\n'
+          '-E_{z\\sim q(z\\mid x)}[\\log(p(x\\mid z))]+K L(q(z\\mid x))|p(z))\n'
+          '$$',
+  'type': 'isolated'},
+ {'line_number': 2,
+  'position': array([[         18,         242],
+       [        470,         242],
+       [        470,         275],
+       [         18,         275]]),
+  'text': '其中之利用 Gumbel-Softmax 人',
+  'type': 'text'},
+ {'line_number': 2,
+  'position': array([[        481,         238],
+       [        664,         238],
+       [        664,         287],
+       [        481,         287]]),
+  'text': ' $z\\sim q(z|x)$ ',
+  'type': 'embedding'},
+ {'line_number': 2,
+  'position': array([[        667,         244],
+       [        840,         244],
+       [        840,         277],
+       [        667,         277]]),
+  'text': '中抽样得到,',
+  'type': 'text'},
+ {'line_number': 2,
+  'position': array([[        852,         239],
+       [        932,         239],
+       [        932,         288],
+       [        852,         288]]),
+  'text': ' $\\scriptstyle{p(z)}$ ',
+  'type': 'embedding'},
+ {'line_number': 2,
+  'position': array([[        937,         244],
+       [       1299,         244],
+       [       1299,         277],
+       [        937,         277]]),
+  'text': '是个等概率的多项式分布',
+  'type': 'text'}]
 ```
 
 </td>
@@ -150,7 +179,8 @@ only_text = '\n'.join([out['text'] for out in outs])
 <td>
 
 ```python
-[{"position": array([[         12,          19],
+[{"line_number": 0,
+  "position": array([[         12,          19],
        [        749,          19],
        [        749,         150],
        [         12,         150]]),
@@ -209,7 +239,9 @@ only_text = '\n'.join([out['text'] for out in outs])
 
 ## 模型下载
 
-安装好 Pix2Text 后，首次使用时系统会**自动下载** 模型文件，并存于 `~/.pix2text`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
+### 开源免费模型
+
+安装好 Pix2Text 后，首次使用时系统会**自动下载** 免费模型文件，并存于 `~/.pix2text`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
 
 
 
@@ -222,6 +254,12 @@ only_text = '\n'.join([out['text'] for out in outs])
 对于**分类模型**，系统会自动下载模型`mobilenet_v2.zip`文件并对其解压，然后把解压后的模型相关目录放于`~/.pix2text`目录中。如果系统无法自动成功下载`mobilenet_v2.zip`文件，则需要手动从 **[cnstd-cnocr-models/pix2text](https://huggingface.co/breezedeus/cnstd-cnocr-models/tree/main/models/pix2text/0.2)** 下载此zip文件并把它放于 `~/.pix2text`目录。如果下载太慢，也可以从 [百度云盘](https://pan.baidu.com/s/1kubZF4JGE19d98NDoPHJzQ?pwd=p2t0) 下载， 提取码为 ` p2t0`。
 
 对于  **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** ，系统同样会自动下载模型文件并把它们存放于`~/.pix2text/formula`目录中。如果系统无法自动成功下载这些模型文件，则需从  [百度云盘](https://pan.baidu.com/s/1kubZF4JGE19d98NDoPHJzQ?pwd=p2t0) 下载文件 `weights.pth` 和 `image_resizer.pth`， 并把它们存放于`~/.pix2text/formula`目录中；提取码为 ` p2t0`。
+
+
+
+### 付费模型
+
+除了上面免费的开源模型，P2T 也训练了精度更高的数学公式检测和识别模型，这些模型供 **[P2T网页版](https://p2t.behye.com)** 使用，它们的效果也可以在网页版体验。这些模型不是免费的（抱歉开源作者也是要喝咖啡的），具体可参考 [Pix2Text (P2T) | Breezedeus.com](https://www.breezedeus.com/pix2text#259b04346dd94f45a65c10ff3db48540) 。
 
 
 
@@ -317,7 +355,7 @@ class Pix2Text(object):
   ```python
   {
       'config': LATEX_CONFIG_FP,
-      'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
+      'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
       'no_resize': False
   }
   ```
@@ -364,25 +402,33 @@ class Pix2Text(object):
 返回结果为列表（`list`），列表中的每个元素为`dict`，包含如下 `key`：
 
 * `type`：识别出的图像类别；
-  * 当开启Analyzer时（`use_analyzer==True`），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `text-embed`（文本行中包含了嵌入式的数学公式）；
+  * 当开启Analyzer时（`use_analyzer==True`），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `embedding`（行内的数学公式）；
+  
+    >  Warning
+    > 对于 **MFD Analyzer** ，此取值从 P2T **v0.2.3** 开始与之前不同。
   * 当未开启Analyzer时（`use_analyzer==False`），取值为`formula`（纯数学公式）、`english`（纯英文文字）、`general`（纯文字，可能包含中英文）；
-
+  
 * `text`：识别出的文字或Latex表达式；
-* `position`：所在块的位置信息，`np.ndarray`, with shape of `[4, 2]`。
+* `position`：所在块的位置信息，`np.ndarray`, with shape of `[4, 2]`；
+* `line_number`：仅在使用 **MFD Analyzer** 时，才会包含此字段。此字段为 Box 所在的行号（第一行 **`line_number=0`**），值相同的 Box 表示它们在同一行。
+
+  > Warning
+  > 此取值从 P2T **v0.2.3** 开始才有，之前版本没有此 `key`。
 
 
 
 `Pix2Text` 类也实现了 `__call__()` 函数，其功能与 `.recognize()` 函数完全相同。所以才会有以下的调用方式：
 
 ```python
-from pix2text import Pix2Text
+from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
 p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
-outs = p2t(img_fp, resized_shape=600)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
+outs = p2t(img_fp, resized_shape=608)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
-only_text = '\n'.join([out['text'] for out in outs])
+only_text = merge_line_texts(outs, auto_line_break=True)
+print(only_text)
 ```
 
 
@@ -395,7 +441,7 @@ only_text = '\n'.join([out['text'] for out in outs])
 
 ### 对单张图片或单个文件夹中的图片进行识别
 
-使用命令 **`p2t predict`** 预测单个文件或文件夹中所有图片，以下是使用说明：
+使用命令 **`p2t predict`** 预测单张图片或文件夹中所有图片，以下是使用说明：
 
 ```bash
 $ p2t predict -h
@@ -411,9 +457,12 @@ Options:
                                   使用哪个Analyzer，MFD还是版面分析  [default: mfd]
   -t, --analyzer-type TEXT        Analyzer使用哪个模型，'yolov7_tiny' or 'yolov7'
                                   [default: yolov7_tiny]
+  --analyzer-model-fp TEXT        Analyzer检测模型的文件路径。Default：`None`，表示使用默认模型
+  --latex-ocr-model-fp TEXT       Latex-OCR
+                                  数学公式识别模型的文件路径。Default：`None`，表示使用默认模型
   -d, --device TEXT               使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`
                                   [default: cpu]
-  --resized-shape INTEGER         把图片宽度resize到此大小再进行处理  [default: 600]
+  --resized-shape INTEGER         把图片宽度resize到此大小再进行处理  [default: 608]
   -i, --img-file-or-dir TEXT      输入图片的文件路径或者指定的文件夹  [required]
   --save-analysis-res TEXT        把解析结果存储到此文件或目录中（如果'--img-file-or-
                                   dir'为文件/文件夹，则'--save-analysis-
@@ -423,6 +472,20 @@ Options:
   -h, --help                      Show this message and exit.
 ```
 
+
+
+此命令可用于**打印对指定图片的检测和识别结果**，如运行：
+
+```bash
+$ p2t predict --use-analyzer -a mfd --resized-shape 608 -i docs/examples/en1.jpg --save-analysis-res output-en1.jpg
+```
+
+上面命令打印出识别结果，同时会把检测结果存储在 `output-en1.jpg` 文件中，类似以下效果：
+
+
+<div align="center">
+  <img src="./docs/figs/output-en1.jpg" alt="P2T 数学公式检测效果图" width="600px"/>
+</div>
 
 
 ## HTTP服务
@@ -487,7 +550,7 @@ url = 'http://0.0.0.0:8503/pix2text'
 image_fp = 'docs/examples/mixed.jpg'
 data = {
     "use_analyzer": True,
-    "resized_shape": 600,
+    "resized_shape": 608,
     "embed_sep": " $,$ ",
     "isolated_sep": "$$\n, \n$$"
 }
@@ -545,9 +608,11 @@ print(f'{only_text=}')
 
 ## 给作者来杯咖啡
 
-开源不易，如果此项目对您有帮助，可以考虑 [给作者加点油🥤，鼓鼓气💪🏻](https://cnocr.readthedocs.io/zh/latest/buymeacoffee/) 。
+开源不易，如果此项目对您有帮助，可以考虑 [给作者加点油🥤，鼓鼓气💪🏻](https://www.breezedeus.com/buy-me-coffee) 。
 
 ---
 
-官方代码库：[https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text)。
+官方代码库：[https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text) 。
+
+Pix2Text (P2T) 更多信息：[https://www.breezedeus.com/pix2text](https://www.breezedeus.com/pix2text) 。
 

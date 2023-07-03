@@ -213,7 +213,7 @@ The parameters are described as follows:
   ```python
   {
       'config': LATEX_CONFIG_FP,
-      'checkpoint': Path(data_dir()) / 'formular' / 'weights.pth',
+      'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
       'no_resize': False
   }
   ```
