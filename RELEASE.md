@@ -1,5 +1,10 @@
 # Release Notes
 
+## Update 2023.07.14：发布 **V0.2.3.1**
+
+主要变更：
+* 修复了 `self.recognize_by_clf` 返回结果中不包含 `line_number` 字段导致 `merge_line_texts` 报错的bug。
+
 ## Update 2023.07.03：发布 **V0.2.3**
 
 主要变更：
