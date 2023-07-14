@@ -420,19 +420,20 @@ def merge_line_texts(
     line_margin_list = []  # 每行的最左边和左右边的x坐标
     isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
     for o in out:
-        if len(out_texts) <= o['line_number']:
+        line_number = o.get('line_number', 0)
+        if len(out_texts) <= line_number:
             out_texts.append([])
             line_margin_list.append([0, 0])
             isolated_included.append(False)
-        out_texts[o['line_number']].append(o['text'])
-        line_margin_list[o['line_number']][1] = max(
-            line_margin_list[o['line_number']][1], float(o['position'][2, 0])
+        out_texts[line_number].append(o['text'])
+        line_margin_list[line_number][1] = max(
+            line_margin_list[line_number][1], float(o['position'][2, 0])
         )
-        line_margin_list[o['line_number']][0] = min(
-            line_margin_list[o['line_number']][0], float(o['position'][0, 0])
+        line_margin_list[line_number][0] = min(
+            line_margin_list[line_number][0], float(o['position'][0, 0])
         )
         if o['type'] == 'isolated':
-            isolated_included[o['line_number']] = True
+            isolated_included[line_number] = True
 
     line_text_list = [smart_join(o) for o in out_texts]
 
