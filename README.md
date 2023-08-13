@@ -18,7 +18,9 @@
 
 <div align="center">
 [English](./README_en.md) | 中文
+
 </div>
+
 
 # Pix2Text (P2T)
 ## Update 2023.07.03：发布 V0.2.3
