@@ -12,17 +12,19 @@
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
 [👩🏻‍💻网页版](https://p2t.breezedeus.com) |
-[💬 交流群](https://cnocr.readthedocs.io/zh/latest/contact/)
+[💬 交流群](https://www.breezedeus.com/join-group)
 
 </div>
 
 <div align="center">
+
 [English](./README_en.md) | 中文
+
 
 </div>
 
-
 # Pix2Text (P2T)
+
 ## Update 2023.07.03：发布 V0.2.3
 
 主要变更：
