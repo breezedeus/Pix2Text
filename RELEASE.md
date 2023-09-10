@@ -1,5 +1,10 @@
 # Release Notes
 
+## Update 2023.09.10：发布 **V0.2.3.2**
+
+主要变更：
+* fix: 去掉 `consts.py` 无用的 `CATEGORY_MAPPINGS`。
+
 ## Update 2023.07.14：发布 **V0.2.3.1**
 
 主要变更：
