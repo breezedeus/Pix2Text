@@ -76,7 +76,7 @@ class Pix2Text(object):
         english_config: Dict[str, Any] = None,
         formula_config: Dict[str, Any] = None,
         thresholds: Dict[str, Any] = None,
-        device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
+        device: str = 'cuda',  # ['cpu', 'cuda', 'gpu']
         **kwargs,
     ):
         """
@@ -182,7 +182,7 @@ class Pix2Text(object):
         self.image_clf.load(model_fp, self.device)
 
     @classmethod
-    def from_config(cls, total_configs: Optional[dict] = None, device: str = 'cpu'):
+    def from_config(cls, total_configs: Optional[dict] = None, device: str = 'cuda'):
         total_configs = total_configs or DEFAULT_CONFIGS
         return cls(
             analyzer_config=total_configs.get('analyzer', dict()),

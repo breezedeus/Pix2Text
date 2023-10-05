@@ -218,7 +218,7 @@ class LatexOCR(object):
             'resizer_checkpoint': Path(data_dir()) / 'formula' / 'image_resizer.pth',
             # 'no_cuda': True,
             'no_resize': False,
-            'device': 'cpu',
+            'device': 'cuda',
         }
         if arguments is not None:
             if 'model_fp' in arguments:
