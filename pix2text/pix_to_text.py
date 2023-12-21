@@ -166,19 +166,21 @@ class Pix2Text(object):
         if model_fp is not None and not os.path.isfile(model_fp):
             raise FileNotFoundError('can not find model file %s' % model_fp)
 
-        fps = glob(os.path.join(model_dir, model_file_prefix) + '*.ckpt')
-        if len(fps) > 1:
-            raise ValueError(
-                'multiple .ckpt files are found in %s, not sure which one should be used'
-                % model_dir
-            )
-        elif len(fps) < 1:
-            logger.warning('no .ckpt file is found in %s' % model_dir)
-            url = format_hf_hub_url(CLF_MODEL_URL_FMT % clf_config['base_model_name'])
-            get_model_file(url, model_dir)  # download the .zip file and unzip
+        # 如果未指定model_fp，则尝试在model_dir中搜索，或下载模型文件。
+        if not model_fp:
             fps = glob(os.path.join(model_dir, model_file_prefix) + '*.ckpt')
+            if len(fps) > 1:
+                raise ValueError(
+                    'multiple .ckpt files are found in %s, not sure which one should be used'
+                    % model_dir
+                )
+            elif len(fps) < 1:
+                logger.warning('no .ckpt file is found in %s' % model_dir)
+                url = format_hf_hub_url(CLF_MODEL_URL_FMT % clf_config['base_model_name'])
+                get_model_file(url, model_dir)  # download the .zip file and unzip
+                fps = glob(os.path.join(model_dir, model_file_prefix) + '*.ckpt')
 
-        model_fp = fps[0]
+            model_fp = fps[0]
         self.image_clf.load(model_fp, self.device)
 
     @classmethod
