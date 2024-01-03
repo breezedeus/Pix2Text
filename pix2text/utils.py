@@ -414,10 +414,13 @@ def merge_line_texts(
     Args:
         out (List[Dict[str, Any]]):
         auto_line_break: 基于box位置自动判断是否该换行
+        line_sep: 行与行之间的分隔符
 
     Returns: 合并后的字符串
 
     """
+    if not out:
+        return ''
     out_texts = []
     line_margin_list = []  # 每行的最左边和左右边的x坐标
     isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
@@ -427,6 +430,9 @@ def merge_line_texts(
             out_texts.append([])
             line_margin_list.append([0, 0])
             isolated_included.append(False)
+        if o['type'] == 'isolated':
+            isolated_included[line_number] = True
+            o['text'] = line_sep + o['text'] + line_sep
         out_texts[line_number].append(o['text'])
         line_margin_list[line_number][1] = max(
             line_margin_list[line_number][1], float(o['position'][2, 0])
@@ -434,13 +440,11 @@ def merge_line_texts(
         line_margin_list[line_number][0] = min(
             line_margin_list[line_number][0], float(o['position'][0, 0])
         )
-        if o['type'] == 'isolated':
-            isolated_included[line_number] = True
 
     line_text_list = [smart_join(o) for o in out_texts]
 
     if not auto_line_break:
-        return line_sep.join(line_text_list)
+        return re.sub(rf'{line_sep}+', line_sep, line_sep.join(line_text_list))
 
     line_lengths = [rx - lx for lx, rx in line_margin_list]
     line_length_thrsh = max(line_lengths) * 0.3
@@ -469,4 +473,4 @@ def merge_line_texts(
         res_line_texts[idx] = tmp
 
     out = smart_join(res_line_texts)
-    return out.replace(line_sep + line_sep, line_sep)  # 把 '\n\n' 替换为 '\n'
+    return re.sub(rf'{line_sep}+', line_sep, out)  # 把多个 '\n' 替换为 '\n'
