@@ -174,7 +174,7 @@ COLOR_LIST = [
     [255, 191, 0],  # 深天蓝色
     [50, 205, 50],  # 石灰绿色
     [60, 20, 220],  # 猩红色
-    [130, 0, 75]  # 靛蓝色
+    [130, 0, 75],  # 靛蓝色
 ]
 
 
@@ -234,9 +234,9 @@ def is_valid_box(box, min_height=8, min_width=2) -> bool:
     )
 
 
-def list2box(xmin, ymin, xmax, ymax):
+def list2box(xmin, ymin, xmax, ymax, dtype=float):
     return np.array(
-        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype=float
+        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype=dtype
     )
 
 
@@ -373,6 +373,120 @@ def sort_boxes(boxes: List[dict], key='position') -> List[List[dict]]:
         lines.append(line_boxes)
 
     return lines
+
+
+def merge_adjacent_bboxes(line_bboxes):
+    """
+    合并同一行中相邻且足够接近的边界框（bboxes）。
+    如果两个边界框在水平方向上的距离小于行的高度，则将它们合并为一个边界框。
+
+    :param line_bboxes: 包含边界框信息的列表，每个边界框包含行号、位置（四个角点的坐标）和类型。
+    :return: 合并后的边界框列表。
+    """
+    merged_bboxes = []
+    current_bbox = None
+
+    for bbox in line_bboxes:
+        # 如果是当前行的第一个边界框，或者与上一个边界框不在同一行
+        if current_bbox is None:
+            current_bbox = bbox
+            continue
+
+        line_number = bbox['line_number']
+        position = bbox['position']
+        bbox_type = bbox['type']
+
+        # 计算边界框的高度和宽度
+        height = position[2, 1] - position[0, 1]
+
+        # 检查当前边界框与上一个边界框的距离
+        distance = position[0, 0] - current_bbox['position'][1, 0]
+        if (
+            current_bbox['type'] == 'text'
+            and bbox_type == 'text'
+            and distance <= height
+        ):
+            # 合并边界框：ymin 取两个框对应值的较小值，ymax 取两个框对应值的较大
+            # [text]_[text] -> [text_text]
+            ymin = min(position[0, 1], current_bbox['position'][0, 1])
+            ymax = max(position[2, 1], current_bbox['position'][2, 1])
+            xmin = current_bbox['position'][0, 0]
+            xmax = position[2, 0]
+            current_bbox['position'] = list2box(xmin, ymin, xmax, ymax)
+        else:
+            if (
+                current_bbox['type'] == 'text'
+                and bbox_type != 'text'
+                and 0 < distance <= height
+            ):
+                # [text]_[embedding] -> [text_][embedding]
+                current_bbox['position'][1, 0] = position[0, 0]
+                current_bbox['position'][2, 0] = position[0, 0]
+            elif (
+                current_bbox['type'] != 'text'
+                and bbox_type == 'text'
+                and 0 < distance <= height
+            ):
+                # [embedding]_[text] -> [embedding][_text]
+                position[0, 0] = current_bbox['position'][1, 0]
+                position[3, 0] = current_bbox['position'][1, 0]
+            # 添加当前边界框，并开始新的合并
+            merged_bboxes.append(current_bbox)
+            current_bbox = bbox
+
+    if current_bbox is not None:
+        merged_bboxes.append(current_bbox)
+
+    return merged_bboxes
+
+
+def adjust_line_height(bboxes, img_height, max_expand_ratio=0.2):
+    """
+    基于临近行与行之间间隙，把 box 的高度略微调高（检测出来的 box 可以挨着文字很近）。
+    Args:
+        bboxes (List[List[dict]]): 包含边界框信息的列表，每个边界框包含行号、位置（四个角点的坐标）和类型。
+        img_height (int): 原始图像的高度。
+        max_expand_ratio (float): 相对于 box 高度来说的上下最大扩展比率
+
+    Returns:
+
+    """
+
+    def get_max_text_ymax(line_bboxes):
+        return max([bbox['position'][2, 1] for bbox in line_bboxes])
+
+    def get_min_text_ymin(line_bboxes):
+        return min([bbox['position'][0, 1] for bbox in line_bboxes])
+
+    if len(bboxes) < 1:
+        return bboxes
+
+    for line_idx, line_bboxes in enumerate(bboxes):
+        next_line_ymin = (
+            get_min_text_ymin(bboxes[line_idx + 1])
+            if line_idx < len(bboxes) - 1
+            else img_height
+        )
+        above_line_ymax = get_max_text_ymax(bboxes[line_idx - 1]) if line_idx > 0 else 0
+        for box in line_bboxes:
+            if box['type'] != 'text':
+                continue
+            box_height = box['position'][2, 1] - box['position'][0, 1]
+            if box['position'][0, 1] > above_line_ymax:
+                expand_size = min(
+                    (box['position'][0, 1] - above_line_ymax) // 3,
+                    int(max_expand_ratio * box_height),
+                )
+                box['position'][0, 1] -= expand_size
+                box['position'][1, 1] -= expand_size
+            if box['position'][2, 1] < next_line_ymin:
+                expand_size = min(
+                    (next_line_ymin - box['position'][2, 1]) // 3,
+                    int(max_expand_ratio * box_height),
+                )
+                box['position'][2, 1] += expand_size
+                box['position'][3, 1] += expand_size
+    return bboxes
 
 
 def is_chinese(ch):
