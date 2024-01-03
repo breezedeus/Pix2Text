@@ -4,6 +4,7 @@
 import os
 import logging
 import glob
+import json
 from multiprocessing import Process
 import subprocess
 from pprint import pformat
@@ -27,6 +28,14 @@ def cli():
     "--use-analyzer/--no-use-analyzer",
     default=True,
     help="是否使用 MFD 或者版面分析 Analyzer",
+    show_default=True,
+)
+@click.option(
+    "-l",
+    "--languages",
+    type=str,
+    default='en,ch_sim',
+    help="Text-OCR 识别文本的语言，以逗号分隔。",
     show_default=True,
 )
 @click.option(
@@ -60,6 +69,13 @@ def cli():
     show_default=True,
 )
 @click.option(
+    "--text-ocr-config",
+    type=str,
+    default=None,
+    help="Text-OCR 识别文本的配置信息，JSON 字符串。Default：`None`，表示使用默认配置",
+    show_default=True,
+)
+@click.option(
     "-d",
     "--device",
     help="使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`",
@@ -84,7 +100,13 @@ def cli():
     show_default=True,
 )
 @click.option(
-    "-l",
+    "--rec-kwargs",
+    type=str,
+    default=None,
+    help="kwargs for calling .recognize()，JSON 字符串",
+    show_default=True,
+)
+@click.option(
     "--log-level",
     default='INFO',
     help="Log Level, such as `INFO`, `DEBUG`",
@@ -96,10 +118,13 @@ def predict(
     analyzer_type,
     analyzer_model_fp,
     latex_ocr_model_fp,
+    languages,
+    text_ocr_config,
     device,
     resized_shape,
     img_file_or_dir,
     save_analysis_res,
+    rec_kwargs,
     log_level,
 ):
     """模型预测"""
@@ -112,8 +137,14 @@ def predict(
     formula_config = None
     if latex_ocr_model_fp is not None:
         formula_config = {'model_fp': latex_ocr_model_fp}
+    languages = [lang.strip() for lang in languages.split(',') if lang.strip()]
+    text_ocr_config = json.loads(text_ocr_config) if text_ocr_config else {}
     p2t = Pix2Text(
-        analyzer_config=analyzer_config, formula_config=formula_config, device=device,
+        languages=languages,
+        analyzer_config=analyzer_config,
+        text_config=text_ocr_config,
+        formula_config=formula_config,
+        device=device,
     )
 
     fp_list = []
@@ -130,6 +161,7 @@ def predict(
                 os.path.join(save_analysis_res, 'analysis-' + fn) for fn in fn_list
             ]
 
+    rec_kwargs = json.loads(rec_kwargs) if rec_kwargs else {}
     for idx, fp in enumerate(fp_list):
         analysis_res = save_analysis_res[idx] if save_analysis_res is not None else None
         out = p2t.recognize(
@@ -137,8 +169,9 @@ def predict(
             use_analyzer=use_analyzer,
             resized_shape=resized_shape,
             save_analysis_res=analysis_res,
+            **rec_kwargs,
         )
-        res = merge_line_texts(out, auto_line_break=True)
+        res = merge_line_texts(out, auto_line_break=False)
         logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n{res}')
 
 
