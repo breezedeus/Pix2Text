@@ -395,6 +395,8 @@ def smart_join(str_list):
 
     res = str_list[0]
     for i in range(1, len(str_list)):
+        if not str_list[i]:
+            continue
         if (is_chinese(res[-1]) and is_chinese(str_list[i][0])) or contain_whitespace(
             res[-1] + str_list[i][0]
         ):
