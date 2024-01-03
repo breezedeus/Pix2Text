@@ -63,13 +63,13 @@ class Pix2Text(object):
         **kwargs,
     ):
         """
-
         Args:
-            analyzer_config (dict): Analyzer模型对应的配置信息；默认为 `None`，表示使用默认配置
-            text_config (dict): 文本识别模型对应的配置信息；默认为 `None`，表示使用默认配置
-            formula_config (dict): 公式识别模型对应的配置信息；默认为 `None`，表示使用默认配置
-            device (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`
-            **kwargs (): 预留的其他参数；目前未被使用
+            languages (str or Sequence[str]): The language code(s) of the text to be recognized.
+            analyzer_config (dict): Configuration information for the Analyzer model; defaults to `None`, which means using the default configuration.
+            text_config (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
+            formula_config (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
+            device (str): What device to use for computation, supports `['cpu', 'cuda', 'gpu']`; defaults to `cpu`.
+            **kwargs (): Reserved for other parameters; not currently used.
         """
         if device.lower() == 'gpu':
             device = 'cuda'
@@ -85,11 +85,7 @@ class Pix2Text(object):
         self.latex_model = LatexOCR(formula_config)
 
     def _prepare_configs(
-        self,
-        analyzer_config,
-        text_config,
-        formula_config,
-        device,
+        self, analyzer_config, text_config, formula_config, device,
     ):
         def _to_default(_conf, _def_val):
             if not _conf:
@@ -127,22 +123,22 @@ class Pix2Text(object):
         self, img: Union[str, Path, Image.Image], use_analyzer: bool = True, **kwargs
     ) -> List[Dict[str, Any]]:
         """
-        对图片先做版面分析，然后再识别每块中包含的信息。在版面分析未识别出内容时，则把整个图片作为整体进行识别。
+        Analyze the layout of the image, and then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             use_analyzer (bool): whether to use the analyzer (MFD or Layout) to analyze the image; Default: `True`
             kwargs ():
-                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
-                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
-                * embed_sep (tuple): embedding latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `(' $', '$ ')`
-                * isolated_sep (tuple): isolated latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `('$$\n', '\n$$')`
-                * det_bbox_max_expand_ratio (float): 对检测出的文本 bbox，扩展其高度。此值表示相对于原始 bbox 高度来说的上下最大扩展比率
+                * resized_shape (int): Resize the image width to this size for processing; default value is `608`
+                * save_analysis_res (str): Save the analysis result image in this file; default is `None`, which means not to save
+                * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when using `MFD`; default is `(' $', '$ ')`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when using `MFD`; default is `('$$\n', '\n$$')`
+                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height
 
         Returns: a list of dicts, with keys:
-           `type`: 图像类别；
-           `text`: 识别出的文字或Latex公式
-           `postion`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+           `type`: The category of the image
+           `text`: The recognized text or Latex formula
+           `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
 
         """
         out = None
@@ -157,23 +153,23 @@ class Pix2Text(object):
         self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
         """
-        对图片先做MFD 或 版面分析，然后再识别每块中包含的信息。
+        Perform Mathematical Formula Detection (MFD) on the image, and then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             kwargs ():
-                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `608`
-                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
-                * embed_sep (tuple): embedding latex的前后缀；默认值为 `(' $', '$ ')`
-                * isolated_sep (tuple): isolated latex的前后缀；默认值为 `('$$\n', '\n$$')`
-                * det_bbox_max_expand_ratio (float): 对检测出的文本 bbox，扩展其高度。此值表示相对于原始 bbox 高度来说的上下最大扩展比率
+                * resized_shape (int): Resize the image width to this size for processing; default value is `608`
+                * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
+                * embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
+                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height
 
         Returns: a list of ordered (top to bottom, left to right) dicts,
             with each dict representing one detected box, containing keys:
-           `type`: 图像类别；Optional: 'text', 'isolated', 'embedding'
-           `text`: 识别出的文字或Latex公式
-           `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
-           `line_number`: box 所在行号（第一行 `line_number==0`），值相同的box表示它们在同一行
+           `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
+           `text`: The recognized text or Latex formula
+           `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
+           `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
 
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
@@ -322,18 +318,18 @@ class Pix2Text(object):
         self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
         """
-        对图片先做版面分析，然后再识别每块中包含的信息。
+        Perform Layout Analysis (LA) on the image, then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             kwargs ():
-                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
-                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
+                * resized_shape (int): Resize the image width to this size for processing; default value is `500`
+                * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
 
         Returns: a list of dicts, with keys:
-           `type`: 图像类别；
-           `text`: 识别出的文字或Latex公式
-           `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+           `type`: The category of the image;
+           `text`: The recognized text or Latex formula
+           `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
 
         """
         if isinstance(img, Image.Image):

@@ -27,7 +27,7 @@ def cli():
 @click.option(
     "--use-analyzer/--no-use-analyzer",
     default=True,
-    help="是否使用 MFD 或者版面分析 Analyzer",
+    help="Whether to use MFD (Mathematical Formula Detection) or Layout Analysis",
     show_default=True,
 )
 @click.option(
@@ -35,7 +35,7 @@ def cli():
     "--languages",
     type=str,
     default='en,ch_sim',
-    help="Text-OCR 识别文本的语言，以逗号分隔。",
+    help="Languages for Text-OCR to recognize, separated by commas",
     show_default=True,
 )
 @click.option(
@@ -43,7 +43,7 @@ def cli():
     "--analyzer-name",
     type=click.Choice(['mfd', 'layout']),
     default='mfd',
-    help="使用哪个Analyzer，MFD还是版面分析",
+    help="Which Analyzer to use, either MFD or Layout Analysis",
     show_default=True,
 )
 @click.option(
@@ -51,59 +51,59 @@ def cli():
     "--analyzer-type",
     type=str,
     default='yolov7_tiny',
-    help="Analyzer使用哪个模型，'yolov7_tiny' or 'yolov7'",
+    help="Which model to use for the Analyzer, 'yolov7_tiny' or 'yolov7'",
     show_default=True,
 )
 @click.option(
     "--analyzer-model-fp",
     type=str,
     default=None,
-    help="Analyzer检测模型的文件路径。Default：`None`，表示使用默认模型",
+    help="File path for the Analyzer detection model. Default: `None`, meaning using the default model",
     show_default=True,
 )
 @click.option(
     "--latex-ocr-model-fp",
     type=str,
     default=None,
-    help="Latex-OCR 数学公式识别模型的文件路径。Default：`None`，表示使用默认模型",
+    help="File path for the Latex-OCR mathematical formula recognition model. Default: `None`, meaning using the default model",
     show_default=True,
 )
 @click.option(
     "--text-ocr-config",
     type=str,
     default=None,
-    help="Text-OCR 识别文本的配置信息，JSON 字符串。Default：`None`，表示使用默认配置",
+    help="Configuration information for Text-OCR recognition, in JSON string format. Default: `None`, meaning using the default configuration",
     show_default=True,
 )
 @click.option(
     "-d",
     "--device",
-    help="使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`",
+    help="Choose to run the code using `cpu`, `gpu`, or a specific GPU like `cuda:0`",
     type=str,
     default='cpu',
     show_default=True,
 )
 @click.option(
     "--resized-shape",
-    help="把图片宽度resize到此大小再进行处理",
+    help="Resize the image width to this size before processing",
     type=int,
     default=608,
     show_default=True,
 )
-@click.option("-i", "--img-file-or-dir", required=True, help="输入图片的文件路径或者指定的文件夹")
+@click.option("-i", "--img-file-or-dir", required=True, help="File path of the input image or the specified directory")
 @click.option(
     "--save-analysis-res",
     default=None,
-    help="把解析结果存储到此文件或目录中"
-    "（如果'--img-file-or-dir'为文件/文件夹，则'--save-analysis-res'也应该是文件/文件夹）。"
-    "取值为 `None` 表示不存储",
+    help="Save the analysis results to this file or directory"
+    " (If '--img-file-or-dir' is a file/directory, then '--save-analysis-res' should also be a file/directory)."
+    " Set to `None` for not saving",
     show_default=True,
 )
 @click.option(
     "--rec-kwargs",
     type=str,
     default=None,
-    help="kwargs for calling .recognize()，JSON 字符串",
+    help="kwargs for calling .recognize(), in JSON string format",
     show_default=True,
 )
 @click.option(
@@ -127,7 +127,7 @@ def predict(
     rec_kwargs,
     log_level,
 ):
-    """模型预测"""
+    """Use Pix2Text (P2T) to predict the text information in an image"""
     logger = set_logger(log_level=log_level)
 
     analyzer_config = dict(model_name=analyzer_name, model_type=analyzer_type)
