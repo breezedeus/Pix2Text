@@ -197,7 +197,7 @@ class Pix2Text(object):
                 int(box[2][1]),
             )
             crop_patch = img0.crop((xmin, ymin, xmax, ymax))
-            patch_out = self._latex(crop_patch)
+            patch_out = self.recognize_formula(crop_patch)
             sep = isolated_sep if box_info['type'] == 'isolated' else embed_sep
             text = sep[0] + patch_out + sep[1]
             mf_out.append({'type': box_info['type'], 'text': text, 'position': box})
@@ -352,9 +352,9 @@ class Pix2Text(object):
             crop_patch = img0.crop((xmin, ymin, xmax, ymax))
             image_type = box_info['type']
             if image_type == 'Equation':
-                patch_out = self._latex(crop_patch)
+                patch_out = self.recognize_formula(crop_patch)
             else:
-                patch_out = self._ocr(crop_patch)
+                patch_out = self.recognize_text(crop_patch)
             out.append({'type': image_type, 'text': patch_out, 'position': box})
 
         if kwargs.get('save_analysis_res'):
@@ -368,15 +368,37 @@ class Pix2Text(object):
 
         return out
 
-    def _ocr(self, image):
-        result = self.text_ocr.ocr(image)
+    def recognize_text(self, image: Union[str, Path, Image.Image]) -> str:
+        """
+        Recognize a pure Text Image.
+        Args:
+            image (Union[str, Path, Image.Image]): an image path, or `Image.Image` loaded by `Image.open()`
+
+        Returns: str; the recognized texts
+
+        """
+        if isinstance(image, (str, Path)):
+            image = read_img(image, return_type='Image')
+        elif isinstance(image, Image.Image):
+            image = image.convert('RGB')
+        result = self.text_ocr.ocr(np.array(image))
         texts = [_one['text'] for _one in result]
         result = '\n'.join(texts)
         return result
 
-    def _latex(self, image):
+    def recognize_formula(self, image: Union[str, Path, Image.Image]) -> str:
+        """
+        Recognize a pure Formula Image to Latex Expression.
+        Args:
+            image (Union[str, Path, Image.Image]): an image path, or `Image.Image` loaded by `Image.open()`
+
+        Returns: str; the recognized Latex expression texts
+
+        """
         if isinstance(image, (str, Path)):
             image = read_img(image, return_type='Image')
+        elif isinstance(image, Image.Image):
+            image = image.convert('RGB')
         out = self.latex_model(image)
         return str(out)
 

@@ -63,7 +63,7 @@ class OcrEngineWrapper:
         """
         pass
 
-    def ocr(self, img, **kwargs):
+    def ocr(self, img: np.ndarray, **kwargs):
         """
         Detect texts first, and then recognize the texts for detected bbox patches.
         Args:
