@@ -41,8 +41,6 @@ Major changes:
 - Trained a new **formula recognition model** for **[P2T Online Service](https://p2t.breezedeus.com/)** to use. The new model has higher accuracy, especially for **handwritten formulas** and **multi-line formulas**. See: [New Formula Recognition Model for Pix2Text | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-20230702).
 - Optimized the sorting logic of detected boxes and the processing logic of mixed images to make the final recognition results more intuitive.
 - Optimized the merging logic of recognition results to automatically determine line breaks and paragraph breaks.
-- Fixed the automatic model downloading feature. HuggingFace seems to have changed the downloading logic, which caused the previous version's auto-download to fail. The current version has fixed it. 
-- Updated the version numbers of various dependency packages.
 
 See more at: [RELEASE.md](./RELEASE.md) .
 
