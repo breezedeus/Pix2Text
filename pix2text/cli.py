@@ -90,7 +90,12 @@ def cli():
     default=608,
     show_default=True,
 )
-@click.option("-i", "--img-file-or-dir", required=True, help="File path of the input image or the specified directory")
+@click.option(
+    "-i",
+    "--img-file-or-dir",
+    required=True,
+    help="File path of the input image or the specified directory",
+)
 @click.option(
     "--save-analysis-res",
     default=None,
@@ -104,6 +109,12 @@ def cli():
     type=str,
     default=None,
     help="kwargs for calling .recognize(), in JSON string format",
+    show_default=True,
+)
+@click.option(
+    "--auto-line-break/--no-auto-line-break",
+    default=False,
+    help="Whether to automatically break lines",
     show_default=True,
 )
 @click.option(
@@ -125,6 +136,7 @@ def predict(
     img_file_or_dir,
     save_analysis_res,
     rec_kwargs,
+    auto_line_break,
     log_level,
 ):
     """Use Pix2Text (P2T) to predict the text information in an image"""
@@ -171,7 +183,7 @@ def predict(
             save_analysis_res=analysis_res,
             **rec_kwargs,
         )
-        res = merge_line_texts(out, auto_line_break=False)
+        res = merge_line_texts(out, auto_line_break=auto_line_break)
         logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n{res}')
 
 
