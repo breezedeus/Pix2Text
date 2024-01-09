@@ -380,9 +380,6 @@ The text or Latex recognition of one specified image is done by invoking the cla
 where the input parameters are described as follows.
 
 * `img` (`str` or `Image.Image`): the path of the image to be recognized, or the image `Image` that has been read by using `Image.open()`.
-
-* `use_analyzer`: Whether to use the Analyzer (MFD or Layout). `False` means treat the image as pure text or math.
-
 * `**kwargs`: Can contain:
   - `resized_shape`: Resize image width to this before processing. Default: `700`.
   - `save_analysis_res`: Save analysis visualization to this file/dir. Default: `None` meaning not saving.
