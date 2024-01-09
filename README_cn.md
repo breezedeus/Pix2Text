@@ -26,6 +26,15 @@
 
 # Pix2Text (P2T)
 
+## Update 2024.01.10：发布 **V0.3**
+
+主要变更：
+
+* 支持多语言，详细语言列表见 [支持的语言列表](./README_cn.md#支持的语言列表)：
+* 模型自动下载增加国内站点；
+* 优化对检测 boxes 的合并逻辑。
+
+
 ## Update 2023.07.03：发布 V0.2.3
 
 主要变更：
@@ -34,18 +43,6 @@
 * 优化了识别结果的合并逻辑，自动判断是否该换行，是否分段。
 * 修复了模型文件自动下载的功能。HuggingFace似乎对下载文件的逻辑做了调整，导致之前版本的自动下载失败，当前版本已修复。但由于HuggingFace国内被墙，国内下载仍需 **梯子（VPN）**。
 * 更新了各个依赖包的版本号。
-
-## Update 2023.06.20：发布新版 MFD 模型
-
-主要变更：
-* 基于新标注的数据，重新训练了 **MFD YoloV7** 模型，目前新模型已部署到 [P2T网页版](https://p2t.breezedeus.com) 。具体说明见：[Pix2Text (P2T) 新版公式检测模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-20230613) 。
-* 之前的 MFD YoloV7 模型已开放给星球会员下载，具体说明见：[P2T YoloV7 数学公式检测模型开放给星球会员下载 | Breezedeus.com](https://www.breezedeus.com/article/p2t-yolov7-for-zsxq-20230619) 。
-
-## Update 2023.02.10： **[P2T网页版](https://p2t.breezedeus.com)** 开放免费使用
-
-* P2T作为Python包，对于不熟悉Python的朋友还是太不友好，所以我们也开发了 [P2T网页版](https://p2t.breezedeus.com)，可直接免费使用，欢迎帮忙推荐分享。
-* 视频介绍：[Pix2Text 新版和网页版发布，离Mathpix又近了一大步_bilibili](https://www.bilibili.com/video/BV1U24y1q7n3) 。
-* 文字版介绍：[Pix2Text (P2T) 新版发布，离Mathpix又近了一大步 - 知乎](https://zhuanlan.zhihu.com/p/604999678) 。
 
 
 了解更多：[RELEASE.md](./RELEASE.md) 。
@@ -178,7 +175,7 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 </details>
 
 
-Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
+> Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
 
 
 
@@ -351,7 +348,7 @@ class Pix2Text(object):
   ```python
   {
         'model_name': 'mfd'  # 可以取值为 'mfd'（MFD），或者 'layout'（版面分析）
-	}
+  }
 	```
 	
 * `text_config` (dict): 文字识别模型对应的配置信息；默认为 `None`，表示使用默认配置：
@@ -366,9 +363,9 @@ class Pix2Text(object):
   {}
   ```
   
-* `device` (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`
+* `device` (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`；
 
-* `**kwargs` (): 预留的其他参数；目前未被使用
+* `**kwargs` (): 预留的其他参数；目前未被使用。
 
 
 
@@ -389,7 +386,7 @@ class Pix2Text(object):
 其中的输入参数说明如下：
 
 * `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
-* `kwargs`: 保留字段，可以包含以下值，
+* `kwargs`: 保留字段，可以包含以下值：
   * `resized_shape` (`int`): 把图片宽度resize到此大小再进行处理；默认值为 `700`；
   * `save_analysis_res` (`str`): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储；
   * `embed_sep` (`tuple`): embedding latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `(' $', '$ ')`；
