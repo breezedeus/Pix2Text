@@ -30,7 +30,7 @@
 
 主要变更：
 
-* 支持多语言，详细语言列表见 [支持的语言列表](./README_cn.md#支持的语言列表)：
+* 支持识别 **`80+` 种语言**，详细语言列表见 [支持的语言列表](./README_cn.md#支持的语言列表)；
 * 模型自动下载增加国内站点；
 * 优化对检测 boxes 的合并逻辑。
 
@@ -197,7 +197,6 @@ print(only_text)
 ```
 
 
-
 返回结果 `outs` 是个 `dict`，其中 key `position` 表示Box位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体见下面的[接口说明](#接口说明)。
 
 
@@ -208,7 +207,7 @@ print(only_text)
 
 **识别效果**：
 
-![Pix2Text 识别中文（繁体）](docs/figs/output-en.jpg)
+![Pix2Text 识别英文](docs/figs/output-en.jpg)
 
 **识别命令**：
 
@@ -228,7 +227,7 @@ $ p2t predict -l en --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd
 
 **识别效果**：
 
-![Pix2Text 识别中文（繁体）](docs/figs/output-ch_sim.jpg)
+![Pix2Text 识别简体中文](docs/figs/output-ch_sim.jpg)
 
 **识别命令**：
 
@@ -236,13 +235,18 @@ $ p2t predict -l en --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd
 $ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
 ```
 
+> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
+>
+> ```bash
+> $ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
+> ```
 
 
 ### 繁体中文
 
 **识别效果**：
 
-![Pix2Text 识别中文（繁体）](docs/figs/output-ch_tra.jpg)
+![Pix2Text 识别繁体中文](docs/figs/output-ch_tra.jpg)
 
 **识别命令**：
 
@@ -250,18 +254,30 @@ $ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~
 $ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg 
 ```
 
+> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
+>
+> ```bash
+> $ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/ch_tra.jpg
+> ```
+
 
 
 ### 越南语
 **识别效果**：
 
-![Pix2Text 识别中文（繁体）](docs/figs/output-vietnamese.jpg)
+![Pix2Text 识别越南语](docs/figs/output-vietnamese.jpg)
 
 **识别命令**：
 
 ```bash
 $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
 ```
+
+> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
+>
+> ```bash
+> $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/vietnamese.jpg
+> ```
 
 
 ## 模型下载
@@ -399,9 +415,7 @@ class Pix2Text(object):
 
 * `type`：识别出的图像类别；
   * 对于 **MFD Analyzer**（数学公式检测），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `embedding`（行内的数学公式）；
-  
   * 对于 **Layout Analyzer**（版面分析），取值为版面分析结果类别。
-  
 * `text`：识别出的文字或Latex表达式；
 * `position`：所在块的位置信息，`np.ndarray`, with shape of `[4, 2]`；
 * `line_number`：仅在使用 **MFD Analyzer** 时，才会包含此字段。此字段为 Box 所在的行号（第一行 **`line_number=0`**），值相同的 Box 表示它们在同一行。
