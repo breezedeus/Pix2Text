@@ -41,11 +41,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_CONFIGS = {
     'analyzer': {'model_name': 'mfd'},
     'text': {},
-    'formula': {
-        'config': LATEX_CONFIG_FP,
-        'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
-        'no_resize': False,
-    },
+    'formula': {},
 }
 
 
@@ -82,7 +78,7 @@ class Pix2Text(object):
         self.analyzer = LayoutAnalyzer(**analyzer_config)
 
         self.text_ocr = prepare_ocr_engine(languages, text_config)
-        self.latex_model = LatexOCR(formula_config)
+        self.latex_model = LatexOCR(**formula_config)
 
     def _prepare_configs(
         self, analyzer_config, text_config, formula_config, device,
@@ -97,7 +93,7 @@ class Pix2Text(object):
         text_config = _to_default(text_config, DEFAULT_CONFIGS['text'])
         text_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
-        formula_config['device'] = device
+        formula_config['context'] = device
         return (
             analyzer_config,
             text_config,
