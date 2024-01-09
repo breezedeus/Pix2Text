@@ -296,7 +296,7 @@ $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cn
 pip install pix2text
 ```
 
-如果需要**英文**与**简体中文**之外的文字时，请使用以下命令安装额外的包：
+如果需要识别**英文**与**简体中文**之外的文字，请使用以下命令安装额外的包：
 
 ```bash
 pip install pix2text[multilingual]
@@ -334,18 +334,18 @@ class Pix2Text(object):
     def __init__(
         self,
         *,
+        languages: Union[str, Sequence[str]] = ('en', 'ch_sim'),
         analyzer_config: Dict[str, Any] = None,
-        clf_config: Dict[str, Any] = None,
-        general_config: Dict[str, Any] = None,
-        english_config: Dict[str, Any] = None,
+        text_config: Dict[str, Any] = None,
         formula_config: Dict[str, Any] = None,
-        thresholds: Dict[str, Any] = None,
         device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
         **kwargs,
     ):
 ```
 
 其中的各参数说明如下：
+* `languages` (str or Sequence[str]): 文字识别对应的语言编码序列；默认为 `('en', 'ch_sim')`，表示可识别英文与简体中文；
+	
 * `analyzer_config` (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置（使用**MFD** Analyzer）：
 	
   ```python
@@ -354,52 +354,18 @@ class Pix2Text(object):
 	}
 	```
 	
-* `clf_config` (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置：
-	```python
-  {
-        'base_model_name': 'mobilenet_v2',
-        'categories': IMAGE_TYPES,
-        'transform_configs': {
-            'crop_size': [150, 450],
-            'resize_size': 160,
-            'resize_max_size': 1000,
-        },
-        'model_dir': Path(data_dir()) / 'clf',
-        'model_fp': None  # 如果指定，直接使用此模型文件
-  }
-	```
-	
-* `general_config` (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置：
+* `text_config` (dict): 文字识别模型对应的配置信息；默认为 `None`，表示使用默认配置：
 
   ```python
   {}
   ```
 
-* `english_config` (dict): 英文模型对应的配置信息；默认为 `None`，表示使用默认配置：
-
-  ```py
-  {'det_model_name': 'en_PP-OCRv3_det', 'rec_model_name': 'en_PP-OCRv3'}
-  ```
-
 * `formula_config` (dict): 公式识别模型对应的配置信息；默认为 `None`，表示使用默认配置：
 
   ```python
-  {
-      'config': LATEX_CONFIG_FP,
-      'model_fp': Path(data_dir()) / 'formula' / 'weights.pth',
-      'no_resize': False
-  }
+  {}
   ```
-
-* `thresholds` (dict): 识别阈值对应的配置信息；默认为 `None`，表示使用默认配置：
-
-  ```py
-  {
-      'formula2general': 0.65,  # 如果识别为 `formula` 类型，但得分小于此阈值，则改为 `general` 类型
-      'english2general': 0.75,  # 如果识别为 `english` 类型，但得分小于此阈值，则改为 `general` 类型
-  }
-  ```
-
+  
 * `device` (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`
 
 * `**kwargs` (): 预留的其他参数；目前未被使用
@@ -408,11 +374,13 @@ class Pix2Text(object):
 
 ### 识别类函数
 
+#### 识别混合图片
+
 通过调用类 **`Pix2Text`** 的类函数 `.recognize()` 完成对指定图片进行识别。类函数 `.recognize()` 说明如下：
 
 ```python
     def recognize(
-        self, img: Union[str, Path, Image.Image], use_analyzer: bool = True, **kwargs
+        self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
 ```
 
@@ -421,22 +389,21 @@ class Pix2Text(object):
 其中的输入参数说明如下：
 
 * `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
-* `use_analyzer` (`bool`)：是否使用 Analyzer (**MFD** or **Layout**); `False` 表示把图片看成纯文本或者纯图片处理，相当于 **P2T V0.1.*** 的效果。Default: `True`。
 * `kwargs`: 保留字段，可以包含以下值，
   * `resized_shape` (`int`): 把图片宽度resize到此大小再进行处理；默认值为 `700`；
   * `save_analysis_res` (`str`): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储；
   * `embed_sep` (`tuple`): embedding latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `(' $', '$ ')`；
-  * `isolated_sep` (`tuple`): isolated latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `('$$\n', '\n$$')`。
+  * `isolated_sep` (`tuple`): isolated latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `('$$\n', '\n$$')`；
+  * `det_bbox_max_expand_ratio (float)`: 扩展检测到的文本边界框（bbox）的高度。这个值表示相对于原始 bbox 高度的上下最大扩展比例；默认值为 `0.2`。
 
 
 
 返回结果为列表（`list`），列表中的每个元素为`dict`，包含如下 `key`：
 
 * `type`：识别出的图像类别；
-  * 当开启Analyzer时（`use_analyzer==True`），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `embedding`（行内的数学公式）；
+  * 对于 **MFD Analyzer**（数学公式检测），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `embedding`（行内的数学公式）；
   
-    >  注意：对于 **MFD Analyzer** ，此取值从 P2T **v0.2.3** 开始与之前不同。
-  * 当未开启Analyzer时（`use_analyzer==False`），取值为`formula`（纯数学公式）、`english`（纯英文文字）、`general`（纯文字，可能包含中英文）；
+  * 对于 **Layout Analyzer**（版面分析），取值为版面分析结果类别。
   
 * `text`：识别出的文字或Latex表达式；
 * `position`：所在块的位置信息，`np.ndarray`, with shape of `[4, 2]`；
@@ -459,6 +426,48 @@ print(outs)
 only_text = merge_line_texts(outs, auto_line_break=True)
 print(only_text)
 ```
+
+
+
+#### 识别纯文字图片
+
+通过调用类 **`Pix2Text`** 的类函数 `.recognize_text()` 完成对指定图片进行文字识别。此时，Pix2Text 提供了一般的文字识别功能。类函数 `.recognize_text()` 说明如下：
+
+```python
+    def recognize_text(
+        self, img: Union[str, Path, Image.Image], **kwargs
+    ) -> str:
+```
+
+
+
+其中的输入参数说明如下：
+
+* `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
+* `kwargs`: 传入文字识别接口的其他参数。
+
+返回结果为识别后文本字符串。
+
+
+
+#### 识别纯公式图片
+
+通过调用类 **`Pix2Text`** 的类函数 `.recognize_formula()` 识别指定图片中的数学公式，并转化为 Latex 表示。类函数 `.recognize_formula()` 说明如下：
+
+```python
+    def recognize_formula(self, img: Union[str, Path, Image.Image]) -> str:
+```
+
+
+
+其中的输入参数说明如下：
+
+* `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
+
+返回结果为识别后的 Latex 表示字符串。
+
+
+
 
 
 
@@ -501,7 +510,7 @@ $ p2t predict -h
                                   也应该是文件/目录）。设置为 `None` 表示不保存
   --rec-kwargs TEXT               调用 .recognize() 时使用的 kwargs，JSON 字符串格式
   --auto-line-break / --no-auto-line-break
-                                  是否自动分行  [默认: no-auto-line-break]
+                                  自动判断是否要把临近行结果合并为单行  [默认: no-auto-line-break]
   --log-level TEXT                日志级别，如 `INFO`, `DEBUG`  [默认: INFO]
   -h, --help                      显示此消息并退出。
 ```
