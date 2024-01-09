@@ -9,6 +9,7 @@ torch
 torchvision
 pillow>=5.3.0
 opencv-python
-cnstd>=1.2.3.2
-cnocr>=2.2.3.1
+cnstd>=1.2.3.5
+cnocr>=2.3.0.1
+easyocr
 pix2tex
