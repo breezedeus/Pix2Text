@@ -30,7 +30,7 @@
 
 Major Changes:
 
-* Support for recognizing **`80+` languages**; for a detailed list of supported languages, see [List of Supported Languages](./README_cn.md#list-of-supported-languages);
+* Support for recognizing **`80+` languages**; for a detailed list of supported languages, see [List of Supported Languages](#list-of-supported-languages);
 * Added domestic sites for automatic model downloads;
 * Optimized the logic for merging detection boxes.
 
