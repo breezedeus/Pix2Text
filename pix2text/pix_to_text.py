@@ -60,7 +60,7 @@ class Pix2Text(object):
     ):
         """
         Args:
-            languages (str or Sequence[str]): The language code(s) of the text to be recognized.
+            languages (str or Sequence[str]): The language code(s) of the text to be recognized; defaults to `('en', 'ch_sim')`.
             analyzer_config (dict): Configuration information for the Analyzer model; defaults to `None`, which means using the default configuration.
             text_config (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
             formula_config (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
@@ -116,14 +116,13 @@ class Pix2Text(object):
         return self.recognize(img, **kwargs)
 
     def recognize(
-        self, img: Union[str, Path, Image.Image], use_analyzer: bool = True, **kwargs
+        self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
         """
         Analyze the layout of the image, and then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
-            use_analyzer (bool): whether to use the analyzer (MFD or Layout) to analyze the image; Default: `True`
             kwargs ():
                 * resized_shape (int): Resize the image width to this size for processing; default value is `608`
                 * save_analysis_res (str): Save the analysis result image in this file; default is `None`, which means not to save
@@ -137,12 +136,10 @@ class Pix2Text(object):
            `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
 
         """
-        out = None
-        if use_analyzer:
-            if self.analyzer._model_name == 'mfd':
-                out = self.recognize_by_mfd(img, **kwargs)
-            else:
-                out = self.recognize_by_layout(img, **kwargs)
+        if self.analyzer._model_name == 'mfd':
+            out = self.recognize_by_mfd(img, **kwargs)
+        else:
+            out = self.recognize_by_layout(img, **kwargs)
         return out
 
     def recognize_by_mfd(
@@ -158,7 +155,7 @@ class Pix2Text(object):
                 * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
                 * embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
                 * isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
-                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height
+                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
 
         Returns: a list of ordered (top to bottom, left to right) dicts,
             with each dict representing one detected box, containing keys:
@@ -364,11 +361,12 @@ class Pix2Text(object):
 
         return out
 
-    def recognize_text(self, image: Union[str, Path, Image.Image]) -> str:
+    def recognize_text(self, image: Union[str, Path, Image.Image], **kwargs) -> str:
         """
         Recognize a pure Text Image.
         Args:
             image (Union[str, Path, Image.Image]): an image path, or `Image.Image` loaded by `Image.open()`
+            kwargs (): other parameters for `text_ocr.ocr()`
 
         Returns: str; the recognized texts
 
@@ -377,7 +375,7 @@ class Pix2Text(object):
             image = read_img(image, return_type='Image')
         elif isinstance(image, Image.Image):
             image = image.convert('RGB')
-        result = self.text_ocr.ocr(np.array(image))
+        result = self.text_ocr.ocr(np.array(image), **kwargs)
         texts = [_one['text'] for _one in result]
         result = '\n'.join(texts)
         return result

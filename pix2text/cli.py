@@ -114,7 +114,7 @@ def cli():
 @click.option(
     "--auto-line-break/--no-auto-line-break",
     default=False,
-    help="Whether to automatically break lines",
+    help="Whether to automatically determine to merge adjacent line results into a single line result",
     show_default=True,
 )
 @click.option(
