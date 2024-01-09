@@ -83,10 +83,10 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以
 
 ## 支持的语言列表
 
-Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、中文简体、中文繁体、越南语**等。其中，**英文**和**中文简体**识别使用的是开源 OCR 工具 **[CnOCR](https://github.com/breezedeus/cnocr)** ，其他语言的识别使用的是开源 OCR 工具 **[EasyOCR](https://github.com/JaidedAI/EasyOCR)** ，感谢相关的作者们。
+Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 **[CnOCR](https://github.com/breezedeus/cnocr)** ，其他语言的识别使用的是开源 OCR 工具 **[EasyOCR](https://github.com/JaidedAI/EasyOCR)** ，感谢相关的作者们。
 
 <details>
-<summary>支持的语言列表和对应代码（参考：[Supported Languages](https://www.jaided.ai/easyocr/)）：</summary>
+<summary>支持的语言列表和对应代码：</summary>
 
 
 | Language            | Code Name   |
@@ -219,9 +219,15 @@ print(only_text)
 $ p2t predict -l en --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
 ```
 
+> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
+>
+> ```bash
+> $ p2t predict -l en --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
+> ```
 
 
-### 中文（简体）
+
+### 简体中文
 
 **识别效果**：
 
@@ -235,7 +241,7 @@ $ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~
 
 
 
-### 中文（繁体）
+### 繁体中文
 
 **识别效果**：
 
@@ -267,17 +273,12 @@ $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cn
 
 安装好 Pix2Text 后，首次使用时系统会**自动下载** 免费模型文件，并存于 `~/.pix2text`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
 
-
-
 > **Note**
 >
 > 如果已成功运行上面的示例，说明模型已完成自动下载，可忽略本节后续内容。
 
 
-
-对于**分类模型**，系统会自动下载模型`mobilenet_v2.zip`文件并对其解压，然后把解压后的模型相关目录放于`~/.pix2text`目录中。如果系统无法自动成功下载`mobilenet_v2.zip`文件，则需要手动从 **[cnstd-cnocr-models/pix2text](https://huggingface.co/breezedeus/cnstd-cnocr-models/tree/main/models/pix2text/0.2)** 下载此zip文件并把它放于 `~/.pix2text`目录。如果下载太慢，也可以从 [百度云盘](https://pan.baidu.com/s/1kubZF4JGE19d98NDoPHJzQ?pwd=p2t0) 下载， 提取码为 ` p2t0`。
-
-对于  **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** ，系统同样会自动下载模型文件并把它们存放于`~/.pix2text/formula`目录中。如果系统无法自动成功下载这些模型文件，则需从  [百度云盘](https://pan.baidu.com/s/1kubZF4JGE19d98NDoPHJzQ?pwd=p2t0) 下载文件 `weights.pth` 和 `image_resizer.pth`， 并把它们存放于`~/.pix2text/formula`目录中；提取码为 ` p2t0`。
+对于  **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** ，系统同样会自动下载模型文件并把它们存放于`~/.pix2text/0.3/formula`目录中。如果系统无法自动成功下载这些模型文件，则需从  [百度云盘](https://pan.baidu.com/s/1rU9n1Yyme7wXgS8ZbkrY3A?pwd=bdbd) 下载压缩文件并把它们存放于`~/.pix2text/0.3/formula`目录中；提取码为 ` bdbd`。
 
 
 
@@ -295,10 +296,16 @@ $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cn
 pip install pix2text
 ```
 
-安装速度慢的话，可以指定国内的安装源，如使用豆瓣源：
+如果需要**英文**与**简体中文**之外的文字时，请使用以下命令安装额外的包：
 
 ```bash
-pip install pix2text -i https://pypi.doubanio.com/simple
+pip install pix2text[multilingual]
+```
+
+安装速度慢的话，可以指定国内的安装源，如使用阿里云的安装源：
+
+```bash
+pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 
@@ -467,31 +474,36 @@ print(only_text)
 
 ```bash
 $ p2t predict -h
-Usage: p2t predict [OPTIONS]
+用法：p2t predict [选项]
 
-  模型预测
+  使用 Pix2Text (P2T) 来预测图像中的文本信息
 
-Options:
+选项:
   --use-analyzer / --no-use-analyzer
-                                  是否使用 MFD 或者版面分析 Analyzer  [default: use-
-                                  analyzer]
+                                  是否使用 MFD (数学公式检测) 或版面分析  [默认:
+                                  use-analyzer]
+  -l, --languages TEXT            Text-OCR 用于识别的语言，以逗号分隔  [默认: en,ch_sim]
   -a, --analyzer-name [mfd|layout]
-                                  使用哪个Analyzer，MFD还是版面分析  [default: mfd]
-  -t, --analyzer-type TEXT        Analyzer使用哪个模型，'yolov7_tiny' or 'yolov7'
-                                  [default: yolov7_tiny]
-  --analyzer-model-fp TEXT        Analyzer检测模型的文件路径。Default：`None`，表示使用默认模型
-  --latex-ocr-model-fp TEXT       Latex-OCR
-                                  数学公式识别模型的文件路径。Default：`None`，表示使用默认模型
-  -d, --device TEXT               使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`
-                                  [default: cpu]
-  --resized-shape INTEGER         把图片宽度resize到此大小再进行处理  [default: 608]
-  -i, --img-file-or-dir TEXT      输入图片的文件路径或者指定的文件夹  [required]
-  --save-analysis-res TEXT        把解析结果存储到此文件或目录中（如果'--img-file-or-
-                                  dir'为文件/文件夹，则'--save-analysis-
-                                  res'也应该是文件/文件夹）。取值为 `None` 表示不存储
-  -l, --log-level TEXT            Log Level, such as `INFO`, `DEBUG`
-                                  [default: INFO]
-  -h, --help                      Show this message and exit.
+                                  使用哪个分析器，MFD 或版面分析  [默认: mfd]
+  -t, --analyzer-type TEXT        分析器使用的模型，'yolov7_tiny' 或 'yolov7'  [默认:
+                                  yolov7_tiny]
+  --analyzer-model-fp TEXT        分析器检测模型的文件路径。默认：`None`，意味着使用默认模型
+  --latex-ocr-model-fp TEXT       Latex-OCR 数学公式识别模型的文件路径。默认：`None`，
+                                  意味着使用默认模型
+  --text-ocr-config TEXT          Text-OCR 识别配置信息，JSON 字符串格式。默认：`None`，
+                                  意味着使用默认配置
+  -d, --device TEXT               选择使用 `cpu`、`gpu` 还是特定 GPU（如 `cuda:0`）来运行代码  [默认:
+                                  cpu]
+  --resized-shape INTEGER         在处理前将图像宽度调整到此大小  [默认: 608]
+  -i, --img-file-or-dir TEXT      输入图像的文件路径或指定的文件夹  [必须]
+  --save-analysis-res TEXT        将分析结果保存到此文件或目录中
+                                  （如果 '--img-file-or-dir' 是文件/目录，则 '--save-analysis-res'
+                                  也应该是文件/目录）。设置为 `None` 表示不保存
+  --rec-kwargs TEXT               调用 .recognize() 时使用的 kwargs，JSON 字符串格式
+  --auto-line-break / --no-auto-line-break
+                                  是否自动分行  [默认: no-auto-line-break]
+  --log-level TEXT                日志级别，如 `INFO`, `DEBUG`  [默认: INFO]
+  -h, --help                      显示此消息并退出。
 ```
 
 

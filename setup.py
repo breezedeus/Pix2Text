@@ -32,6 +32,7 @@ required = [
     "pix2tex",
 ]
 extras_require = {
+    "multilingual": ["easyocr"],
     "dev": ["pip-tools", "pytest"],
     "serve": ["uvicorn[standard]", "fastapi", "python-multipart", "pydantic"],
 }
