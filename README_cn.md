@@ -61,7 +61,6 @@
 </div>
 
 
-
 **P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **[CnOCR](https://github.com/breezedeus/cnocr)** 进行文字检测和文字识别。最后 P2T 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
 
 
@@ -82,6 +81,101 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以
 
 
 
+## 支持的语言
+
+Pix2Text 的文字识别引擎支持`80+`种语言，如英文、中文简体、中文繁体、越南语等。其中，**英文**和**中文简体**识别使用的是开源 OCR 工具**[CnOCR][https://github.com/breezedeus/cnocr]**，其他语言的识别使用的是开源 OCR 工具 **[EasyOCR](https://github.com/JaidedAI/EasyOCR)** ，感谢相关的作者们。
+
+<details>
+<summary>支持的语言列表和对应代码</summary>
+
+| Language            | Code Name   |
+| ------------------- | ----------- |
+| Abaza               | abq         |
+| Adyghe              | ady         |
+| Afrikaans           | af          |
+| Angika              | ang         |
+| Arabic              | ar          |
+| Assamese            | as          |
+| Avar                | ava         |
+| Azerbaijani         | az          |
+| Belarusian          | be          |
+| Bulgarian           | bg          |
+| Bihari              | bh          |
+| Bhojpuri            | bho         |
+| Bengali             | bn          |
+| Bosnian             | bs          |
+| Simplified Chinese  | ch_sim      |
+| Traditional Chinese | ch_tra      |
+| Chechen             | che         |
+| Czech               | cs          |
+| Welsh               | cy          |
+| Danish              | da          |
+| Dargwa              | dar         |
+| German              | de          |
+| English             | en          |
+| Spanish             | es          |
+| Estonian            | et          |
+| Persian (Farsi)     | fa          |
+| French              | fr          |
+| Irish               | ga          |
+| Goan Konkani        | gom         |
+| Hindi               | hi          |
+| Croatian            | hr          |
+| Hungarian           | hu          |
+| Indonesian          | id          |
+| Ingush              | inh         |
+| Icelandic           | is          |
+| Italian             | it          |
+| Japanese            | ja          |
+| Kabardian           | kbd         |
+| Kannada             | kn          |
+| Korean              | ko          |
+| Kurdish             | ku          |
+| Latin               | la          |
+| Lak                 | lbe         |
+| Lezghian            | lez         |
+| Lithuanian          | lt          |
+| Latvian             | lv          |
+| Magahi              | mah         |
+| Maithili            | mai         |
+| Maori               | mi          |
+| Mongolian           | mn          |
+| Marathi             | mr          |
+| Malay               | ms          |
+| Maltese             | mt          |
+| Nepali              | ne          |
+| Newari              | new         |
+| Dutch               | nl          |
+| Norwegian           | no          |
+| Occitan             | oc          |
+| Pali                | pi          |
+| Polish              | pl          |
+| Portuguese          | pt          |
+| Romanian            | ro          |
+| Russian             | ru          |
+| Serbian (cyrillic)  | rs_cyrillic |
+| Serbian (latin)     | rs_latin    |
+| Nagpuri             | sck         |
+| Slovak              | sk          |
+| Slovenian           | sl          |
+| Albanian            | sq          |
+| Swedish             | sv          |
+| Swahili             | sw          |
+| Tamil               | ta          |
+| Tabassaran          | tab         |
+| Telugu              | te          |
+| Thai                | th          |
+| Tajik               | tjk         |
+| Tagalog             | tl          |
+| Turkish             | tr          |
+| Uyghur              | ug          |
+| Ukranian            | uk          |
+| Urdu                | ur          |
+| Uzbek               | uz          |
+| Vietnamese          | vi          |
+
+</details>
+
 ## 使用说明
 
 
@@ -92,7 +186,7 @@ from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
 p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
-outs = p2t(img_fp, resized_shape=600)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
+outs = p2t(img_fp, resized_shape=608)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
 only_text = merge_line_texts(outs, auto_line_break=True)
@@ -107,138 +201,58 @@ print(only_text)
 
 ## 示例
 
-<table>
-<tr>
-<th> 图片 </th> 
-<th> Pix2Text识别结果 </th>
-</tr>
-<tr>
-<td>
-<img src="./docs/examples/mixed.jpg" alt="mixed"> 
+### 英文
 
-</td>
-<td>
+**识别效果**：
 
-```python
-[{'line_number': 0,
-  'position': array([[         22,          31],
-       [       1057,          31],
-       [       1057,          58],
-       [         22,          58]]),
-  'text': 'JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散',
-  'type': 'text'},
- {'line_number': 1,
-  'position': array([[        625,         121],
-       [       1388,         121],
-       [       1388,         182],
-       [        625,         182]]),
-  'text': '$$\n'
-          '-E_{z\\sim q(z\\mid x)}[\\log(p(x\\mid z))]+K L(q(z\\mid x))|p(z))\n'
-          '$$',
-  'type': 'isolated'},
- {'line_number': 2,
-  'position': array([[         18,         242],
-       [        470,         242],
-       [        470,         275],
-       [         18,         275]]),
-  'text': '其中之利用 Gumbel-Softmax 人',
-  'type': 'text'},
- {'line_number': 2,
-  'position': array([[        481,         238],
-       [        664,         238],
-       [        664,         287],
-       [        481,         287]]),
-  'text': ' $z\\sim q(z|x)$ ',
-  'type': 'embedding'},
- {'line_number': 2,
-  'position': array([[        667,         244],
-       [        840,         244],
-       [        840,         277],
-       [        667,         277]]),
-  'text': '中抽样得到,',
-  'type': 'text'},
- {'line_number': 2,
-  'position': array([[        852,         239],
-       [        932,         239],
-       [        932,         288],
-       [        852,         288]]),
-  'text': ' $\\scriptstyle{p(z)}$ ',
-  'type': 'embedding'},
- {'line_number': 2,
-  'position': array([[        937,         244],
-       [       1299,         244],
-       [       1299,         277],
-       [        937,         277]]),
-  'text': '是个等概率的多项式分布',
-  'type': 'text'}]
+![Pix2Text 识别中文（繁体）](docs/figs/output-en.jpg)
+
+**识别命令**：
+
+```bash
+$ p2t predict -l en --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
 ```
 
-</td>
-</tr>
-<tr>
-<td>
 
-<img src="./docs/examples/formula.jpg" alt="formula"> 
-</td>
-<td>
 
-```python
-[{"line_number": 0,
-  "position": array([[         12,          19],
-       [        749,          19],
-       [        749,         150],
-       [         12,         150]]),
-  "text": "$$\n"
-          "\\mathcal{L}_{\\mathrm{eyelid}}~\\equiv~"
-          "\\sum_{t=1}^{T}\\sum_{v=1}^{V}"
-          "\\mathcal{N}_{U}^{\\mathrm{(eyelid)}}"
-          "\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,"
-          "\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)\n"
-          "$$",
-  "type": "isolated"}]
+### 中文（简体）
+
+**识别效果**：
+
+![Pix2Text 识别中文（繁体）](docs/figs/output-ch_sim.jpg)
+
+**识别命令**：
+
+```bash
+$ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
 ```
-</div>
-</td>
-</tr>
-<tr>
-<td>
 
- <img src="./docs/examples/english.jpg" alt="english"> 
-</td>
-<td>
 
-```python
-[{"position": array([[          0,           0],
-       [        710,           0],
-       [        710,         116],
-       [          0,         116]]),
-  "text": "python scripts/screenshot_daemon_with_server\n"
-          "2-get_model:178usemodel:/Users/king/.cr\n"
-          "enet_lite_136-fc-epoch=039-complete_match_er",
-  "type": "english"}]
+
+### 中文（繁体）
+
+**识别效果**：
+
+![Pix2Text 识别中文（繁体）](docs/figs/output-ch_tra.jpg)
+
+**识别命令**：
+
+```bash
+$ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg 
 ```
-</td>
-</tr>
-<tr>
-<td>
 
- <img src="./docs/examples/general.jpg" alt="general"  width="300px"> 
-</td>
-<td>
 
-```python
-[{"position": array([[          0,           0],
-       [        800,           0],
-       [        800,         800],
-       [          0,         800]]),
-  "text": "618\n开门红提前购\n很贵\n买贵返差"
-  "\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天",
-  "type": "general"}]
+
+### 越南语
+**识别效果**：
+
+![Pix2Text 识别中文（繁体）](docs/figs/output-vietnamese.jpg)
+
+**识别命令**：
+
+```bash
+$ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
 ```
-</td>
-</tr>
-</table>
-
 
 
 ## 模型下载
