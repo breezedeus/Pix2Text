@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/figs/p2t.jpg" width="250px"/>
+  <img src="./docs/figs/p2t-logo.png" width="250px"/>
   <div>&nbsp;</div>
 
 [![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
