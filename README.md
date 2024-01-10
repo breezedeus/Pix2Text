@@ -68,7 +68,7 @@ The text recognition engine of Pix2Text supports **`80+` languages**, including 
 
 List of Supported Languages and corresponding Codes are shown below:
 <details>
-<summary>↓↓↓ Click to show details ↓↓↓</summary>
+  <summary>↓↓↓ Click to show details ↓↓↓</summary>
 
 | Language            | Code Name   |
 | ------------------- | ----------- |
