@@ -66,8 +66,9 @@ The author also maintains **Planet of Knowledge** [**P2T/CnOCR/CnSTD Private Gro
 
 The text recognition engine of Pix2Text supports **`80+` languages**, including **English, Simplified Chinese, Traditional Chinese, Vietnamese**, etc. Among these, **English** and **Simplified Chinese** recognition utilize the open-source OCR tool **[CnOCR](https://github.com/breezedeus/cnocr)**, while recognition for other languages employs the open-source OCR tool **[EasyOCR](https://github.com/JaidedAI/EasyOCR)**. Special thanks to the respective authors.
 
+List of Supported Languages and corresponding Codes are shown below:
 <details>
-<summary>🍔🍔🍔 List of Supported Languages and Corresponding Codes 🍔🍔🍔:</summary>
+<summary>↓↓↓ Click to show details ↓↓↓</summary>
 
 | Language            | Code Name   |
 | ------------------- | ----------- |
@@ -170,7 +171,7 @@ Pix2Text is very simple to use and the following is an example:
 from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
-p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
+p2t = Pix2Text()
 outs = p2t(img_fp, resized_shape=608)  # # can also use `p2t.recognize(img_fp)`
 print(outs)
 # To get just the text contents, use: 

@@ -80,8 +80,9 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以
 
 Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 **[CnOCR](https://github.com/breezedeus/cnocr)** ，其他语言的识别使用的是开源 OCR 工具 **[EasyOCR](https://github.com/JaidedAI/EasyOCR)** ，感谢相关的作者们。
 
+支持的语言列表和对应代码如下：
 <details>
-<summary>🍔🍔🍔 支持的语言列表和对应代码 🍔🍔🍔：</summary>
+<summary>↓↓↓ Click to show details ↓↓↓</summary>
 
 
 | Language            | Code Name   |
@@ -186,7 +187,7 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
-p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
+p2t = Pix2Text()
 outs = p2t(img_fp, resized_shape=608)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
