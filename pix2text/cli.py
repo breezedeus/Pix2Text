@@ -1,5 +1,5 @@
 # coding: utf-8
-# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
+# Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
 import os
 import logging
@@ -12,7 +12,6 @@ from pprint import pformat
 import click
 
 from pix2text import set_logger, Pix2Text, merge_line_texts
-from pix2text.consts import LATEX_CONFIG_FP
 
 _CONTEXT_SETTINGS = {"help_option_names": ['-h', '--help']}
 logger = set_logger(log_level=logging.INFO)
@@ -25,17 +24,11 @@ def cli():
 
 @cli.command('predict')
 @click.option(
-    "--use-analyzer/--no-use-analyzer",
-    default=True,
-    help="Whether to use MFD (Mathematical Formula Detection) or Layout Analysis",
-    show_default=True,
-)
-@click.option(
     "-l",
     "--languages",
     type=str,
     default='en,ch_sim',
-    help="Languages for Text-OCR to recognize, separated by commas",
+    help="Language Codes for Text-OCR to recognize, separated by commas",
     show_default=True,
 )
 @click.option(
@@ -124,7 +117,6 @@ def cli():
     show_default=True,
 )
 def predict(
-    use_analyzer,
     analyzer_name,
     analyzer_type,
     analyzer_model_fp,
@@ -178,7 +170,6 @@ def predict(
         analysis_res = save_analysis_res[idx] if save_analysis_res is not None else None
         out = p2t.recognize(
             fp,
-            use_analyzer=use_analyzer,
             resized_shape=resized_shape,
             save_analysis_res=analysis_res,
             **rec_kwargs,
