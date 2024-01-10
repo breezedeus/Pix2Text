@@ -33,12 +33,16 @@ click==8.1.7
     #   cnocr
     #   cnstd
     #   wandb
-cnocr==2.3.0.1
-    # via -r requirements.in
+cnocr[ort-cpu]==2.3.0.1
+    # via
+    #   -r requirements.in
+    #   cnocr
 cnstd==1.2.3.5
     # via
     #   -r requirements.in
     #   cnocr
+coloredlogs==15.0.1
+    # via onnxruntime
 contourpy==1.2.0
     # via matplotlib
 cycler==0.12.1
@@ -58,6 +62,8 @@ filelock==3.13.1
     #   huggingface-hub
     #   torch
     #   transformers
+flatbuffers==23.5.26
+    # via onnxruntime
 fonttools==4.47.0
     # via matplotlib
 frozenlist==1.4.1
@@ -78,6 +84,8 @@ huggingface-hub==0.20.2
     #   cnstd
     #   tokenizers
     #   transformers
+humanfriendly==10.0
+    # via coloredlogs
 idna==3.6
     # via
     #   requests
@@ -129,6 +137,7 @@ numpy==1.26.3
     #   imageio
     #   matplotlib
     #   onnx
+    #   onnxruntime
     #   opencv-python
     #   opencv-python-headless
     #   pandas
@@ -148,6 +157,8 @@ onnx==1.15.0
     # via
     #   cnocr
     #   cnstd
+onnxruntime==1.16.3
+    # via cnocr
 opencv-python==4.9.0.80
     # via
     #   -r requirements.in
@@ -163,6 +174,7 @@ packaging==23.2
     #   huggingface-hub
     #   lightning-utilities
     #   matplotlib
+    #   onnxruntime
     #   pytorch-lightning
     #   scikit-image
     #   torchmetrics
@@ -190,6 +202,7 @@ polygon3==3.0.9.1
 protobuf==4.25.1
     # via
     #   onnx
+    #   onnxruntime
     #   wandb
 psutil==5.9.7
     # via wandb
@@ -266,7 +279,9 @@ six==1.16.0
 smmap==5.0.1
     # via gitdb
 sympy==1.12
-    # via torch
+    # via
+    #   onnxruntime
+    #   torch
 threadpoolctl==3.2.0
     # via scikit-learn
 tifffile==2023.12.9
