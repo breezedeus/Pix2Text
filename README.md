@@ -368,6 +368,7 @@ The parameters are described as follows:
 
 
 ### Class Function for Recognition
+#### Recognizing Mixed Images containing both Text and Formulas
 
 The text or Latex recognition of one specified image is done by invoking the class function `.recognize()` of class **`Pix2Text`**. The class function `.recognize()` is described as follows.
 
