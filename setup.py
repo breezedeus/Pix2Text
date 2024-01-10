@@ -25,13 +25,14 @@ required = [
     "tqdm",
     "numpy",
     "opencv-python",
-    "cnocr>=2.2.3.1",
-    "cnstd>=1.2.3.2",
+    "cnocr[ort-cpu]>=2.3.0.1",
+    "cnstd>=1.2.3.5",
     "torch",
     "torchvision",
     "pix2tex",
 ]
 extras_require = {
+    "multilingual": ["easyocr"],
     "dev": ["pip-tools", "pytest"],
     "serve": ["uvicorn[standard]", "fastapi", "python-multipart", "pydantic"],
 }

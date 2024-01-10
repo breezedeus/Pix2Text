@@ -1,5 +1,25 @@
 # Release Notes
 
+## Update 2024.01.10：发布 **V0.3**
+
+主要变更：
+
+* 支持识别 **`80+` 种语言**，详细语言列表见 [支持的语言列表](./README_cn.md#支持的语言列表)；
+
+* 模型自动下载增加国内站点；
+
+* 优化对检测 boxes 的合并逻辑。
+
+  
+
+## Update 2023.12.21：发布 **V0.2.3.3**
+
+主要变更：
+
+* fix: bugfixed from [@hiroi-sora](https://github.com/hiroi-sora) , thanks much.
+
+  
+
 ## Update 2023.09.10：发布 **V0.2.3.2**
 
 主要变更：

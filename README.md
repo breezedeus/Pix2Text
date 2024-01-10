@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/figs/p2t.jpg" width="250px"/>
+  <img src="./docs/figs/p2t-logo.png" width="250px"/>
   <div>&nbsp;</div>
 
 [![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
@@ -26,6 +26,13 @@
 
 
 # Pix2Text
+## Update 2024.01.10: Release **V0.3**
+
+Major Changes:
+
+* Support for recognizing **`80+` languages**; for a detailed list of supported languages, see [List of Supported Languages](#list-of-supported-languages);
+* Added domestic sites for automatic model downloads;
+* Optimized the logic for merging detection boxes.
 
 ## Update 2023.07.03: Released V0.2.3
 
@@ -34,21 +41,6 @@ Major changes:
 - Trained a new **formula recognition model** for **[P2T Online Service](https://p2t.breezedeus.com/)** to use. The new model has higher accuracy, especially for **handwritten formulas** and **multi-line formulas**. See: [New Formula Recognition Model for Pix2Text | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-20230702).
 - Optimized the sorting logic of detected boxes and the processing logic of mixed images to make the final recognition results more intuitive.
 - Optimized the merging logic of recognition results to automatically determine line breaks and paragraph breaks.
-- Fixed the automatic model downloading feature. HuggingFace seems to have changed the downloading logic, which caused the previous version's auto-download to fail. The current version has fixed it. 
-- Updated the version numbers of various dependency packages.
-
-## Update 2023.06.20: Released New MFD Model
-
-Major changes:
-
-- Retrained the **MFD YoloV7** model on new annotated data. The new model has been deployed to [P2T Online Service](https://p2t.breezedeus.com/). See: [New Formula Detection Model for Pix2Text (P2T) | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-20230613).
-- The previous MFD YoloV7 model is now available for download to community members. See: [P2T YoloV7 Formula Detection Model Released to Community Members | Breezedeus.com](https://www.breezedeus.com/article/p2t-yolov7-for-zsxq-20230619).
-
-## Update 2023.02.10: **[P2T Online Service](https://p2t.breezedeus.com/)** Open for Free Use
-
-- As a Python package, Pix2Text is not very beginner-friendly. So we also developed the [P2T Online Service](https://p2t.breezedeus.com/) that can be used for free directly. Feel free to help spread the word!
-- Video intro: [Pix2Text New Version and Web Version Released, Getting Closer to Mathpix_bilibili](https://www.bilibili.com/video/BV1U24y1q7n3)
-- Text intro: [Pix2Text New Version Released, Getting Closer to Mathpix - Zhihu](https://zhuanlan.zhihu.com/p/604999678)
 
 See more at: [RELEASE.md](./RELEASE.md) .
 
@@ -70,6 +62,105 @@ If interested, please scan the QR code below to add the assistant WeChat account
 
 The author also maintains **Planet of Knowledge** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), welcome to join. The **Planet of Knowledge Private Group** will release some P2T/CnOCR/CnSTD related private materials one after another, including **non-public models**, **discount for paid models**, answers to problems encountered during usage, etc. This group also releases the latest research materials related to VIE/OCR/STD.
 
+## List of Supported Languages
+
+The text recognition engine of Pix2Text supports **`80+` languages**, including **English, Simplified Chinese, Traditional Chinese, Vietnamese**, etc. Among these, **English** and **Simplified Chinese** recognition utilize the open-source OCR tool **[CnOCR](https://github.com/breezedeus/cnocr)**, while recognition for other languages employs the open-source OCR tool **[EasyOCR](https://github.com/JaidedAI/EasyOCR)**. Special thanks to the respective authors.
+
+List of **Supported Languages** and **Language Codes** are shown below:
+
+<details>
+<summary>↓↓↓ Click to show details ↓↓↓</summary>
+
+| Language            | Code Name   |
+| ------------------- | ----------- |
+| Abaza               | abq         |
+| Adyghe              | ady         |
+| Afrikaans           | af          |
+| Angika              | ang         |
+| Arabic              | ar          |
+| Assamese            | as          |
+| Avar                | ava         |
+| Azerbaijani         | az          |
+| Belarusian          | be          |
+| Bulgarian           | bg          |
+| Bihari              | bh          |
+| Bhojpuri            | bho         |
+| Bengali             | bn          |
+| Bosnian             | bs          |
+| Simplified Chinese  | ch_sim      |
+| Traditional Chinese | ch_tra      |
+| Chechen             | che         |
+| Czech               | cs          |
+| Welsh               | cy          |
+| Danish              | da          |
+| Dargwa              | dar         |
+| German              | de          |
+| English             | en          |
+| Spanish             | es          |
+| Estonian            | et          |
+| Persian (Farsi)     | fa          |
+| French              | fr          |
+| Irish               | ga          |
+| Goan Konkani        | gom         |
+| Hindi               | hi          |
+| Croatian            | hr          |
+| Hungarian           | hu          |
+| Indonesian          | id          |
+| Ingush              | inh         |
+| Icelandic           | is          |
+| Italian             | it          |
+| Japanese            | ja          |
+| Kabardian           | kbd         |
+| Kannada             | kn          |
+| Korean              | ko          |
+| Kurdish             | ku          |
+| Latin               | la          |
+| Lak                 | lbe         |
+| Lezghian            | lez         |
+| Lithuanian          | lt          |
+| Latvian             | lv          |
+| Magahi              | mah         |
+| Maithili            | mai         |
+| Maori               | mi          |
+| Mongolian           | mn          |
+| Marathi             | mr          |
+| Malay               | ms          |
+| Maltese             | mt          |
+| Nepali              | ne          |
+| Newari              | new         |
+| Dutch               | nl          |
+| Norwegian           | no          |
+| Occitan             | oc          |
+| Pali                | pi          |
+| Polish              | pl          |
+| Portuguese          | pt          |
+| Romanian            | ro          |
+| Russian             | ru          |
+| Serbian (cyrillic)  | rs_cyrillic |
+| Serbian (latin)     | rs_latin    |
+| Nagpuri             | sck         |
+| Slovak              | sk          |
+| Slovenian           | sl          |
+| Albanian            | sq          |
+| Swedish             | sv          |
+| Swahili             | sw          |
+| Tamil               | ta          |
+| Tabassaran          | tab         |
+| Telugu              | te          |
+| Thai                | th          |
+| Tajik               | tjk         |
+| Tagalog             | tl          |
+| Turkish             | tr          |
+| Uyghur              | ug          |
+| Ukranian            | uk          |
+| Urdu                | ur          |
+| Uzbek               | uz          |
+| Vietnamese          | vi          |
+
+
+> Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
+
+</details>
 
 
 ## Usage
@@ -81,8 +172,8 @@ Pix2Text is very simple to use and the following is an example:
 from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
-p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
-outs = p2t(img_fp, resized_shape=600)  # # can also use `p2t.recognize(img_fp)`
+p2t = Pix2Text()
+outs = p2t(img_fp, resized_shape=608)  # # can also use `p2t.recognize(img_fp)`
 print(outs)
 # To get just the text contents, use: 
 only_text = merge_line_texts(outs, auto_line_break=True)
@@ -91,140 +182,80 @@ print(only_text)
 
 The returned `outs` is a `dict` where `position` gives the box coordinates, `type` the predicted type, and `text` the recognized texts. See [API Interfaces](#接口说明) for details.
 
+## Examples
 
-Some examples:
+### English
 
-<table>
-<tr>
-<th> Image </th> 
-<th> Pix2Text's Result </th>
-</tr>
-<tr>
-<td>
-<img src="./docs/examples/mixed.jpg" alt="mixed"> 
+**Recognition Results**:
 
-</td>
-<td>
+![Pix2Text Recognizing English](docs/figs/output-en.jpg)
 
-```python
-[{'line_number': 0,
-  'position': array([[         22,          31],
-       [       1057,          31],
-       [       1057,          58],
-       [         22,          58]]),
-  'text': 'JVAE的训练loss和VQ-VAE类似，只是使用了KL距离来让分布尽量分散',
-  'type': 'text'},
- {'line_number': 1,
-  'position': array([[        625,         121],
-       [       1388,         121],
-       [       1388,         182],
-       [        625,         182]]),
-  'text': '$$\n'
-          '-E_{z\\sim q(z\\mid x)}[\\log(p(x\\mid z))]+K L(q(z\\mid x))|p(z))\n'
-          '$$',
-  'type': 'isolated'},
- {'line_number': 2,
-  'position': array([[         18,         242],
-       [        470,         242],
-       [        470,         275],
-       [         18,         275]]),
-  'text': '其中之利用 Gumbel-Softmax 人',
-  'type': 'text'},
- {'line_number': 2,
-  'position': array([[        481,         238],
-       [        664,         238],
-       [        664,         287],
-       [        481,         287]]),
-  'text': ' $z\\sim q(z|x)$ ',
-  'type': 'embedding'},
- {'line_number': 2,
-  'position': array([[        667,         244],
-       [        840,         244],
-       [        840,         277],
-       [        667,         277]]),
-  'text': '中抽样得到,',
-  'type': 'text'},
- {'line_number': 2,
-  'position': array([[        852,         239],
-       [        932,         239],
-       [        932,         288],
-       [        852,         288]]),
-  'text': ' $\\scriptstyle{p(z)}$ ',
-  'type': 'embedding'},
- {'line_number': 2,
-  'position': array([[        937,         244],
-       [       1299,         244],
-       [       1299,         277],
-       [        937,         277]]),
-  'text': '是个等概率的多项式分布',
-  'type': 'text'}]
+**Recognition Command**:
+
+```bash
+$ p2t predict -l en --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
 ```
 
-</td>
-</tr>
-<tr>
-<td>
+> Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
+>
+> ```bash
+> $ p2t predict -l en --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
+> ```
 
-<img src="./docs/examples/formula.jpg" alt="formula"> 
-</td>
-<td>
+### Simplified Chinese
 
-```python
-[{"line_number": 0,
-  "position": array([[         12,          19],
-       [        749,          19],
-       [        749,         150],
-       [         12,         150]]),
-  "text": "$$\n"
-          "\\mathcal{L}_{\\mathrm{eyelid}}~\\equiv~"
-          "\\sum_{t=1}^{T}\\sum_{v=1}^{V}"
-          "\\mathcal{N}_{U}^{\\mathrm{(eyelid)}}"
-          "\\left(\\left|\\left|\\hat{h}_{t,v}\\,-\\,"
-          "\\mathcal{x}_{t,v}\\right|\\right|^{2}\\right)\n"
-          "$$",
-  "type": "isolated"}]
+**Recognition Results**:
+
+![Pix2Text Recognizing Simplified Chinese](docs/figs/output-ch_sim.jpg)
+
+**Recognition Command**:
+
+```bash
+$ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
 ```
-</div>
-</td>
-</tr>
-<tr>
-<td>
 
- <img src="./docs/examples/english.jpg" alt="english"> 
-</td>
-<td>
+> Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
+>
+> ```bash
+> $ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
+> ```
 
-```python
-[{"position": array([[          0,           0],
-       [        710,           0],
-       [        710,         116],
-       [          0,         116]]),
-  "text": "python scripts/screenshot_daemon_with_server\n"
-          "2-get_model:178usemodel:/Users/king/.cr\n"
-          "enet_lite_136-fc-epoch=039-complete_match_er",
-  "type": "english"}]
+### Traditional Chinese
+
+**Recognition Results**:
+
+![Pix2Text Recognizing Traditional Chinese](docs/figs/output-ch_tra.jpg)
+
+**Recognition Command**:
+
+```bash
+$ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg
 ```
-</td>
-</tr>
-<tr>
-<td>
 
- <img src="./docs/examples/general.jpg" alt="general"  width="300px"> 
-</td>
-<td>
+> Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
+>
+> ```bash
+> $ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/ch_tra.jpg
+> ```
 
-```python
-[{"position": array([[          0,           0],
-       [        800,           0],
-       [        800,         800],
-       [          0,         800]]),
-  "text": "618\n开门红提前购\n很贵\n买贵返差"
-  "\n终于降价了\n100%桑蚕丝\n要买趁早\n今日下单188元\n仅限一天",
-  "type": "general"}]
+### Vietnamese
+
+**Recognition Results**:
+
+![Pix2Text Recognizing Vietnamese](docs/figs/output-vietnamese.jpg)
+
+**Recognition Command**:
+
+```bash
+$ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
 ```
-</td>
-</tr>
-</table>
+
+> Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
+>
+> ```bash
+> $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/vietnamese.jpg
+> ```
+
 
 
 
@@ -238,9 +269,9 @@ After installing Pix2Text, the system will **automatically download** the model 
 >
 > If you have successfully run the above example, the model has completed its automatic download and you can ignore the subsequent contents of this section.
 
-For the **classifier model**, the system will automatically download the model file `mobilenet_v2.zip` and unzip it, putting the extracted model directories under `~/.pix2text`. If it fails, you need to manually download the `mobilenet_v2.zip` file from [**cnstd-cnocr-models/pix2text**](https://huggingface.co/breezedeus/cnstd-cnocr-models/tree/main/models/pix2text/0.2) and put it under `~/.pix2text`. If the download is too slow, you can also download it from [Baidu Cloud](https://pan.baidu.com/s/1kubZF4JGE19d98NDoPHJzQ?pwd=p2t0) with code `p2t0`.
 
-For [**LaTeX-OCR**](https://github.com/lukas-blecher/LaTeX-OCR), the system will also try to automatically download its model files `weights.pth` and `image_resizer.pth` into `~/.pix2text/formula`. If failed, you need to download them from [Baidu Cloud](https://pan.baidu.com/s/1kubZF4JGE19d98NDoPHJzQ?pwd=p2t0) and put them under `~/.pix2text/formula`; code: `p2t0`.
+
+For [**LaTeX-OCR**](https://github.com/lukas-blecher/LaTeX-OCR), the system will also try to automatically download its model files into `~/.pix2text/0.3/formula`. If failed, you need to download them from [Baidu Cloud](https://pan.baidu.com/s/1rU9n1Yyme7wXgS8ZbkrY3A?pwd=bdbd) and put them under `~/.pix2text/0.3/formula`; code: `bdbd`.
 
 
 
@@ -259,10 +290,18 @@ Well, one line of command is enough if it goes well.
 pip install pix2text
 ```
 
-If the installation is slow, you can specify a domestic installation source, such as using the Douban source: 
+If you need to recognize languages other than **English** and **Simplified Chinese**, please use the following command to install additional packages:
 
 ```bash
-pip install pix2text -i https://pypi.doubanio.com/simple
+pip install pix2text[multilingual]
+```
+
+
+
+If the installation is slow, you can specify a domestic installation source, such as using the Aliyun source: 
+
+```bash
+pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 
@@ -287,12 +326,10 @@ class Pix2Text(object):
     def __init__(
         self,
         *,
+        languages: Union[str, Sequence[str]] = ('en', 'ch_sim'),
         analyzer_config: Dict[str, Any] = None,
-        clf_config: Dict[str, Any] = None,
-        general_config: Dict[str, Any] = None,
-        english_config: Dict[str, Any] = None,
+        text_config: Dict[str, Any] = None,
         formula_config: Dict[str, Any] = None,
-        thresholds: Dict[str, Any] = None,
         device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
         **kwargs,
     ):
@@ -302,6 +339,8 @@ class Pix2Text(object):
 
 The parameters are described as follows:
 
+- `languages` (str or Sequence[str]): Sequence of language codes for text recognition; default is `('en', 'ch_sim')`, which means it can recognize English and Simplified Chinese;
+
 - `analyzer_config` (dict): Configuration for the classifier model. Default to `None` meaning using default config (MFD Analyzer):
 
   ```python
@@ -310,51 +349,16 @@ The parameters are described as follows:
   }
   ```
 
-- `clf_config` (dict): Configuration for the classifier model. Default to `None` meaning using default:
-
-  ```python
-  {
-      'base_model_name': 'mobilenet_v2',
-      'categories': IMAGE_TYPES,
-      'transform_configs': {
-          'crop_size': [150, 450],
-          'resize_size': 160,
-          'resize_max_size': 1000,
-      },
-      'model_dir': Path(data_dir()) / 'clf',
-      'model_fp': None # use this model file if specified
-  }
-  ```
-
-- `general_config` (dict): Configuration for the general recognizer. Default to `None` meaning using default:
+- `text_config` (dict): Configuration for the general recognizer. Default to `None` meaning using default:
 
   ```python
   {}
   ```
 
-- `english_config` (dict): Configuration for the English recognizer. Default to `None` meaning using default:
-
-  ```python
-  {'det_model_name': 'en_PP-OCRv3_det', 'rec_model_name': 'en_PP-OCRv3'}
-  ```
-
 - `formula_config` (dict): Configuration for the formula recognizer. Default to `None` meaning using default:
 
   ```python
-  {
-      'config': LATEX_CONFIG_FP,
-      'model_fp': Path(data_dir()) / 'formula' / 'weights.pth',
-      'no_resize': False
-  }
-  ```
-
-- `thresholds` (dict): Thresholds for prediction confidence. Default to `None` meaning using default:
-
-  ```python
-  {
-      'formula2general': 0.65, # Lower confidence formula -> general
-      'english2general': 0.75, # Lower confidence english -> general 
-  }
+  {}
   ```
 
 - `device` (str): Device for running the code, can be `['cpu', 'cuda', 'gpu']`. Default: `'cpu'`
@@ -367,38 +371,29 @@ The parameters are described as follows:
 
 The text or Latex recognition of one specified image is done by invoking the class function `.recognize()` of class **`Pix2Text`**. The class function `.recognize()` is described as follows.
 
-```py
+```python
     def recognize(
-        self, img: Union[str, Path, Image.Image], use_analyzer: bool = True, **kwargs
+        self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
 ```
 
 where the input parameters are described as follows.
 
 * `img` (`str` or `Image.Image`): the path of the image to be recognized, or the image `Image` that has been read by using `Image.open()`.
-
-* `use_analyzer`: Whether to use the Analyzer (MFD or Layout). `False` means treat the image as pure text or math.
-
 * `**kwargs`: Can contain:
   - `resized_shape`: Resize image width to this before processing. Default: `700`.
   - `save_analysis_res`: Save analysis visualization to this file/dir. Default: `None` meaning not saving.
   - `embed_sep`: LaTeX delimiter for embedded formulas. Only useful with MFD. Default: `(' $', '$ ')`.
   - `isolated_sep`: LaTeX delimiter for isolated formulas. Only useful with MFD. Default: `('$$\n', '\n$$')`.
+  - `det_bbox_max_expand_ratio (float)`: Expand the height of the detected text bounding box (bbox). This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`.
 
 It returns a `list` of `dict`, each `dict` contains:
 
-- `type`: Predicted type, can be:
-
-  - `text`, `isolated`, `embedding` when `use_analyzer==True`.
-
-    > Note: The values are different from P2T **v0.2.3** and before when using **MFD Analyzer**.
-
-  - `formula`, `english`, `general` when `use_analyzer==False`.
-
+- `type`: The category of the recognized image;
+  - For **MFD Analyzer** (Mathematical Formula Detection), the values can be `text` (pure text), `isolated` (mathematical formulas in isolated lines), or `embedding` (mathematical formulas embedded in lines).
+  - For **Layout Analyzer** (Layout Analysis), the values correspond to the categories of layout analysis results.
 - `text`: Recognized text or latex.
-
 - `position`: Detected box coordinates, `np.ndarray`, with shape `[4, 2]`.
-
 - `line_number`: Exists only when using **MFD Analyzer**. Indicates the line number (starting from 0) of the box. Boxes with the same `line_number` are on the same line.
 
   > Note: This is new since P2T **v0.2.3**. Not in previous versions.
@@ -419,6 +414,37 @@ only_text = merge_line_texts(outs, auto_line_break=True)
 print(only_text)
 ```
 
+#### Recognizing Pure Text Images
+
+The class method `.recognize_text()` of the class **`Pix2Text`** is used to perform text recognition on specified images. In this case, Pix2Text provides general text recognition functionality. The class function `.recognize_text()` is described as follows:
+
+```python
+    def recognize_text(
+        self, img: Union[str, Path, Image.Image], **kwargs
+    ) -> str:
+```
+
+The input parameters are explained as follows:
+
+* `img` (`str` or `Image.Image`): The path of the image to be recognized, or an `Image` object already read using `Image.open()`.
+* `kwargs`: Other parameters passed to the text recognition interface.
+
+The return result is the recognized text string.
+
+#### Recognizing Pure Formula Images
+
+The class method `.recognize_formula()` of the class **`Pix2Text`** is used to recognize mathematical formulas in specified images and convert them into Latex representation. The class function `.recognize_formula()` is described as follows:
+
+```python
+    def recognize_formula(self, img: Union[str, Path, Image.Image]) -> str:
+```
+
+The input parameters are explained as follows:
+
+* `img` (`str` or `Image.Image`): The path of the image to be recognized, or an `Image` object already read using `Image.open()`.
+
+The return result is the recognized Latex representation string.
+
 
 
 ## Script Usage
@@ -433,27 +459,50 @@ Use the **`p2t predict`** command to predict a single image or all images in a d
 $ p2t predict -h
 Usage: p2t predict [OPTIONS]
 
-  Model prediction
+  Use Pix2Text (P2T) to predict the text information in an image
 
 Options:
   --use-analyzer / --no-use-analyzer
-                                  Whether to use MFD or layout analysis Analyzer  [default: use-
-                                  analyzer]
+                                  Whether to use MFD (Mathematical Formula
+                                  Detection) or Layout Analysis  [default:
+                                  use-analyzer]
+  -l, --languages TEXT            Languages for Text-OCR to recognize,
+                                  separated by commas  [default: en,ch_sim]
   -a, --analyzer-name [mfd|layout]
-                                  Which Analyzer to use, MFD or layout analysis  [default: mfd]
-  -t, --analyzer-type TEXT        Which model should the Analyzer use, 'yolov7_tiny' or 'yolov7'
-                                  [default: yolov7_tiny]
-  --analyzer-model-fp TEXT        File path for the Analyzer detection model. Default: `None`, meaning to use the default model
-  --latex-ocr-model-fp TEXT       File path for the Latex-OCR
-                                  mathematical formula recognition model. Default: `None`, indicating using the default model
-  -d, --device TEXT               Use `cpu` or `gpu` to run the code, or specify a particular GPU, such as `cuda:0`
-                                  [default: cpu]
-  --resized-shape INTEGER         Resize the image width to this size for processing  [default: 608]
-  -i, --img-file-or-dir TEXT      Input path for the image file or specified directory [required]
-  --save-analysis-res TEXT        Save the analysis results to this file or directory (if '--img-file-or-
-                                  dir' is a file/directory, then '--save-analysis-
-                                  res' should also be a file/directory). A value of `None` means not to save
-  -l, --log-level TEXT            Log Level, such as `INFO`, `DEBUG`
+                                  Which Analyzer to use, either MFD or Layout
+                                  Analysis  [default: mfd]
+  -t, --analyzer-type TEXT        Which model to use for the Analyzer,
+                                  'yolov7_tiny' or 'yolov7'  [default:
+                                  yolov7_tiny]
+  --analyzer-model-fp TEXT        File path for the Analyzer detection model.
+                                  Default: `None`, meaning using the default
+                                  model
+  --latex-ocr-model-fp TEXT       File path for the Latex-OCR mathematical
+                                  formula recognition model. Default: `None`,
+                                  meaning using the default model
+  --text-ocr-config TEXT          Configuration information for Text-OCR
+                                  recognition, in JSON string format. Default:
+                                  `None`, meaning using the default
+                                  configuration
+  -d, --device TEXT               Choose to run the code using `cpu`, `gpu`,
+                                  or a specific GPU like `cuda:0`  [default:
+                                  cpu]
+  --resized-shape INTEGER         Resize the image width to this size before
+                                  processing  [default: 608]
+  -i, --img-file-or-dir TEXT      File path of the input image or the
+                                  specified directory  [required]
+  --save-analysis-res TEXT        Save the analysis results to this file or
+                                  directory (If '--img-file-or-dir' is a
+                                  file/directory, then '--save-analysis-res'
+                                  should also be a file/directory). Set to
+                                  `None` for not saving
+  --rec-kwargs TEXT               kwargs for calling .recognize(), in JSON
+                                  string format
+  --auto-line-break / --no-auto-line-break
+                                  Whether to automatically determine to merge
+                                  adjacent line results into a single line
+                                  result  [default: no-auto-line-break]
+  --log-level TEXT                Log Level, such as `INFO`, `DEBUG`
                                   [default: INFO]
   -h, --help                      Show this message and exit.
 ```

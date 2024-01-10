@@ -4,6 +4,7 @@
 import os
 import logging
 import glob
+import json
 from multiprocessing import Process
 import subprocess
 from pprint import pformat
@@ -26,7 +27,15 @@ def cli():
 @click.option(
     "--use-analyzer/--no-use-analyzer",
     default=True,
-    help="是否使用 MFD 或者版面分析 Analyzer",
+    help="Whether to use MFD (Mathematical Formula Detection) or Layout Analysis",
+    show_default=True,
+)
+@click.option(
+    "-l",
+    "--languages",
+    type=str,
+    default='en,ch_sim',
+    help="Languages for Text-OCR to recognize, separated by commas",
     show_default=True,
 )
 @click.option(
@@ -34,7 +43,7 @@ def cli():
     "--analyzer-name",
     type=click.Choice(['mfd', 'layout']),
     default='mfd',
-    help="使用哪个Analyzer，MFD还是版面分析",
+    help="Which Analyzer to use, either MFD or Layout Analysis",
     show_default=True,
 )
 @click.option(
@@ -42,49 +51,73 @@ def cli():
     "--analyzer-type",
     type=str,
     default='yolov7_tiny',
-    help="Analyzer使用哪个模型，'yolov7_tiny' or 'yolov7'",
+    help="Which model to use for the Analyzer, 'yolov7_tiny' or 'yolov7'",
     show_default=True,
 )
 @click.option(
     "--analyzer-model-fp",
     type=str,
     default=None,
-    help="Analyzer检测模型的文件路径。Default：`None`，表示使用默认模型",
+    help="File path for the Analyzer detection model. Default: `None`, meaning using the default model",
     show_default=True,
 )
 @click.option(
     "--latex-ocr-model-fp",
     type=str,
     default=None,
-    help="Latex-OCR 数学公式识别模型的文件路径。Default：`None`，表示使用默认模型",
+    help="File path for the Latex-OCR mathematical formula recognition model. Default: `None`, meaning using the default model",
+    show_default=True,
+)
+@click.option(
+    "--text-ocr-config",
+    type=str,
+    default=None,
+    help="Configuration information for Text-OCR recognition, in JSON string format. Default: `None`, meaning using the default configuration",
     show_default=True,
 )
 @click.option(
     "-d",
     "--device",
-    help="使用 `cpu` 还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`",
+    help="Choose to run the code using `cpu`, `gpu`, or a specific GPU like `cuda:0`",
     type=str,
     default='cpu',
     show_default=True,
 )
 @click.option(
     "--resized-shape",
-    help="把图片宽度resize到此大小再进行处理",
+    help="Resize the image width to this size before processing",
     type=int,
     default=608,
     show_default=True,
 )
-@click.option("-i", "--img-file-or-dir", required=True, help="输入图片的文件路径或者指定的文件夹")
+@click.option(
+    "-i",
+    "--img-file-or-dir",
+    required=True,
+    help="File path of the input image or the specified directory",
+)
 @click.option(
     "--save-analysis-res",
     default=None,
-    help="把解析结果存储到此文件或目录中"
-    "（如果'--img-file-or-dir'为文件/文件夹，则'--save-analysis-res'也应该是文件/文件夹）。"
-    "取值为 `None` 表示不存储",
+    help="Save the analysis results to this file or directory"
+    " (If '--img-file-or-dir' is a file/directory, then '--save-analysis-res' should also be a file/directory)."
+    " Set to `None` for not saving",
     show_default=True,
 )
 @click.option(
-    "-l",
+    "--rec-kwargs",
+    type=str,
+    default=None,
+    help="kwargs for calling .recognize(), in JSON string format",
+    show_default=True,
+)
+@click.option(
+    "--auto-line-break/--no-auto-line-break",
+    default=False,
+    help="Whether to automatically determine to merge adjacent line results into a single line result",
+    show_default=True,
+)
+@click.option(
     "--log-level",
     default='INFO',
     help="Log Level, such as `INFO`, `DEBUG`",
@@ -96,13 +129,17 @@ def predict(
     analyzer_type,
     analyzer_model_fp,
     latex_ocr_model_fp,
+    languages,
+    text_ocr_config,
     device,
     resized_shape,
     img_file_or_dir,
     save_analysis_res,
+    rec_kwargs,
+    auto_line_break,
     log_level,
 ):
-    """模型预测"""
+    """Use Pix2Text (P2T) to predict the text information in an image"""
     logger = set_logger(log_level=log_level)
 
     analyzer_config = dict(model_name=analyzer_name, model_type=analyzer_type)
@@ -112,8 +149,14 @@ def predict(
     formula_config = None
     if latex_ocr_model_fp is not None:
         formula_config = {'model_fp': latex_ocr_model_fp}
+    languages = [lang.strip() for lang in languages.split(',') if lang.strip()]
+    text_ocr_config = json.loads(text_ocr_config) if text_ocr_config else {}
     p2t = Pix2Text(
-        analyzer_config=analyzer_config, formula_config=formula_config, device=device,
+        languages=languages,
+        analyzer_config=analyzer_config,
+        text_config=text_ocr_config,
+        formula_config=formula_config,
+        device=device,
     )
 
     fp_list = []
@@ -130,6 +173,7 @@ def predict(
                 os.path.join(save_analysis_res, 'analysis-' + fn) for fn in fn_list
             ]
 
+    rec_kwargs = json.loads(rec_kwargs) if rec_kwargs else {}
     for idx, fp in enumerate(fp_list):
         analysis_res = save_analysis_res[idx] if save_analysis_res is not None else None
         out = p2t.recognize(
@@ -137,8 +181,9 @@ def predict(
             use_analyzer=use_analyzer,
             resized_shape=resized_shape,
             save_analysis_res=analysis_res,
+            **rec_kwargs,
         )
-        res = merge_line_texts(out, auto_line_break=True)
+        res = merge_line_texts(out, auto_line_break=auto_line_break)
         logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n{res}')
 
 

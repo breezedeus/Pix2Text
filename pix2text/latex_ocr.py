@@ -1,9 +1,9 @@
 # coding: utf-8
-# Copyright (C) 2022, [Breezedeus](https://github.com/breezedeus).
+# Copyright (C) 2022-2024, [Breezedeus](https://github.com/breezedeus).
 #
 # credit to: pix2tex, lukas-blecher/LaTeX-OCR
 # Adapted from https://github.com/lukas-blecher/LaTeX-OCR/blob/main/pix2tex/cli.py
-from typing import Tuple, Optional, Dict, Any
+from typing import Tuple, Optional, Dict, Any, Union
 import logging
 import yaml
 from pathlib import Path
@@ -12,48 +12,29 @@ from PIL import Image
 from transformers import PreTrainedTokenizerFast
 from timm.models.resnetv2 import ResNetV2
 from timm.models.layers import StdConv2dSame
+from cnstd.utils import get_model_file
 
 from pix2tex.utils import *
 from pix2tex.models import get_model
 from pix2tex.dataset.transforms import test_transform
-from pix2tex.model.checkpoints.get_latest_checkpoint import (
-    download_as_bytes_with_progress,
-)
 
-from .consts import LATEX_CONFIG_FP
+from .consts import LATEX_CONFIG_FP, MODEL_VERSION, AVAILABLE_MODELS, DOWNLOAD_SOURCE
 from .utils import data_dir
 
 
 logger = logging.getLogger(__name__)
 
 
-def download_checkpoints(args):
+def download_checkpoints(model_info, resizer_model_info, args):
     # adapted from pix2tex.model.checkpoints.get_latest_checkpoint
     ckpt_list = [args.mfr_checkpoint, args.resizer_checkpoint]
-    tag = 'v0.0.1'  # get_latest_tag()
-    weights = (
-        'https://github.com/lukas-blecher/LaTeX-OCR/releases/download/%s/weights.pth'
-        % tag
-    )
-    resizer = (
-        'https://github.com/lukas-blecher/LaTeX-OCR/releases/download/%s/image_resizer.pth'
-        % tag
-    )
-    for idx, (url, fp) in enumerate(zip([weights, resizer], ckpt_list)):
-        name = os.path.basename(url)
+    for info, fp in zip([model_info, resizer_model_info], ckpt_list):
         if not os.path.exists(fp):
-            if os.path.basename(fp) != name:
-                logger.warning(f'can not find file {fp}, download {name} from {url} instead')
-                fp = os.path.join(os.path.dirname(fp), name)
-                if idx == 0:
-                    args.mfr_checkpoint = fp
-                else:
-                    args.resizer_checkpoint = fp
-            os.makedirs(os.path.dirname(fp), exist_ok=True)
-            file = download_as_bytes_with_progress(url, name)
-            logger.info('downloading file %s to path %s', name, fp)
-            open(fp, "wb").write(file)
-            logger.info(f'save {name} to path {fp}')
+            logger.warning(f'model file {fp} not found, downloading...')
+            info['filename'] = info['url']
+            get_model_file(
+                info, args.model_root_dir, download_source=DOWNLOAD_SOURCE
+            )  # download the .zip file and unzip
 
 
 def minmax_size(
@@ -206,24 +187,45 @@ class LatexOCR(object):
     last_pic = None
 
     @in_model_path()
-    def __init__(self, arguments: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        *,
+        model_name: str = 'mfr',
+        model_backend: str = 'pytorch',
+        context: str = 'cpu',  # ['cpu', 'gpu', 'cuda']
+        model_fp: Optional[Union[str, Path]] = None,
+        root: Union[str, Path] = data_dir(),
+        arguments: Optional[Dict[str, Any]] = None,
+    ):
         """Initialize a LatexOCR model
 
         Args:
+            model_name (str, optional): The name of the model. Defaults to 'mfr'.
+            model_backend (str, optional): The model backend. Defaults to 'pytorch'.
+            context (str, optional): What device to use for computation, supports `['cpu', 'cuda', 'gpu']`; defaults to `cpu`.
+            model_fp (Optional[Union[str, Path]], optional): The model file path. Defaults to None.
+            root (Union[str, Path], optional): The model root directory. Defaults to data_dir().
             arguments (Union[Namespace, Munch], optional): Special model parameters. Defaults to None.
         """
+        model_root_dir = Path(root) / MODEL_VERSION / 'formula'
+        model_info = AVAILABLE_MODELS.get_info(model_name, model_backend)
+        resizer_model_info = AVAILABLE_MODELS.get_info('resizer', 'pytorch')
+
         def_arguments = {
             'config': LATEX_CONFIG_FP,
-            'mfr_checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
-            'resizer_checkpoint': Path(data_dir()) / 'formula' / 'image_resizer.pth',
+            'mfr_checkpoint': model_root_dir / model_info['fn'],
+            'resizer_checkpoint': model_root_dir / resizer_model_info['fn'],
+            'model_root_dir': model_root_dir,
             # 'no_cuda': True,
             'no_resize': False,
-            'device': 'cpu',
+            'device': context,
         }
         if arguments is not None:
             if 'model_fp' in arguments:
                 arguments['mfr_checkpoint'] = arguments.pop('model_fp')
             def_arguments.update(arguments)
+        if model_fp is not None:
+            def_arguments['mfr_checkpoint'] = model_fp
         arguments = def_arguments
 
         arguments = Munch(arguments)
@@ -236,7 +238,7 @@ class LatexOCR(object):
         # self.args.device = (
         #     'cuda' if torch.cuda.is_available() and not self.args.no_cuda else 'cpu'
         # )
-        download_checkpoints(self.args)
+        download_checkpoints(model_info, resizer_model_info, self.args)
 
         self.model = get_model(self.args)
         self.model.load_state_dict(
@@ -257,10 +259,7 @@ class LatexOCR(object):
                 conv_layer=StdConv2dSame,
             ).to(self.args.device)
             self.image_resizer.load_state_dict(
-                torch.load(
-                    self.args.resizer_checkpoint,
-                    map_location=self.args.device,
-                )
+                torch.load(self.args.resizer_checkpoint, map_location=self.args.device)
             )
             logger.info(f'use model: {self.args.resizer_checkpoint}')
             self.image_resizer.eval()

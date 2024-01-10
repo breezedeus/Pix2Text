@@ -1,31 +1,32 @@
 # coding: utf-8
-# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
+# Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
-import os
-from glob import glob
 import logging
 from itertools import chain
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List
-from copy import deepcopy, copy
+from typing import Dict, Any, Optional, Union, List, Sequence
+from copy import copy
 
 from PIL import Image
 import numpy as np
 import torch
-from cnocr import CnOcr, ImageClassifier
-from cnstd.utils import get_model_file
 from cnstd import LayoutAnalyzer
 from cnstd.yolov7.consts import CATEGORY_DICT
+from cnstd.yolov7.general import box_partial_overlap
 
-from .utils import sort_boxes, rotated_box_to_horizontal, is_valid_box, list2box
-from cnstd.yolov7.general import xyxy24p, box_partial_overlap
+from .utils import (
+    sort_boxes,
+    merge_adjacent_bboxes,
+    adjust_line_height,
+    rotated_box_to_horizontal,
+    is_valid_box,
+    list2box,
+)
+from .ocr_engine import prepare_ocr_engine
 
 from .consts import (
-    IMAGE_TYPES,
     LATEX_CONFIG_FP,
     MODEL_VERSION,
-    CLF_MODEL_URL_FMT,
-    format_hf_hub_url,
 )
 from .latex_ocr import LatexOCR
 from .utils import (
@@ -39,28 +40,8 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIGS = {
     'analyzer': {'model_name': 'mfd'},
-    'clf': {
-        'base_model_name': 'mobilenet_v2',
-        'categories': IMAGE_TYPES,
-        'transform_configs': {
-            'crop_size': [150, 450],
-            'resize_size': 160,
-            'resize_max_size': 1000,
-        },
-        'model_dir': Path(data_dir()) / 'clf',
-        'model_fp': None,  # 如果指定，直接使用此模型文件
-    },
-    'general': {},
-    'english': {'det_model_name': 'en_PP-OCRv3_det', 'rec_model_name': 'en_PP-OCRv3'},
-    'formula': {
-        'config': LATEX_CONFIG_FP,
-        'checkpoint': Path(data_dir()) / 'formula' / 'weights.pth',
-        'no_resize': False,
-    },
-    'thresholds': {  # 用于clf场景
-        'formula2general': 0.65,  # 如果识别为 `formula` 类型，但阈值小于此值，则改为 `general` 类型
-        'english2general': 0.75,  # 如果识别为 `english` 类型，但阈值小于此值，则改为 `general` 类型
-    },
+    'text': {},
+    'formula': {},
 }
 
 
@@ -70,69 +51,37 @@ class Pix2Text(object):
     def __init__(
         self,
         *,
+        languages: Union[str, Sequence[str]] = ('en', 'ch_sim'),
         analyzer_config: Dict[str, Any] = None,
-        clf_config: Dict[str, Any] = None,
-        general_config: Dict[str, Any] = None,
-        english_config: Dict[str, Any] = None,
+        text_config: Dict[str, Any] = None,
         formula_config: Dict[str, Any] = None,
-        thresholds: Dict[str, Any] = None,
         device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
         **kwargs,
     ):
         """
-
         Args:
-            analyzer_config (dict): Analyzer模型对应的配置信息；默认为 `None`，表示使用默认配置
-            clf_config (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置
-            general_config (dict): 通用模型对应的配置信息；默认为 `None`，表示使用默认配置
-            english_config (dict): 英文模型对应的配置信息；默认为 `None`，表示使用默认配置
-            formula_config (dict): 公式识别模型对应的配置信息；默认为 `None`，表示使用默认配置
-            thresholds (dict): 识别阈值对应的配置信息；默认为 `None`，表示使用默认配置
-            device (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`
-            **kwargs (): 预留的其他参数；目前未被使用
+            languages (str or Sequence[str]): The language code(s) of the text to be recognized; defaults to `('en', 'ch_sim')`.
+            analyzer_config (dict): Configuration information for the Analyzer model; defaults to `None`, which means using the default configuration.
+            text_config (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
+            formula_config (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
+            device (str): What device to use for computation, supports `['cpu', 'cuda', 'gpu']`; defaults to `cpu`.
+            **kwargs (): Reserved for other parameters; not currently used.
         """
         if device.lower() == 'gpu':
             device = 'cuda'
         self.device = device
-        thresholds = thresholds or DEFAULT_CONFIGS['thresholds']
-        self.thresholds = deepcopy(thresholds)
 
-        (
-            analyzer_config,
-            clf_config,
-            general_config,
-            english_config,
-            formula_config,
-        ) = self._prepare_configs(
-            analyzer_config,
-            clf_config,
-            general_config,
-            english_config,
-            formula_config,
-            device,
+        analyzer_config, text_config, formula_config = self._prepare_configs(
+            analyzer_config, text_config, formula_config, device,
         )
 
         self.analyzer = LayoutAnalyzer(**analyzer_config)
 
-        _clf_config = deepcopy(clf_config)
-        _clf_config.pop('model_dir')
-        _clf_config.pop('model_fp')
-        self.image_clf = ImageClassifier(**_clf_config)
-
-        self.general_ocr = CnOcr(**general_config)
-        self.english_ocr = CnOcr(**english_config)
-        self.latex_model = LatexOCR(formula_config)
-
-        self._assert_and_prepare_clf_model(clf_config)
+        self.text_ocr = prepare_ocr_engine(languages, text_config)
+        self.latex_model = LatexOCR(**formula_config)
 
     def _prepare_configs(
-        self,
-        analyzer_config,
-        clf_config,
-        general_config,
-        english_config,
-        formula_config,
-        device,
+        self, analyzer_config, text_config, formula_config, device,
     ):
         def _to_default(_conf, _def_val):
             if not _conf:
@@ -141,58 +90,23 @@ class Pix2Text(object):
 
         analyzer_config = _to_default(analyzer_config, DEFAULT_CONFIGS['analyzer'])
         analyzer_config['device'] = device
-        clf_config = _to_default(clf_config, DEFAULT_CONFIGS['clf'])
-        general_config = _to_default(general_config, DEFAULT_CONFIGS['general'])
-        general_config['context'] = device
-        english_config = _to_default(english_config, DEFAULT_CONFIGS['english'])
-        english_config['context'] = device
+        text_config = _to_default(text_config, DEFAULT_CONFIGS['text'])
+        text_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
-        formula_config['device'] = device
+        formula_config['context'] = device
         return (
             analyzer_config,
-            clf_config,
-            general_config,
-            english_config,
+            text_config,
             formula_config,
         )
-
-    def _assert_and_prepare_clf_model(self, clf_config):
-        model_file_prefix = '{}-{}'.format(
-            self.MODEL_FILE_PREFIX, clf_config['base_model_name']
-        )
-        model_dir = clf_config['model_dir']
-        model_fp = clf_config['model_fp']
-
-        if model_fp is not None and not os.path.isfile(model_fp):
-            raise FileNotFoundError('can not find model file %s' % model_fp)
-
-        # 如果未指定model_fp，则尝试在model_dir中搜索，或下载模型文件。
-        if not model_fp:
-            fps = glob(os.path.join(model_dir, model_file_prefix) + '*.ckpt')
-            if len(fps) > 1:
-                raise ValueError(
-                    'multiple .ckpt files are found in %s, not sure which one should be used'
-                    % model_dir
-                )
-            elif len(fps) < 1:
-                logger.warning('no .ckpt file is found in %s' % model_dir)
-                url = format_hf_hub_url(CLF_MODEL_URL_FMT % clf_config['base_model_name'])
-                get_model_file(url, model_dir)  # download the .zip file and unzip
-                fps = glob(os.path.join(model_dir, model_file_prefix) + '*.ckpt')
-
-            model_fp = fps[0]
-        self.image_clf.load(model_fp, self.device)
 
     @classmethod
     def from_config(cls, total_configs: Optional[dict] = None, device: str = 'cpu'):
         total_configs = total_configs or DEFAULT_CONFIGS
         return cls(
             analyzer_config=total_configs.get('analyzer', dict()),
-            clf_config=total_configs.get('clf', dict()),
-            general_config=total_configs.get('general', dict()),
-            english_config=total_configs.get('english', dict()),
+            text_config=total_configs.get('text', dict()),
             formula_config=total_configs.get('formula', dict()),
-            thresholds=total_configs.get('thresholds', DEFAULT_CONFIGS['thresholds']),
             device=device,
         )
 
@@ -202,98 +116,53 @@ class Pix2Text(object):
         return self.recognize(img, **kwargs)
 
     def recognize(
-        self, img: Union[str, Path, Image.Image], use_analyzer: bool = True, **kwargs
-    ) -> List[Dict[str, Any]]:
-        """
-        对图片先做版面分析，然后再识别每块中包含的信息。在版面分析未识别出内容时，则把整个图片作为整体进行识别。
-
-        Args:
-            img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
-            use_analyzer (bool): whether to use the analyzer (MFD or Layout) to analyze the image; Default: `True`
-            kwargs ():
-                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
-                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
-                * embed_sep (tuple): embedding latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `(' $', '$ ')`
-                * isolated_sep (tuple): isolated latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `('$$\n', '\n$$')`
-
-        Returns: a list of dicts, with keys:
-           `type`: 图像类别；
-           `text`: 识别出的文字或Latex公式
-           `postion`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
-
-        """
-        out = None
-        if use_analyzer:
-            if self.analyzer._model_name == 'mfd':
-                out = self.recognize_by_mfd(img, **kwargs)
-            else:
-                out = self.recognize_by_layout(img, **kwargs)
-        if not out:
-            out = self.recognize_by_clf(img, **kwargs)
-        return out
-
-    def recognize_by_clf(
         self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
         """
-        把整张图片作为一整块进行识别。
+        Analyze the layout of the image, and then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            kwargs ():
+                * resized_shape (int): Resize the image width to this size for processing; default value is `608`
+                * save_analysis_res (str): Save the analysis result image in this file; default is `None`, which means not to save
+                * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when using `MFD`; default is `(' $', '$ ')`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when using `MFD`; default is `('$$\n', '\n$$')`
+                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height
 
         Returns: a list of dicts, with keys:
-           `type`: 图像类别；
-           `text`: 识别出的文字或Latex公式
-           `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+           `type`: The category of the image
+           `text`: The recognized text or Latex formula
+           `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
 
         """
-        if isinstance(img, Image.Image):
-            img0 = img.convert('RGB')
+        if self.analyzer._model_name == 'mfd':
+            out = self.recognize_by_mfd(img, **kwargs)
         else:
-            img0 = read_img(img, return_type='Image')
-        width, height = img0.size
-        _img = torch.tensor(np.asarray(img0))
-        res = self.image_clf.predict_images([_img])[0]
-        logger.debug('CLF Result: %s', res)
-
-        image_type = res[0]
-        if res[1] < self.thresholds['formula2general'] and res[0] == 'formula':
-            image_type = 'general'
-        if res[1] < self.thresholds['english2general'] and res[0] == 'english':
-            image_type = 'general'
-        if image_type == 'formula':
-            result = self._latex(img)
-        else:
-            result = self._ocr(img, image_type)
-
-        box = xyxy24p([0, 0, width, height], np.array)
-
-        if kwargs.get('save_analysis_res'):
-            out = [{'type': image_type, 'score': res[1], 'position': box}]
-            save_layout_img(img0, IMAGE_TYPES, out, kwargs.get('save_analysis_res'))
-
-        return [{'type': image_type, 'text': result, 'position': box}]
+            out = self.recognize_by_layout(img, **kwargs)
+        return out
 
     def recognize_by_mfd(
         self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
         """
-        对图片先做MFD 或 版面分析，然后再识别每块中包含的信息。
+        Perform Mathematical Formula Detection (MFD) on the image, and then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             kwargs ():
-                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `608`
-                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
-                * embed_sep (tuple): embedding latex的前后缀；默认值为 `(' $', '$ ')`
-                * isolated_sep (tuple): isolated latex的前后缀；默认值为 `('$$\n', '\n$$')`
+                * resized_shape (int): Resize the image width to this size for processing; default value is `608`
+                * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
+                * embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
+                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
 
         Returns: a list of ordered (top to bottom, left to right) dicts,
             with each dict representing one detected box, containing keys:
-           `type`: 图像类别；Optional: 'text', 'isolated', 'embedding'
-           `text`: 识别出的文字或Latex公式
-           `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
-           `line_number`: box 所在行号（第一行 `line_number==0`），值相同的box表示它们在同一行
+           `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
+           `text`: The recognized text or Latex formula
+           `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
+           `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
 
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
@@ -321,7 +190,7 @@ class Pix2Text(object):
                 int(box[2][1]),
             )
             crop_patch = img0.crop((xmin, ymin, xmax, ymax))
-            patch_out = self._latex(crop_patch)
+            patch_out = self.recognize_formula(crop_patch)
             sep = isolated_sep if box_info['type'] == 'isolated' else embed_sep
             text = sep[0] + patch_out + sep[1]
             mf_out.append({'type': box_info['type'], 'text': text, 'position': box})
@@ -338,7 +207,7 @@ class Pix2Text(object):
                 )
                 img[ymin:ymax, xmin:xmax, :] = 255
 
-        box_infos = self.general_ocr.det_model.detect(img)
+        box_infos = self.text_ocr.detect_only(img)
 
         def _to_iou_box(ori):
             return torch.tensor([ori[0][0], ori[0][1], ori[2][0], ori[2][1]]).unsqueeze(
@@ -370,14 +239,28 @@ class Pix2Text(object):
 
         outs = copy(mf_out)
         for box in total_text_boxes:
-            crop_patch = torch.tensor(np.asarray(img0.crop(box['position'])))
-            part_res = self._ocr_for_single_line(crop_patch, 'general')
-            if part_res['text']:
-                box['position'] = list2box(*box['position'])
-                box['text'] = part_res['text']
-                outs.append(box)
-
+            box['position'] = list2box(*box['position'])
+            outs.append(box)
         outs = sort_boxes(outs, key='position')
+        outs = [merge_adjacent_bboxes(bboxes) for bboxes in outs]
+        max_expand_ratio = kwargs.get('det_bbox_max_expand_ratio', 0.2)
+        outs = adjust_line_height(outs, img0.size[1], max_expand_ratio=max_expand_ratio)
+
+        for line_boxes in outs:
+            for box in line_boxes:
+                if box['type'] != 'text':
+                    continue
+                bbox = box['position']
+                xmin, ymin, xmax, ymax = (
+                    int(bbox[0][0]),
+                    int(bbox[0][1]),
+                    int(bbox[2][0]),
+                    int(bbox[2][1]),
+                )
+                crop_patch = np.array(img0.crop((xmin, ymin, xmax, ymax)))
+                part_res = self.text_ocr.recognize_only(crop_patch)
+                box['text'] = part_res['text']
+
         logger.debug(outs)
         outs = self._post_process(outs)
 
@@ -428,18 +311,18 @@ class Pix2Text(object):
         self, img: Union[str, Path, Image.Image], **kwargs
     ) -> List[Dict[str, Any]]:
         """
-        对图片先做版面分析，然后再识别每块中包含的信息。
+        Perform Layout Analysis (LA) on the image, then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             kwargs ():
-                * resized_shape (int): 把图片宽度resize到此大小再进行处理；默认值为 `700`
-                * save_analysis_res (str): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储
+                * resized_shape (int): Resize the image width to this size for processing; default value is `500`
+                * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
 
         Returns: a list of dicts, with keys:
-           `type`: 图像类别；
-           `text`: 识别出的文字或Latex公式
-           `position`: 所在块的位置信息，`np.ndarray`, with shape of [4, 2]
+           `type`: The category of the image;
+           `text`: The recognized text or Latex formula
+           `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
 
         """
         if isinstance(img, Image.Image):
@@ -460,20 +343,11 @@ class Pix2Text(object):
                 int(box[2][1]),
             )
             crop_patch = img0.crop((xmin, ymin, xmax, ymax))
-            if box_info['type'] == 'Equation':
-                image_type = 'formula'
-                patch_out = self._latex(crop_patch)
+            image_type = box_info['type']
+            if image_type == 'Equation':
+                patch_out = self.recognize_formula(crop_patch)
             else:
-                crop_patch = torch.tensor(np.asarray(crop_patch))
-                res = self.image_clf.predict_images([crop_patch])[0]
-                image_type = res[0]
-                if res[0] == 'formula':
-                    image_type = 'general'
-                elif (
-                    res[1] < self.thresholds['english2general'] and res[0] == 'english'
-                ):
-                    image_type = 'general'
-                patch_out = self._ocr(crop_patch, image_type)
+                patch_out = self.recognize_text(crop_patch)
             out.append({'type': image_type, 'text': patch_out, 'position': box})
 
         if kwargs.get('save_analysis_res'):
@@ -487,23 +361,38 @@ class Pix2Text(object):
 
         return out
 
-    def _ocr_for_single_line(self, image, image_type):
-        ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr
-        try:
-            return ocr_model.ocr_for_single_line(image)
-        except:
-            return {'text': '', 'score': 0.0}
+    def recognize_text(self, image: Union[str, Path, Image.Image], **kwargs) -> str:
+        """
+        Recognize a pure Text Image.
+        Args:
+            image (Union[str, Path, Image.Image]): an image path, or `Image.Image` loaded by `Image.open()`
+            kwargs (): other parameters for `text_ocr.ocr()`
 
-    def _ocr(self, image, image_type):
-        ocr_model = self.english_ocr if image_type == 'english' else self.general_ocr
-        result = ocr_model.ocr(image)
+        Returns: str; the recognized texts
+
+        """
+        if isinstance(image, (str, Path)):
+            image = read_img(image, return_type='Image')
+        elif isinstance(image, Image.Image):
+            image = image.convert('RGB')
+        result = self.text_ocr.ocr(np.array(image), **kwargs)
         texts = [_one['text'] for _one in result]
         result = '\n'.join(texts)
         return result
 
-    def _latex(self, image):
+    def recognize_formula(self, image: Union[str, Path, Image.Image]) -> str:
+        """
+        Recognize a pure Formula Image to Latex Expression.
+        Args:
+            image (Union[str, Path, Image.Image]): an image path, or `Image.Image` loaded by `Image.open()`
+
+        Returns: str; the recognized Latex expression texts
+
+        """
         if isinstance(image, (str, Path)):
             image = read_img(image, return_type='Image')
+        elif isinstance(image, Image.Image):
+            image = image.convert('RGB')
         out = self.latex_model(image)
         return str(out)
 
