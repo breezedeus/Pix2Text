@@ -80,7 +80,7 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以
 
 Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 **[CnOCR](https://github.com/breezedeus/cnocr)** ，其他语言的识别使用的是开源 OCR 工具 **[EasyOCR](https://github.com/JaidedAI/EasyOCR)** ，感谢相关的作者们。
 
-支持的语言列表和对应代码如下：
+支持的**语言列表**和**语言代码**如下：
 <details>
 <summary>↓↓↓ Click to show details ↓↓↓</summary>
 
@@ -171,11 +171,10 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 | Uzbek               | uz          |
 | Vietnamese          | vi          |
 
-</details>
-
 
 > Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
 
+</details>
 
 
 ## 使用说明
@@ -356,7 +355,7 @@ class Pix2Text(object):
 ```
 
 其中的各参数说明如下：
-* `languages` (str or Sequence[str]): 文字识别对应的语言编码序列；默认为 `('en', 'ch_sim')`，表示可识别英文与简体中文；
+* `languages` (str or Sequence[str]): 文字识别对应的语言代码序列；默认为 `('en', 'ch_sim')`，表示可识别英文与简体中文；
 	
 * `analyzer_config` (dict): 分类模型对应的配置信息；默认为 `None`，表示使用默认配置（使用**MFD** Analyzer）：
 	

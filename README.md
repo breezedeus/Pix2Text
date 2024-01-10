@@ -66,7 +66,7 @@ The author also maintains **Planet of Knowledge** [**P2T/CnOCR/CnSTD Private Gro
 
 The text recognition engine of Pix2Text supports **`80+` languages**, including **English, Simplified Chinese, Traditional Chinese, Vietnamese**, etc. Among these, **English** and **Simplified Chinese** recognition utilize the open-source OCR tool **[CnOCR](https://github.com/breezedeus/cnocr)**, while recognition for other languages employs the open-source OCR tool **[EasyOCR](https://github.com/JaidedAI/EasyOCR)**. Special thanks to the respective authors.
 
-List of Supported Languages and corresponding Codes are shown below:
+List of **Supported Languages** and **Language Codes** are shown below:
 
 <details>
 <summary>↓↓↓ Click to show details ↓↓↓</summary>
@@ -157,10 +157,10 @@ List of Supported Languages and corresponding Codes are shown below:
 | Uzbek               | uz          |
 | Vietnamese          | vi          |
 
-</details>
-
 
 > Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
+
+</details>
 
 
 ## Usage
