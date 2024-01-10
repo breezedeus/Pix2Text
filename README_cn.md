@@ -500,7 +500,7 @@ $ p2t predict -h
   --use-analyzer / --no-use-analyzer
                                   是否使用 MFD (数学公式检测) 或版面分析  [默认:
                                   use-analyzer]
-  -l, --languages TEXT            Text-OCR 用于识别的语言，以逗号分隔  [默认: en,ch_sim]
+  -l, --languages TEXT            Text-OCR 识别的语言代码序列，以逗号分隔  [默认: en,ch_sim]
   -a, --analyzer-name [mfd|layout]
                                   使用哪个分析器，MFD 或版面分析  [默认: mfd]
   -t, --analyzer-type TEXT        分析器使用的模型，'yolov7_tiny' 或 'yolov7'  [默认:
