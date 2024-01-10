@@ -68,8 +68,8 @@ The text recognition engine of Pix2Text supports **`80+` languages**, including 
 
 List of Supported Languages and corresponding Codes are shown below:
 
-  <details>
-  <summary>↓↓↓ Click to show details ↓↓↓</summary>
+<details>
+<summary>↓↓↓ Click to show details ↓↓↓</summary>
 
 | Language            | Code Name   |
 | ------------------- | ----------- |
@@ -157,7 +157,7 @@ List of Supported Languages and corresponding Codes are shown below:
 | Uzbek               | uz          |
 | Vietnamese          | vi          |
 
-  </details>
+</details>
 
 
 > Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
