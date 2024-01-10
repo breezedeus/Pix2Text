@@ -462,11 +462,7 @@ Usage: p2t predict [OPTIONS]
   Use Pix2Text (P2T) to predict the text information in an image
 
 Options:
-  --use-analyzer / --no-use-analyzer
-                                  Whether to use MFD (Mathematical Formula
-                                  Detection) or Layout Analysis  [default:
-                                  use-analyzer]
-  -l, --languages TEXT            Languages for Text-OCR to recognize,
+  -l, --languages TEXT            Language Codes for Text-OCR to recognize,
                                   separated by commas  [default: en,ch_sim]
   -a, --analyzer-name [mfd|layout]
                                   Which Analyzer to use, either MFD or Layout
