@@ -32,7 +32,7 @@ required = [
     "torch",
     "torchvision",
     "transformers>=4.37.0",
-    "optimum",
+    "optimum[onnxruntime]",
 ]
 extras_require = {
     "multilingual": ["easyocr"],

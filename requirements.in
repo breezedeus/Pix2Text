@@ -12,5 +12,5 @@ opencv-python
 cnstd>=1.2.3.5
 cnocr[ort-cpu]>=2.3.0.1
 transformers>=4.37.0
-optimum
+optimum[onnxruntime]
 easyocr
