@@ -1,4 +1,5 @@
 # coding: utf-8
+# [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
 import logging
@@ -21,16 +22,14 @@ from .utils import (
     rotated_box_to_horizontal,
     is_valid_box,
     list2box,
+    select_device,
+    prepare_imgs,
 )
 from .ocr_engine import prepare_ocr_engine
 
-from .consts import (
-    LATEX_CONFIG_FP,
-    MODEL_VERSION,
-)
+from .consts import MODEL_VERSION
 from .latex_ocr import LatexOCR
 from .utils import (
-    data_dir,
     read_img,
     save_layout_img,
 )
@@ -55,7 +54,7 @@ class Pix2Text(object):
         analyzer_config: Dict[str, Any] = None,
         text_config: Dict[str, Any] = None,
         formula_config: Dict[str, Any] = None,
-        device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
+        device: str = None,
         **kwargs,
     ):
         """
@@ -64,15 +63,13 @@ class Pix2Text(object):
             analyzer_config (dict): Configuration information for the Analyzer model; defaults to `None`, which means using the default configuration.
             text_config (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
             formula_config (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
-            device (str): What device to use for computation, supports `['cpu', 'cuda', 'gpu']`; defaults to `cpu`.
+            device (str, optional): What device to use for computation, supports `['cpu', 'cuda', 'gpu', 'mps']`; defaults to None, which selects the device automatically.
             **kwargs (): Reserved for other parameters; not currently used.
         """
-        if device.lower() == 'gpu':
-            device = 'cuda'
-        self.device = device
+        self.device = select_device(device)
 
         analyzer_config, text_config, formula_config = self._prepare_configs(
-            analyzer_config, text_config, formula_config, device,
+            analyzer_config, text_config, formula_config, self.device,
         )
 
         self.analyzer = LayoutAnalyzer(**analyzer_config)
@@ -89,11 +86,12 @@ class Pix2Text(object):
             return _conf
 
         analyzer_config = _to_default(analyzer_config, DEFAULT_CONFIGS['analyzer'])
-        analyzer_config['device'] = device
+        # FIXME
+        analyzer_config['device'] = device if device != 'mps' else 'cpu'
         text_config = _to_default(text_config, DEFAULT_CONFIGS['text'])
         text_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
-        formula_config['context'] = device
+        formula_config['device'] = device
         return (
             analyzer_config,
             text_config,
@@ -156,6 +154,7 @@ class Pix2Text(object):
                 * embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
                 * isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
                 * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
+                * mfr_batch_size (int): batch size for MFR; default value is `1`
 
         Returns: a list of ordered (top to bottom, left to right) dicts,
             with each dict representing one detected box, containing keys:
@@ -180,7 +179,7 @@ class Pix2Text(object):
         embed_sep = kwargs.get('embed_sep', (' $', '$ '))
         isolated_sep = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
 
-        mf_out = []
+        crop_patches = []
         for box_info in analyzer_outs:
             box = box_info['box']
             xmin, ymin, xmax, ymax = (
@@ -190,10 +189,19 @@ class Pix2Text(object):
                 int(box[2][1]),
             )
             crop_patch = img0.crop((xmin, ymin, xmax, ymax))
-            patch_out = self.recognize_formula(crop_patch)
+            crop_patches.append(crop_patch)
+
+        mfr_batch_size = kwargs.get('mfr_batch_size', 1)
+        mf_results = self.latex_model.recognize(crop_patches, batch_size=mfr_batch_size)
+        assert len(mf_results) == len(analyzer_outs)
+
+        mf_outs = []
+        for box_info, patch_out in zip(analyzer_outs, mf_results):
             sep = isolated_sep if box_info['type'] == 'isolated' else embed_sep
             text = sep[0] + patch_out + sep[1]
-            mf_out.append({'type': box_info['type'], 'text': text, 'position': box})
+            mf_outs.append(
+                {'type': box_info['type'], 'text': text, 'position': box_info['box']}
+            )
 
         img = np.array(img0.copy())
         # 把公式部分mask掉，然后对其他部分进行OCR
@@ -222,7 +230,7 @@ class Pix2Text(object):
                 continue
             line_box = _to_iou_box(hor_box)
             embed_mfs = []
-            for box_info in mf_out:
+            for box_info in mf_outs:
                 if box_info['type'] == 'embedding':
                     box2 = _to_iou_box(box_info['position'])
                     if float(box_partial_overlap(line_box, box2).squeeze()) > 0.7:
@@ -237,7 +245,7 @@ class Pix2Text(object):
             ocr_boxes = self._split_line_image(line_box, embed_mfs)
             total_text_boxes.extend(ocr_boxes)
 
-        outs = copy(mf_out)
+        outs = copy(mf_outs)
         for box in total_text_boxes:
             box['position'] = list2box(*box['position'])
             outs.append(box)
@@ -361,40 +369,56 @@ class Pix2Text(object):
 
         return out
 
-    def recognize_text(self, image: Union[str, Path, Image.Image], **kwargs) -> str:
+    def recognize_text(
+        self,
+        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+        **kwargs,
+    ) -> Union[str, List[str]]:
         """
         Recognize a pure Text Image.
         Args:
-            image (Union[str, Path, Image.Image]): an image path, or `Image.Image` loaded by `Image.open()`
-            kwargs (): other parameters for `text_ocr.ocr()`
+            imgs (Union[str, Path, Image.Image], List[str], List[Path], List[Image.Image]): The image or list of images
+            kwargs (): Other parameters for `text_ocr.ocr()`
 
-        Returns: str; the recognized texts
+        Returns:
+        Returns: Text str or list of text strs
 
         """
-        if isinstance(image, (str, Path)):
-            image = read_img(image, return_type='Image')
-        elif isinstance(image, Image.Image):
-            image = image.convert('RGB')
-        result = self.text_ocr.ocr(np.array(image), **kwargs)
-        texts = [_one['text'] for _one in result]
-        result = '\n'.join(texts)
-        return result
+        is_single_image = False
+        if isinstance(imgs, (str, Path, Image.Image)):
+            imgs = [imgs]
+            is_single_image = True
 
-    def recognize_formula(self, image: Union[str, Path, Image.Image]) -> str:
+        input_imgs = prepare_imgs(imgs)
+
+        outs = []
+        for image in input_imgs:
+            result = self.text_ocr.ocr(np.array(image), **kwargs)
+            texts = [_one['text'] for _one in result]
+            result = '\n'.join(texts)
+            outs.append(result)
+
+        if is_single_image:
+            return outs[0]
+        return outs
+
+    def recognize_formula(
+        self,
+        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+        batch_size: int = 1,
+        **kwargs,
+    ) -> Union[str, List[str]]:
         """
-        Recognize a pure Formula Image to Latex Expression.
+        Recognize pure Math Formula images to LaTeX Expressions
         Args:
-            image (Union[str, Path, Image.Image]): an image path, or `Image.Image` loaded by `Image.open()`
+            imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
+            batch_size (int): The batch size
+            **kwargs (): Special model parameters. Not used for now
 
-        Returns: str; the recognized Latex expression texts
+        Returns: The LaTeX Expression or list of LaTeX Expressions
 
         """
-        if isinstance(image, (str, Path)):
-            image = read_img(image, return_type='Image')
-        elif isinstance(image, Image.Image):
-            image = image.convert('RGB')
-        out = self.latex_model(image)
-        return str(out)
+        return self.latex_model.recognize(imgs, batch_size=batch_size, **kwargs)
 
 
 if __name__ == '__main__':

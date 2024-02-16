@@ -1,5 +1,6 @@
 # coding: utf-8
-# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
+# [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
+# Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
 import hashlib
 import os
@@ -47,14 +48,15 @@ def set_logger(log_file=None, log_level=logging.INFO, log_file_level=logging.NOT
     return logger
 
 
-def check_context(context):
-    if isinstance(context, str):
-        return any([ctx in context.lower() for ctx in ('gpu', 'cpu', 'cuda')])
-    if isinstance(context, list):
-        if len(context) < 1:
-            return False
-        return all(isinstance(ctx, torch.device) for ctx in context)
-    return isinstance(context, torch.device)
+def select_device(device) -> str:
+    if device is not None:
+        return device
+
+    device = 'mps' if torch.backends.mps.is_available() else 'cpu'
+    if torch.cuda.is_available():
+        device = 'cuda'
+
+    return device
 
 
 def data_dir_default():
@@ -162,6 +164,20 @@ def save_img(img: Union[Tensor, np.ndarray], path):
     save_image(img, path)
 
     # Image.fromarray(img).save(path)
+
+
+def prepare_imgs(imgs: List[Union[str, Path, Image.Image]]) -> List[Image.Image]:
+    output_imgs = []
+    for img in imgs:
+        if isinstance(img, (str, Path)):
+            img = read_img(img, return_type='Image')
+        elif isinstance(img, Image.Image):
+            img = img.convert('RGB')
+        else:
+            raise ValueError(f'Unsupported image type: {type(img)}')
+        output_imgs.append(img)
+
+    return output_imgs
 
 
 COLOR_LIST = [
