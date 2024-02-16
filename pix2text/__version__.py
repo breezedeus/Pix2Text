@@ -1,4 +1,5 @@
 # coding: utf-8
-# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
+# [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
+# Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
-__version__ = '0.3'
+__version__ = '1.0'
