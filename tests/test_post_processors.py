@@ -56,6 +56,7 @@ def test_remove_unnecessary_spaces():
         ('\\textit {italic text} with space', '\\textit{italic text} with space'),  # 移除命令后的空格，保留文本中的空格
         ('\\mathrm { a b c }', '\\mathrm{a b c}'),  # 移除命令后的空格
         ('\\sum _ {t=1} ^ {T} 4 _ { 2 }', '\\sum_{t=1}^{T} 4_{2}'),
+        ('\\sim q ( z | x )', '\\sim q ( z | x )'),
     ]
 
     for ori, res in latex_strs:

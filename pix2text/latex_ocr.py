@@ -89,7 +89,7 @@ class LatexOCR(object):
             more_model_config=more_model_configs,
         )
         logger.info(
-            f'Loaded Pix2Text MFR model to: backend-{model_backend}, device-{self.device}'
+            f'Loaded Pix2Text MFR model {model_name} to: backend-{model_backend}, device-{self.device}'
         )
 
     def _prepare_model_files(self, root, model_backend, model_info):
@@ -99,7 +99,9 @@ class LatexOCR(object):
             return str(model_dir)
         assert 'hf_model_id' in model_info
         try:
-            more_model_configs = {'provider': 'CPUExecutionProvider'} if model_backend == 'onnx' else {}
+            more_model_configs = (
+                {'provider': 'CPUExecutionProvider'} if model_backend == 'onnx' else {}
+            )
             model, processor = self._init_model(
                 model_backend,
                 model_info['hf_model_id'],
@@ -259,10 +261,10 @@ def remove_trailing_whitespace(latex_str):
 
 def remove_unnecessary_spaces(latex_str):
     # Preserve space between a command and a following uppercase letter
-    latex_str = re.sub(r'\\([a-zA-Z]+) (?=[A-Z])', r'\\\1 ', latex_str)
+    latex_str = re.sub(r'\\([a-zA-Z]+) (?=[a-zA-Z])', r'\\\1 ', latex_str)
 
     # Remove spaces after commands not followed by an uppercase letter, carefully not affecting commands that require space
-    latex_str = re.sub(r'\\([a-zA-Z]+)\s+(?![A-Z])', r'\\\1', latex_str)
+    latex_str = re.sub(r'\\([a-zA-Z]+)\s+(?![a-zA-Z])', r'\\\1', latex_str)
 
     # Remove spaces around curly braces, preserving internal spaces
     latex_str = re.sub(r'(\{)\s+', r'\1', latex_str)
