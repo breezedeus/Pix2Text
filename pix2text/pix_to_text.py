@@ -127,6 +127,7 @@ class Pix2Text(object):
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when using `MFD`; default is `(' $', '$ ')`
                 * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when using `MFD`; default is `('$$\n', '\n$$')`
                 * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height
+                * mfr_batch_size (int): batch size for MFR; default value is `1`
 
         Returns: a list of dicts, with keys:
            `type`: The category of the image

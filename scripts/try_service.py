@@ -7,20 +7,25 @@ def main():
     url = 'http://0.0.0.0:8503/pix2text'
 
     image_fp = 'docs/examples/mixed.jpg'
+    # image_fp = 'docs/examples/math-formula-42.png'
+    # image_fp = 'docs/examples/english.jpg'
     data = {
-        "use_analyzer": True,
-        "resized_shape": 600,
+        "image_type": "mixed",
+        "resized_shape": 768,
         "embed_sep": " $,$ ",
         "isolated_sep": "$$\n, \n$$"
     }
     files = {
-        "image": (image_fp, open(image_fp, 'rb'))
+        "image": (image_fp, open(image_fp, 'rb'), 'image/jpeg')
     }
 
     r = requests.post(url, data=data, files=files)
 
     outs = r.json()['results']
-    only_text = '\n'.join([out['text'] for out in outs])
+    if isinstance(outs, str):
+        only_text = outs
+    else:
+        only_text = '\n'.join([out['text'] for out in outs])
     print(f'{only_text=}')
 
 
