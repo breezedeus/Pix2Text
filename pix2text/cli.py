@@ -56,10 +56,10 @@ def cli():
     show_default=True,
 )
 @click.option(
-    "--latex-ocr-model-fp",
+    "--formula-ocr-config",
     type=str,
     default=None,
-    help="File path for the Latex-OCR mathematical formula recognition model. Default: `None`, meaning using the default model",
+    help="Configuration information for the Latex-OCR mathematical formula recognition model. Default: `None`, meaning using the default configuration",
     show_default=True,
 )
 @click.option(
@@ -121,7 +121,7 @@ def predict(
     analyzer_name,
     analyzer_type,
     analyzer_model_fp,
-    latex_ocr_model_fp,
+    formula_ocr_config,
     languages,
     text_ocr_config,
     device,
@@ -139,16 +139,14 @@ def predict(
     if analyzer_model_fp is not None:
         analyzer_config['model_fp'] = analyzer_model_fp
 
-    formula_config = None
-    if latex_ocr_model_fp is not None:
-        formula_config = {'model_fp': latex_ocr_model_fp}
+    formula_ocr_config = json.loads(formula_ocr_config) if formula_ocr_config else {}
     languages = [lang.strip() for lang in languages.split(',') if lang.strip()]
     text_ocr_config = json.loads(text_ocr_config) if text_ocr_config else {}
     p2t = Pix2Text(
         languages=languages,
         analyzer_config=analyzer_config,
         text_config=text_ocr_config,
-        formula_config=formula_config,
+        formula_config=formula_ocr_config,
         device=device,
     )
 
@@ -181,6 +179,59 @@ def predict(
 
 @cli.command('serve')
 @click.option(
+    "-l",
+    "--languages",
+    type=str,
+    default='en,ch_sim',
+    help="Language Codes for Text-OCR to recognize, separated by commas",
+    show_default=True,
+)
+@click.option(
+    "-a",
+    "--analyzer-name",
+    type=click.Choice(['mfd', 'layout']),
+    default='mfd',
+    help="Which Analyzer to use, either MFD or Layout Analysis",
+    show_default=True,
+)
+@click.option(
+    "-t",
+    "--analyzer-type",
+    type=str,
+    default='yolov7_tiny',
+    help="Which model to use for the Analyzer, 'yolov7_tiny' or 'yolov7'",
+    show_default=True,
+)
+@click.option(
+    "--analyzer-model-fp",
+    type=str,
+    default=None,
+    help="File path for the Analyzer detection model. Default: `None`, meaning using the default model",
+    show_default=True,
+)
+@click.option(
+    "--formula-ocr-config",
+    type=str,
+    default=None,
+    help="Configuration information for the Latex-OCR mathematical formula recognition model. Default: `None`, meaning using the default configuration",
+    show_default=True,
+)
+@click.option(
+    "--text-ocr-config",
+    type=str,
+    default=None,
+    help="Configuration information for Text-OCR recognition, in JSON string format. Default: `None`, meaning using the default configuration",
+    show_default=True,
+)
+@click.option(
+    "-d",
+    "--device",
+    help="Choose to run the code using `cpu`, `gpu`, or a specific GPU like `cuda:0`",
+    type=str,
+    default='cpu',
+    show_default=True,
+)
+@click.option(
     '-H', '--host', type=str, default='0.0.0.0', help='server host', show_default=True,
 )
 @click.option(
@@ -192,23 +243,50 @@ def predict(
     help='whether to reload the server when the codes have been changed',
     show_default=True,
 )
-def serve(host, port, reload):
+@click.option(
+    "--log-level",
+    default='INFO',
+    help="Log Level, such as `INFO`, `DEBUG`",
+    show_default=True,
+)
+def serve(
+    analyzer_name,
+    analyzer_type,
+    analyzer_model_fp,
+    formula_ocr_config,
+    languages,
+    text_ocr_config,
+    device,
+    host,
+    port,
+    reload,
+    log_level,
+):
     """开启HTTP服务。"""
+    from pix2text.serve import start_server
 
-    path = os.path.realpath(os.path.dirname(__file__))
+    logger = set_logger(log_level=log_level)
+
+    analyzer_config = dict(model_name=analyzer_name, model_type=analyzer_type)
+    if analyzer_model_fp is not None:
+        analyzer_config['model_fp'] = analyzer_model_fp
+
+    formula_ocr_config = json.loads(formula_ocr_config) if formula_ocr_config else {}
+    languages = [lang.strip() for lang in languages.split(',') if lang.strip()]
+    text_ocr_config = json.loads(text_ocr_config) if text_ocr_config else {}
+    p2t_config = dict(
+        languages=languages,
+        analyzer_config=analyzer_config,
+        text_config=text_ocr_config,
+        formula_config=formula_ocr_config,
+        device=device,
+    )
     api = Process(
         target=start_server,
-        kwargs={'path': path, 'host': host, 'port': port, 'reload': reload},
+        kwargs={'p2t_config': p2t_config, 'host': host, 'port': port, 'reload': reload},
     )
     api.start()
     api.join()
-
-
-def start_server(path, host, port, reload):
-    cmd = ['uvicorn', 'serve:app', '--host', host, '--port', str(port)]
-    if reload:
-        cmd.append('--reload')
-    subprocess.call(cmd, cwd=path)
 
 
 if __name__ == "__main__":
