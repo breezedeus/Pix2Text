@@ -56,7 +56,7 @@
 </div>
 
 
-**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LatexOCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr)/[EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
+**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LatexOCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr) 或 [EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
 
 
 
