@@ -5,7 +5,6 @@ import os
 import logging
 from collections import OrderedDict
 from copy import copy, deepcopy
-from pathlib import Path
 from typing import Set, Tuple, Dict, Any, Optional
 
 from .__version__ import __version__
@@ -17,17 +16,6 @@ logger = logging.getLogger(__name__)
 MODEL_VERSION = '.'.join(__version__.split('.', maxsplit=2)[:2])
 DOWNLOAD_SOURCE = os.environ.get('PIX2TEXT_DOWNLOAD_SOURCE', 'CN')
 
-# 图片分类模型对应的类别标签
-# IMAGE_TYPES = ('general', 'english', 'formula')
-
-# LATEX_OCR 使用的配置信息
-# LATEX_CONFIG_FP = Path(__file__).parent.absolute() / 'latex_config.yaml'
-
-# 模型下载根地址
-# HF_HUB_REPO_ID = "breezedeus/cnstd-cnocr-models"
-# HF_HUB_SUBFOLDER = "models/pix2text/%s" % MODEL_VERSION
-# PAID_HF_HUB_REPO_ID = "breezedeus/paid-models"
-# PAID_HF_HUB_SUBFOLDER = "cnocr/%s" % MODEL_VERSION
 CN_OSS_ENDPOINT = (
         "https://sg-models.oss-cn-beijing.aliyuncs.com/pix2text/%s/" % MODEL_VERSION
 )

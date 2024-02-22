@@ -262,7 +262,7 @@ def serve(
     reload,
     log_level,
 ):
-    """开启HTTP服务。"""
+    """Start the HTTP service."""
     from pix2text.serve import start_server
 
     logger = set_logger(log_level=log_level)
