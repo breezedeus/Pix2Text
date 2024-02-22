@@ -47,11 +47,11 @@ See more at: [RELEASE.md](./RELEASE.md) .
 
 
 
-**Pix2Text** aims to be a **free and open-source Python** alternative to **[Mathpix](https://mathpix.com/)**. It can already complete the core functionalities of **Mathpix**. Starting from **V0.2**, **Pix2Text (P2T)** supports recognizing **mixed images containing both text and formulas**, with output similar to **Mathpix**. The core principles of P2T are shown below (text recognition supports both **Chinese** and **English**):
+**Pix2Text (P2T)** aims to be a **free and open-source Python** alternative to **[Mathpix](https://mathpix.com/)**. It can already complete the core functionalities of **Mathpix**. Starting from **V0.2**, **Pix2Text (P2T)** supports recognizing **mixed images containing both text and formulas**, with output similar to **Mathpix**. The core principles of P2T are shown below (text recognition supports both **Chinese** and **English**):
 
 <div align="center"> <img src="./docs/figs/arch-flow2.jpg" alt="Pix2Text workflow" width="600px"/> </div>
 
-**P2T** uses the open-source tool [**CnSTD**](https://github.com/breezedeus/cnstd) to detect **formula** regions in the image. The formulas are then fed into [**LaTeX-OCR**](https://github.com/lukas-blecher/LaTeX-OCR) to recognize their LaTeX expressions. The remaining text regions are recognized by [**CnOCR**](https://github.com/breezedeus/cnocr). Finally, P2T merges all results to get the full recognized texts. Thanks to these great open-source projects!
+**P2T** utilizes the open-source tool **[CnSTD](https://github.com/breezedeus/cnstd)** to detect the locations of **mathematical formulas** in images. These detected areas are then processed by **P2T**'s own **formula recognition engine (LaTeX-OCR)** to recognize the LaTeX representation of each mathematical formula. The remaining parts of the image are processed by a **text recognition engine ([CnOCR](https://github.com/breezedeus/cnocr)/[EasyOCR](https://github.com/JaidedAI/EasyOCR))** for text detection and recognition. Finally, **P2T** merges all recognition results to obtain the final image recognition outcome. Thanks to these great open-source projects!
 
 For beginners who are not familiar with Python, we also provide the **free-to-use** [P2T Online Service](https://p2t.breezedeus.com/). Just upload your image and it will output the P2T parsing results. **The online service uses the latest models and works better than the open-source ones.**
 

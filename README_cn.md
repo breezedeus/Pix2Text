@@ -49,14 +49,14 @@
 
 
 
-**Pix2Text** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。**Pix2Text (P2T)** 自 **V0.2** 开始，支持识别**既包含文字又包含公式的混合图片**，返回效果类似于 **Mathpix**。P2T 的核心原理见下图（文字识别支持**中文**和**英文**）：
+**Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。**Pix2Text (P2T)** 自 **V0.2** 开始，支持识别**既包含文字又包含公式的混合图片**，返回效果类似于 **Mathpix**。P2T 的核心原理见下图（文字识别支持**中文**和**英文**）：
 
 <div align="center">
   <img src="./docs/figs/arch-flow2.jpg" alt="Pix2Text流程" width="600px"/>
 </div>
 
 
-**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **[CnOCR](https://github.com/breezedeus/cnocr)** 进行文字检测和文字识别。最后 P2T 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
+**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LaTeX-OCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr)/[EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
 
 
 
