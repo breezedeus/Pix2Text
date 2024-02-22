@@ -56,7 +56,7 @@
 </div>
 
 
-**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LaTeX-OCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr)/[EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
+**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LatexOCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr)/[EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
 
 
 
@@ -565,7 +565,7 @@ $ p2t predict -h
                                   'yolov7_tiny' 或 'yolov7'  [默认值: yolov7_tiny]
   --analyzer-model-fp TEXT        分析器检测模型的文件路径。
                                   默认值：`无`，表示使用默认模型
-  --formula-ocr-config TEXT       Latex-OCR数学公式识别模型的配置信息。
+  --formula-ocr-config TEXT       LatexOCR数学公式识别模型的配置信息。
                                   默认值：`无`，表示使用默认配置
   --text-ocr-config TEXT          文本-OCR识别的配置信息，以 JSON 字符串格式。
                                   默认值：`无`，表示使用默认配置
@@ -639,7 +639,7 @@ $ p2t serve -h
                                   'yolov7_tiny' 或 'yolov7'  [默认值: yolov7_tiny]
   --analyzer-model-fp TEXT        分析器检测模型的文件路径。
                                   默认值：`无`，表示使用默认模型
-  --formula-ocr-config TEXT       Latex-OCR数学公式识别模型的配置信息。
+  --formula-ocr-config TEXT       LatexOCR数学公式识别模型的配置信息。
                                   默认值：`无`，表示使用默认配置
   --text-ocr-config TEXT          文本-OCR识别的配置信息，以 JSON 字符串格式。
                                   默认值：`无`，表示使用默认配置

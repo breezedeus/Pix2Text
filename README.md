@@ -51,7 +51,7 @@ See more at: [RELEASE.md](./RELEASE.md) .
 
 <div align="center"> <img src="./docs/figs/arch-flow2.jpg" alt="Pix2Text workflow" width="600px"/> </div>
 
-**P2T** utilizes the open-source tool **[CnSTD](https://github.com/breezedeus/cnstd)** to detect the locations of **mathematical formulas** in images. These detected areas are then processed by **P2T**'s own **formula recognition engine (LaTeX-OCR)** to recognize the LaTeX representation of each mathematical formula. The remaining parts of the image are processed by a **text recognition engine ([CnOCR](https://github.com/breezedeus/cnocr)/[EasyOCR](https://github.com/JaidedAI/EasyOCR))** for text detection and recognition. Finally, **P2T** merges all recognition results to obtain the final image recognition outcome. Thanks to these great open-source projects!
+**P2T** utilizes the open-source tool **[CnSTD](https://github.com/breezedeus/cnstd)** to detect the locations of **mathematical formulas** in images. These detected areas are then processed by **P2T**'s own **formula recognition engine (LatexOCR)** to recognize the LaTeX representation of each mathematical formula. The remaining parts of the image are processed by a **text recognition engine ([CnOCR](https://github.com/breezedeus/cnocr)/[EasyOCR](https://github.com/JaidedAI/EasyOCR))** for text detection and recognition. Finally, **P2T** merges all recognition results to obtain the final image recognition outcome. Thanks to these great open-source projects!
 
 For beginners who are not familiar with Python, we also provide the **free-to-use** [P2T Online Service](https://p2t.breezedeus.com/). Just upload your image and it will output the P2T parsing results. **The online service uses the latest models and works better than the open-source ones.**
 
@@ -527,7 +527,7 @@ Options:
   --analyzer-model-fp TEXT        File path for the Analyzer detection model.
                                   Default: `None`, meaning using the default
                                   model
-  --formula-ocr-config TEXT       Configuration information for the Latex-OCR
+  --formula-ocr-config TEXT       Configuration information for the LatexOCR
                                   mathematical formula recognition model.
                                   Default: `None`, meaning using the default
                                   configuration
@@ -609,7 +609,7 @@ Options:
   --analyzer-model-fp TEXT        File path for the Analyzer detection model.
                                   Default: `None`, meaning using the default
                                   model
-  --formula-ocr-config TEXT       Configuration information for the Latex-OCR
+  --formula-ocr-config TEXT       Configuration information for the LatexOCR
                                   mathematical formula recognition model.
                                   Default: `None`, meaning using the default
                                   configuration
