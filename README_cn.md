@@ -570,8 +570,9 @@ $ p2t predict -h
   --text-ocr-config TEXT          文本-OCR识别的配置信息，以 JSON 字符串格式。
                                   默认值：`无`，表示使用默认配置
   -d, --device TEXT               选择使用 `cpu`、`gpu`，
-                                  或特定的 GPU，如 `cuda:0` 运行代码 [默认值:
-                                  cpu]
+                                  或特定的 GPU，如 `cuda:0` 运行代码 [默认值: cpu]
+--image-type [mixed|formula|text]
+                                  处理的图片类型，'mixed'、'formula' 或 'text' [默认值: mixed]
   --resized-shape INTEGER         在处理前将图像宽度调整为此大小 [默认值: 608]
   -i, --img-file-or-dir TEXT      输入图像的文件路径或指定目录  [必需]
   --save-analysis-res TEXT        将分析结果保存到此文件或目录

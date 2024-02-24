@@ -78,6 +78,13 @@ def cli():
     show_default=True,
 )
 @click.option(
+    "--image-type",
+    type=click.Choice(['mixed', 'formula', 'text']),
+    default='mixed',
+    help="Which image type to process, either 'mixed', 'formula' or 'text'",
+    show_default=True,
+)
+@click.option(
     "--resized-shape",
     help="Resize the image width to this size before processing",
     type=int,
@@ -125,6 +132,7 @@ def predict(
     languages,
     text_ocr_config,
     device,
+    image_type,
     resized_shape,
     img_file_or_dir,
     save_analysis_res,
@@ -164,16 +172,24 @@ def predict(
                 os.path.join(save_analysis_res, 'analysis-' + fn) for fn in fn_list
             ]
 
+    proc_func = {
+        'mixed': p2t.recognize,
+        'formula': p2t.recognize_formula,
+        'text': p2t.recognize_text,
+    }
     rec_kwargs = json.loads(rec_kwargs) if rec_kwargs else {}
     for idx, fp in enumerate(fp_list):
         analysis_res = save_analysis_res[idx] if save_analysis_res is not None else None
-        out = p2t.recognize(
+        out = proc_func[image_type](
             fp,
             resized_shape=resized_shape,
             save_analysis_res=analysis_res,
             **rec_kwargs,
         )
-        res = merge_line_texts(out, auto_line_break=auto_line_break)
+        if image_type == 'mixed':
+            res = merge_line_texts(out, auto_line_break=auto_line_break)
+        else:
+            res = out
         logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n{res}')
 
 

@@ -527,7 +527,7 @@ Options:
   --analyzer-model-fp TEXT        File path for the Analyzer detection model.
                                   Default: `None`, meaning using the default
                                   model
-  --formula-ocr-config TEXT       Configuration information for the LatexOCR
+  --formula-ocr-config TEXT       Configuration information for the Latex-OCR
                                   mathematical formula recognition model.
                                   Default: `None`, meaning using the default
                                   configuration
@@ -538,6 +538,9 @@ Options:
   -d, --device TEXT               Choose to run the code using `cpu`, `gpu`,
                                   or a specific GPU like `cuda:0`  [default:
                                   cpu]
+  --image-type [mixed|formula|text]
+                                  Which image type to process, either 'mixed',
+                                  'formula' or 'text'  [default: mixed]
   --resized-shape INTEGER         Resize the image width to this size before
                                   processing  [default: 608]
   -i, --img-file-or-dir TEXT      File path of the input image or the
