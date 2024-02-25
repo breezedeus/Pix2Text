@@ -27,7 +27,14 @@
 
 
 # Pix2Text
-## Update 2024.01.10: Release **V0.3**
+
+## Update 2024.02.26: **V1.0** Released
+
+Main Changes:
+
+* The Mathematical Formula Recognition (MFR) model employs a new architecture and has been trained on a new dataset, achieving state-of-the-art (SOTA) accuracy. For detailed information, please see: [Pix2Text V1.0 New Release: The Best Open-Source Formula Recognition Model | Breezedeus.com](https://www.breezedeus.com/article/p2t-v1.0).
+
+## Update 2024.01.10: **V0.3** Released
 
 Major Changes:
 
@@ -35,7 +42,7 @@ Major Changes:
 * Added domestic sites for automatic model downloads;
 * Optimized the logic for merging detection boxes.
 
-## Update 2023.07.03: Released V0.2.3
+## Update 2023.07.03: V0.2.3 Released 
 
 Major changes:
 

@@ -26,6 +26,12 @@
 
 # Pix2Text (P2T)
 
+## Update 2024.02.26：发布 **V1.0**
+
+主要变更：
+
+* 数学公式识别（MFR）模型使用新架构，在新的数据集上训练，获得了 SOTA 的精度。具体说明请见：[Pix2Text V1.0 新版发布：最好的开源公式识别模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-v1.0)。
+
 ## Update 2024.01.10：发布 V0.3
 
 主要变更：
@@ -290,7 +296,6 @@ $ p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/ana
 > ```bash
 > $ p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
 > ```
-
 
 ### 繁体中文
 
