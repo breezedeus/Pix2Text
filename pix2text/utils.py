@@ -219,7 +219,7 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
             line_thickness=1,
         )
 
-    cv2.imwrite(save_path, img0)
+    cv2.imwrite(str(save_path), img0)
     logger.info(f" The image with the result is saved in: {save_path}")
 
 
