@@ -171,7 +171,23 @@ List of **Supported Languages** and **Language Codes** are shown below:
 </details>
 
 
+
+## Online Service
+
+Everyone can use the **[P2T Online Service](https://p2t.breezedeus.com)** for free, with a daily limit of 10,000 characters per account, which should be sufficient for normal use. *Please refrain from bulk API calls, as machine resources are limited, and this could prevent others from accessing the service.*
+
+Due to hardware constraints, the Online Service currently only supports **Simplified Chinese** and **English** languages. To try the models in other languages, please use the following **Online Demo**.
+
+
+
+## Online Demo 🤗
+
+You can also try the **[Online Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo)** to see the performance of **P2T** in various languages. However, the online demo operates on lower hardware specifications and may be slower. For Simplified Chinese or English images, it is recommended to use the **[P2T Online Service](https://p2t.breezedeus.com)**.
+
+
+
 ## Usage
+
 ### Recognizing Mixed Images with Both Text and Formulas
 
 For mixed images containing both text and mathematical formulas, use the `.recognize()` function to identify the text and mathematical formulas in the image. For example, for the following image ([docs/examples/en1.jpg](docs/examples/en1.jpg)):
