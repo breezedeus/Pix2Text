@@ -33,7 +33,7 @@ class AvailableModels(object):
     FREE_MODELS = OrderedDict(
         {
             ('mfr', 'onnx'): {
-                'filename': 'mfr-onnx.zip',  # download the file from CN OSS
+                'filename': 'p2t-mfr-onnx.zip',  # download the file from CN OSS
                 'hf_model_id': 'breezedeus/pix2text-mfr',
                 'local_model_id': 'mfr-onnx',
             },
@@ -43,15 +43,16 @@ class AvailableModels(object):
     PAID_MODELS = OrderedDict(
         {
             ('mfr', 'pytorch'): {
-                'filename': 'mfr-pytorch.zip',  # download the file from CN OSS
+                'filename': 'p2t-mfr-pytorch.zip',  # download the file from CN OSS
                 'local_model_id': 'mfr-pytorch',
             },
             ('mfr-pro', 'onnx'): {
-                'filename': 'mfr-pro-onnx.zip',  # download the file from CN OSS
+                'filename': 'p2t-mfr-pro-onnx.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-pro',
                 'local_model_id': 'mfr-pro-onnx',
             },
             ('mfr-pro', 'pytorch'): {
-                'filename': 'mfr-pro-pytorch.zip',  # download the file from CN OSS
+                'filename': 'p2t-mfr-pro-pytorch.zip',  # download the file from CN OSS
                 'local_model_id': 'mfr-pro-pytorch',
             },
         }
