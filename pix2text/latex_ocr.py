@@ -73,6 +73,7 @@ class LatexOCR(object):
 
         if model_dir is None:
             model_dir = self._prepare_model_files(root, model_backend, model_info)
+        logger.info(f'Use model dir for LatexOCR: {model_dir}')
 
         more_model_configs = more_model_configs or {}
         if model_backend == 'onnx' and 'provider' not in more_model_configs:
