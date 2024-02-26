@@ -1,8 +1,0 @@
-[browser]
-serverAddress = "0.0.0.0"
-
-[server]
-headless = true
-enableCORS = false
-enableXsrfProtection = false
-port = 8504
