@@ -28,10 +28,6 @@ upload:
 serve:
 	p2t serve -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}'
 
-# 开启监控截屏文件夹的守护进程
-daemon:
-	python scripts/screenshot_daemon.py
-
 docker-build:
 	docker build -t breezedeus/pix2text:v$(VERSION) .
 
