@@ -1,5 +1,6 @@
 # coding: utf-8
-# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
+# [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
+# Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
 import hashlib
 import os
@@ -47,14 +48,15 @@ def set_logger(log_file=None, log_level=logging.INFO, log_file_level=logging.NOT
     return logger
 
 
-def check_context(context):
-    if isinstance(context, str):
-        return any([ctx in context.lower() for ctx in ('gpu', 'cpu', 'cuda')])
-    if isinstance(context, list):
-        if len(context) < 1:
-            return False
-        return all(isinstance(ctx, torch.device) for ctx in context)
-    return isinstance(context, torch.device)
+def select_device(device) -> str:
+    if device is not None:
+        return device
+
+    device = 'mps' if torch.backends.mps.is_available() else 'cpu'
+    if torch.cuda.is_available():
+        device = 'cuda'
+
+    return device
 
 
 def data_dir_default():
@@ -164,6 +166,20 @@ def save_img(img: Union[Tensor, np.ndarray], path):
     # Image.fromarray(img).save(path)
 
 
+def prepare_imgs(imgs: List[Union[str, Path, Image.Image]]) -> List[Image.Image]:
+    output_imgs = []
+    for img in imgs:
+        if isinstance(img, (str, Path)):
+            img = read_img(img, return_type='Image')
+        elif isinstance(img, Image.Image):
+            img = img.convert('RGB')
+        else:
+            raise ValueError(f'Unsupported image type: {type(img)}')
+        output_imgs.append(img)
+
+    return output_imgs
+
+
 COLOR_LIST = [
     [0, 140, 255],  # 深橙色
     [127, 255, 0],  # 春绿色
@@ -203,7 +219,7 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
             line_thickness=1,
         )
 
-    cv2.imwrite(save_path, img0)
+    cv2.imwrite(str(save_path), img0)
     logger.info(f" The image with the result is saved in: {save_path}")
 
 
@@ -507,10 +523,11 @@ def smart_join(str_list):
         else:
             return False
 
+    str_list = [s for s in str_list if s]
+    if not str_list:
+        return ''
     res = str_list[0]
     for i in range(1, len(str_list)):
-        if not str_list[i]:
-            continue
         if (is_chinese(res[-1]) and is_chinese(str_list[i][0])) or contain_whitespace(
             res[-1] + str_list[i][0]
         ):

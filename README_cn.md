@@ -2,6 +2,7 @@
   <img src="./docs/figs/p2t-logo.png" width="250px"/>
   <div>&nbsp;</div>
 
+[![Discord](https://img.shields.io/discord/1200765964434821260?label=Discord)](https://discord.gg/tGuFEybd)
 [![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
 [![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fbreezedeus%2FPix2Text&label=Visitors&countColor=%23ff8a65&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fbreezedeus%2FPix2Text)
 [![license](https://img.shields.io/github/license/breezedeus/pix2text)](./LICENSE)
@@ -26,6 +27,12 @@
 
 # Pix2Text (P2T)
 
+## Update 2024.02.26：发布 **V1.0**
+
+主要变更：
+
+* 数学公式识别（MFR）模型使用新架构，在新的数据集上训练，获得了 SOTA 的精度。具体说明请见：[Pix2Text V1.0 新版发布：最好的开源公式识别模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-v1.0)。
+
 ## Update 2024.01.10：发布 V0.3
 
 主要变更：
@@ -49,14 +56,14 @@
 
 
 
-**Pix2Text** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。**Pix2Text (P2T)** 自 **V0.2** 开始，支持识别**既包含文字又包含公式的混合图片**，返回效果类似于 **Mathpix**。P2T 的核心原理见下图（文字识别支持**中文**和**英文**）：
+**Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。**Pix2Text (P2T)** 自 **V0.2** 开始，支持识别**既包含文字又包含公式的混合图片**，返回效果类似于 **Mathpix**。P2T 的核心原理见下图（文字识别支持**中文**和**英文**）：
 
 <div align="center">
   <img src="./docs/figs/arch-flow2.jpg" alt="Pix2Text流程" width="600px"/>
 </div>
 
 
-**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **[CnOCR](https://github.com/breezedeus/cnocr)** 进行文字检测和文字识别。最后 P2T 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
+**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LatexOCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr) 或 [EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
 
 
 
@@ -176,26 +183,78 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 
 </details>
 
-
 ## 使用说明
 
+### 识别既有公式又有文本的混合图片
 
-调用很简单，以下是示例：
+对于既有公式又有文本的混合图片，使用函数 `.recognize()` 识别图片中的文字和数学公式。如针对以下图片 ([docs/examples/en1.jpg](docs/examples/en1.jpg))：
+
+<div align="center">
+  <img src="./docs/examples/en1.jpg" alt="English mixed image" width="600px"/>
+</div>
+
+调用方式如下：
 
 ```python
 from pix2text import Pix2Text, merge_line_texts
 
-img_fp = './docs/examples/formula.jpg'
+img_fp = './docs/examples/en1.jpg'
 p2t = Pix2Text()
-outs = p2t(img_fp, resized_shape=608)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
+outs = p2t.recognize(img_fp, resized_shape=608)  # 也可以使用 `p2t(img_fp)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
 only_text = merge_line_texts(outs, auto_line_break=True)
 print(only_text)
 ```
 
+返回结果 `outs` 是个 `dict`，其中 key `position` 表示Box位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体说明见[接口说明](#接口说明)。
 
-返回结果 `outs` 是个 `dict`，其中 key `position` 表示Box位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体见下面的[接口说明](#接口说明)。
+
+
+### 识别纯公式图片
+
+对于只包含数学公式的图片，使用函数 `.recognize_formula()` 可以把数学公式识别为LaTeX 表达式。如针对以下图片 ([docs/examples/math-formula-42.png](docs/examples/math-formula-42.png))：
+
+<div align="center">
+  <img src="./docs/examples/math-formula-42.png" alt="Pure Math Formula image" width="300px"/>
+</div>
+
+
+调用方式如下：
+
+```python
+from pix2text import Pix2Text
+
+img_fp = './docs/examples/math-formula-42.png'
+p2t = Pix2Text()
+outs = p2t.recognize_formula(img_fp)
+print(outs)
+```
+
+返回结果为字符串，即对应的LaTeX 表达式。具体说明见[接口说明](#接口说明)。
+
+### 识别纯文字图片
+
+对于只包含文字不包含数学公式的图片，使用函数 `.recognize_text()` 可以识别出图片中的文字。此时 Pix2Text 相当于一般的文字 OCR 引擎。如针对以下图片 ([docs/examples/general.jpg](docs/examples/general.jpg))：
+
+<div align="center">
+  <img src="./docs/examples/general.jpg" alt="Pure Math Formula image" width="400px"/>
+</div>
+
+
+调用方式如下：
+
+```python
+from pix2text import Pix2Text
+
+img_fp = './docs/examples/general.jpg'
+p2t = Pix2Text()
+outs = p2t.recognize_text(img_fp)
+print(outs)
+```
+
+返回结果为字符串，即对应的文字序列。具体说明见[接口说明](#接口说明)。
+
 
 
 
@@ -210,13 +269,13 @@ print(only_text)
 **识别命令**：
 
 ```bash
-$ p2t predict -l en --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
+$ p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
+> $ p2t predict -l en -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
 > ```
 
 
@@ -230,15 +289,14 @@ $ p2t predict -l en --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd
 **识别命令**：
 
 ```bash
-$ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
+$ p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
+> $ p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
 > ```
-
 
 ### 繁体中文
 
@@ -249,13 +307,13 @@ $ p2t predict -l en,ch_sim --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~
 **识别命令**：
 
 ```bash
-$ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg 
+$ p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/ch_tra.jpg
+> $ p2t predict -l en,ch_tra -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg
 > ```
 
 
@@ -268,13 +326,13 @@ $ p2t predict -l en,ch_tra --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~
 **识别命令**：
 
 ```bash
-$ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --latex-ocr-model-fp ~/.pix2text/0.3/formula/p2t-mfr-20230702.pth --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
+$ p2t predict -l en,vi -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/vietnamese.jpg
+> $ p2t predict -l en,vi -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
 > ```
 
 
@@ -282,14 +340,11 @@ $ p2t predict -l en,vi --use-analyzer -a mfd -t yolov7 --analyzer-model-fp ~/.cn
 
 ### 开源免费模型
 
-安装好 Pix2Text 后，首次使用时系统会**自动下载** 免费模型文件，并存于 `~/.pix2text`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
+安装好 Pix2Text 后，首次使用时系统会**自动下载** 免费模型文件，并存于 `~/.pix2text/1.0`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text\1.0`）。
 
 > **Note**
 >
 > 如果已成功运行上面的示例，说明模型已完成自动下载，可忽略本节后续内容。
-
-
-对于  **[LaTeX-OCR](https://github.com/lukas-blecher/LaTeX-OCR)** ，系统同样会自动下载模型文件并把它们存放于`~/.pix2text/0.3/formula`目录中。如果系统无法自动成功下载这些模型文件，则需从  [百度云盘](https://pan.baidu.com/s/1rU9n1Yyme7wXgS8ZbkrY3A?pwd=bdbd) 下载压缩文件并把它们存放于`~/.pix2text/0.3/formula`目录中；提取码为 ` bdbd`。
 
 
 
@@ -323,7 +378,7 @@ pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 
 如果是初次使用**OpenCV**，那估计安装都不会很顺利，bless。
 
-**Pix2Text** 主要依赖 [**CnSTD>=1.2.1**](https://github.com/breezedeus/cnstd)、[**CnOCR>=2.2.2.1**](https://github.com/breezedeus/cnocr) ，以及 [**LaTeX-OCR**](https://github.com/lukas-blecher/LaTeX-OCR) 。如果安装过程遇到问题，也可参考它们的安装说明文档。
+**Pix2Text** 主要依赖 [**CnSTD>=1.2.1**](https://github.com/breezedeus/cnstd)、[**CnOCR>=2.2.2.1**](https://github.com/breezedeus/cnocr) ，以及 [**transformers>=4.37.0**](https://github.com/huggingface/transformers) 。如果安装过程遇到问题，也可参考它们的安装说明文档。
 
 
 
@@ -349,7 +404,7 @@ class Pix2Text(object):
         analyzer_config: Dict[str, Any] = None,
         text_config: Dict[str, Any] = None,
         formula_config: Dict[str, Any] = None,
-        device: str = 'cpu',  # ['cpu', 'cuda', 'gpu']
+        device: str = None,
         **kwargs,
     ):
 ```
@@ -377,7 +432,7 @@ class Pix2Text(object):
   {}
   ```
   
-* `device` (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu']`；默认为 `cpu`；
+* `device` (str): 使用什么资源进行计算，支持 `['cpu', 'cuda', 'gpu', 'mps']` 等；默认为 `None`，表示自动选择设备；
 
 * `**kwargs` (): 预留的其他参数；目前未被使用。
 
@@ -406,6 +461,7 @@ class Pix2Text(object):
   * `embed_sep` (`tuple`): embedding latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `(' $', '$ ')`；
   * `isolated_sep` (`tuple`): isolated latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `('$$\n', '\n$$')`；
   * `det_bbox_max_expand_ratio (float)`: 扩展检测到的文本边界框（bbox）的高度。这个值表示相对于原始 bbox 高度的上下最大扩展比例；默认值为 `0.2`。
+  * `mfr_batch_size (int)`: MFR 预测时使用的 batch size；默认值为 `1`。
 
 
 
@@ -429,7 +485,7 @@ from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
 p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
-outs = p2t(img_fp, resized_shape=608)  # 也可以使用 `p2t.recognize(img_fp)` 获得相同的结果
+outs = p2t.recognize(img_fp, resized_shape=608)  # 也可以使用 `p2t(img_fp, resized_shape=608)` 获得相同的结果
 print(outs)
 # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
 only_text = merge_line_texts(outs, auto_line_break=True)
@@ -444,18 +500,20 @@ print(only_text)
 
 ```python
     def recognize_text(
-        self, img: Union[str, Path, Image.Image], **kwargs
-    ) -> str:
+        self,
+        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+        **kwargs,
+    ) -> Union[str, List[str]]:
 ```
 
 
 
 其中的输入参数说明如下：
 
-* `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
+* `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。支持单张图片，或者多张图片列表。
 * `kwargs`: 传入文字识别接口的其他参数。
 
-返回结果为识别后文本字符串。
+返回结果为识别后文本字符串（输入为多张图片时返回是同样长度的列表）。
 
 
 
@@ -464,16 +522,23 @@ print(only_text)
 通过调用类 **`Pix2Text`** 的类函数 `.recognize_formula()` 识别指定图片中的数学公式，并转化为 Latex 表示。类函数 `.recognize_formula()` 说明如下：
 
 ```python
-    def recognize_formula(self, img: Union[str, Path, Image.Image]) -> str:
+    def recognize_formula(
+        self,
+        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+        batch_size: int = 1,
+        **kwargs,
+    ) -> Union[str, List[str]]:
 ```
 
 
 
 其中的输入参数说明如下：
 
-* `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
+* `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。支持单张图片，或者多张图片列表。
+* `batch_size`：batch size。
+* `kwargs`: 传入公式识别接口的其他参数。
 
-返回结果为识别后的 Latex 表示字符串。
+返回结果为识别后的 Latex 表示字符串（输入为多张图片时返回是同样长度的列表）。
 
 
 
@@ -496,28 +561,36 @@ $ p2t predict -h
 
   使用 Pix2Text (P2T) 来预测图像中的文本信息
 
-选项:
-  -l, --languages TEXT            Text-OCR 识别的语言代码序列，以逗号分隔  [默认: en,ch_sim]
+选项：
+  -l, --languages TEXT            文本-OCR识别的语言代码，用逗号分隔
+                                  [默认值: en,ch_sim]
   -a, --analyzer-name [mfd|layout]
-                                  使用哪个分析器，MFD 或版面分析  [默认: mfd]
-  -t, --analyzer-type TEXT        分析器使用的模型，'yolov7_tiny' 或 'yolov7'  [默认:
-                                  yolov7_tiny]
-  --analyzer-model-fp TEXT        分析器检测模型的文件路径。默认：`None`，意味着使用默认模型
-  --latex-ocr-model-fp TEXT       Latex-OCR 数学公式识别模型的文件路径。默认：`None`，
-                                  意味着使用默认模型
-  --text-ocr-config TEXT          Text-OCR 识别配置信息，JSON 字符串格式。默认：`None`，
-                                  意味着使用默认配置
-  -d, --device TEXT               选择使用 `cpu`、`gpu` 还是特定 GPU（如 `cuda:0`）来运行代码  [默认:
-                                  cpu]
-  --resized-shape INTEGER         在处理前将图像宽度调整到此大小  [默认: 608]
-  -i, --img-file-or-dir TEXT      输入图像的文件路径或指定的文件夹  [必须]
-  --save-analysis-res TEXT        将分析结果保存到此文件或目录中
-                                  （如果 '--img-file-or-dir' 是文件/目录，则 '--save-analysis-res'
-                                  也应该是文件/目录）。设置为 `None` 表示不保存
-  --rec-kwargs TEXT               调用 .recognize() 时使用的 kwargs，JSON 字符串格式
+                                  使用哪种分析器，MFD 或版面分析
+                                  [默认值: mfd]
+  -t, --analyzer-type TEXT        分析器使用哪种模型，
+                                  'yolov7_tiny' 或 'yolov7'  [默认值: yolov7_tiny]
+  --analyzer-model-fp TEXT        分析器检测模型的文件路径。
+                                  默认值：`无`，表示使用默认模型
+  --formula-ocr-config TEXT       LatexOCR数学公式识别模型的配置信息。
+                                  默认值：`无`，表示使用默认配置
+  --text-ocr-config TEXT          文本-OCR识别的配置信息，以 JSON 字符串格式。
+                                  默认值：`无`，表示使用默认配置
+  -d, --device TEXT               选择使用 `cpu`、`gpu`，
+                                  或特定的 GPU，如 `cuda:0` 运行代码 [默认值: cpu]
+--image-type [mixed|formula|text]
+                                  处理的图片类型，'mixed'、'formula' 或 'text' [默认值: mixed]
+  --resized-shape INTEGER         在处理前将图像宽度调整为此大小 [默认值: 608]
+  -i, --img-file-or-dir TEXT      输入图像的文件路径或指定目录  [必需]
+  --save-analysis-res TEXT        将分析结果保存到此文件或目录
+                                  （如果 '--img-file-or-dir' 是文件/目录，
+                                  则 '--save-analysis-res' 也应是文件/目录）。
+                                  设为 `无` 表示不保存
+  --rec-kwargs TEXT               调用 .recognize() 的 kwargs，以 JSON 字符串格式
   --auto-line-break / --no-auto-line-break
-                                  自动判断是否要把临近行结果合并为单行  [默认: no-auto-line-break]
-  --log-level TEXT                日志级别，如 `INFO`, `DEBUG`  [默认: INFO]
+                                  是否自动确定将相邻行结果合并为单行结果
+                                  [默认值: no-auto-line-break]
+  --log-level TEXT                日志级别，如 `INFO`, `DEBUG`
+                                  [默认值: INFO]
   -h, --help                      显示此消息并退出。
 ```
 
@@ -526,7 +599,7 @@ $ p2t predict -h
 此命令可用于**打印对指定图片的检测和识别结果**，如运行：
 
 ```bash
-$ p2t predict --use-analyzer -a mfd --resized-shape 608 -i docs/examples/en1.jpg --save-analysis-res output-en1.jpg
+$ p2t predict -a mfd --resized-shape 608 -i docs/examples/en1.jpg --save-analysis-res output-en1.jpg
 ```
 
 上面命令打印出识别结果，同时会把检测结果存储在 `output-en1.jpg` 文件中，类似以下效果：
@@ -550,7 +623,7 @@ $ pip install pix2text[serve]
 安装完成后，可以通过以下命令启动HTTP服务（**`-p`** 后面的数字是**端口**，可以根据需要自行调整）：
 
 ```bash
-$ p2t serve -p 8503
+$ p2t serve -l en,ch_sim -a mfd
 ```
 
 
@@ -559,16 +632,33 @@ $ p2t serve -p 8503
 
 ```bash
 $ p2t serve -h
-Usage: p2t serve [OPTIONS]
+用法: p2t serve [OPTIONS]
 
   开启HTTP服务。
 
-Options:
-  -H, --host TEXT     server host  [default: 0.0.0.0]
-  -p, --port INTEGER  server port  [default: 8503]
-  --reload            whether to reload the server when the codes have been
-                      changed
-  -h, --help          Show this message and exit.
+选项：
+  -l, --languages TEXT            文本-OCR识别的语言代码，用逗号分隔
+                                  [默认值: en,ch_sim]
+  -a, --analyzer-name [mfd|layout]
+                                  使用哪种分析器，MFD 或版面分析
+                                  [默认值: mfd]
+  -t, --analyzer-type TEXT        分析器使用哪种模型，
+                                  'yolov7_tiny' 或 'yolov7'  [默认值: yolov7_tiny]
+  --analyzer-model-fp TEXT        分析器检测模型的文件路径。
+                                  默认值：`无`，表示使用默认模型
+  --formula-ocr-config TEXT       LatexOCR数学公式识别模型的配置信息。
+                                  默认值：`无`，表示使用默认配置
+  --text-ocr-config TEXT          文本-OCR识别的配置信息，以 JSON 字符串格式。
+                                  默认值：`无`，表示使用默认配置
+  -d, --device TEXT               选择使用 `cpu`、`gpu`，
+                                  或特定的 GPU，如 `cuda:0` 运行代码 [默认值:
+                                  cpu]
+  -H, --host TEXT                 服务器主机  [默认值: 0.0.0.0]
+  -p, --port INTEGER              服务器端口  [默认值: 8503]
+  --reload                        当代码更改时是否重新加载服务器
+  --log-level TEXT                日志级别，如 `INFO`, `DEBUG`
+                                  [默认值: INFO]
+  -h, --help                      显示此消息并退出。
 ```
 
 
@@ -577,17 +667,7 @@ Options:
 
 
 
-### 命令行
-
-比如待识别文件为 `docs/examples/mixed.jpg`，如下使用 `curl` 调用服务：
-
-```bash
-$ curl -F image=@docs/examples/mixed.jpg --form 'use_analyzer=true' --form 'resized_shape=600' http://0.0.0.0:8503/pix2text
-```
-
-
-
-### Python
+### Python 调用服务
 
 使用如下方式调用服务，参考文件 [scripts/try_service.py](scripts/try_service.py)：
 
@@ -598,10 +678,10 @@ url = 'http://0.0.0.0:8503/pix2text'
 
 image_fp = 'docs/examples/mixed.jpg'
 data = {
-    "use_analyzer": True,
-    "resized_shape": 608,
-    "embed_sep": " $,$ ",
-    "isolated_sep": "$$\n, \n$$"
+    "image_type": "mixed",  # "mixed": 混合图片；"formula": 纯公式图片；"text": 纯文字图片
+    "resized_shape": 768,  # image_type=="mixed" 才有效
+    "embed_sep": " $,$ ",  # image_type=="mixed" 才有效
+    "isolated_sep": "$$\n, \n$$"  # image_type=="mixed" 才有效
 }
 files = {
     "image": (image_fp, open(image_fp, 'rb'))
@@ -610,47 +690,28 @@ files = {
 r = requests.post(url, data=data, files=files)
 
 outs = r.json()['results']
-only_text = '\n'.join([out['text'] for out in outs])
+if isinstance(outs, str):
+    only_text = outs
+else:
+    only_text = '\n'.join([out['text'] for out in outs])
 print(f'{only_text=}')
 ```
 
 
 
-### 其他语言
+### Curl 调用服务
+
+如下使用 `curl` 调用服务：
+
+```bash
+$ curl -F image=@docs/examples/mixed.jpg --form 'image_type=mixed' --form 'resized_shape=768' http://0.0.0.0:8503/pix2text
+```
+
+
+
+### 其他语言调用服务
 
 请参照 `curl` 的调用方式自行实现。
-
-
-
-## 脚本运行
-
-脚本 [scripts/screenshot_daemon.py](scripts/screenshot_daemon.py) 实现了自动对截屏图片调用 Pixe2Text 进行公式或者文字识别。这个功能是如何实现的呢？
-
-
-
-**以下是具体的运行流程（请先安装好 Pix2Text）：**
-
-1. 找一个喜欢的截屏软件，这个软件只要**支持把截屏图片存储在指定文件夹**即可。比如Mac下免费的 **Xnip** 就很好用。
-
-2. 除了安装Pix2Text外，还需要额外安装一个Python包 **pyperclip**，利用它把识别结果复制进系统的剪切板：
-
-   ```bash
-   $ pip install pyperclip
-   ```
-
-3. 下载脚本文件 [scripts/screenshot_daemon.py](scripts/screenshot_daemon.py) 到本地，编辑此文件 `"SCREENSHOT_DIR"` 所在行（第 `17` 行），把路径改为你的截屏图片所存储的目录。
-
-4. 运行此脚本：
-
-   ```bash
-   $ python scripts/screenshot_daemon.py
-   ```
-
-好了，现在就用你的截屏软件试试效果吧。截屏后的识别结果会写入电脑剪切板，直接 **Ctrl-V** / **Cmd-V** 即可粘贴使用。
-
-
-
-更详细使用介绍可参考视频：《[Pix2Text: 替代 Mathpix 的免费 Python 开源工具](https://www.bilibili.com/video/BV12e4y1871U)》。
 
 
 

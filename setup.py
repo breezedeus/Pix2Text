@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf-8
-# Copyright (C) 2022-2023, [Breezedeus](https://www.breezedeus.com).
+# [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
+# Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
 import os
 from setuptools import find_packages, setup
@@ -27,9 +28,11 @@ required = [
     "opencv-python",
     "cnocr[ort-cpu]>=2.3.0.1",
     "cnstd>=1.2.3.5",
+    "pillow",
     "torch",
     "torchvision",
-    "pix2tex",
+    "transformers>=4.37.0",
+    "optimum[onnxruntime]",
 ]
 extras_require = {
     "multilingual": ["easyocr"],
@@ -45,8 +48,8 @@ p2t = pix2text.cli:cli
 setup(
     name=PACKAGE_NAME,
     version=about['__version__'],
-    description="An open-source Python3 tool for Optical Character Recognition (OCR) "
-    "and LaTeX expression extraction from images, a Free Alternative to Mathpix",
+    description="An Open-Source Python3 tool for Optical Character Recognition (OCR) "
+    "and LaTeX expression extraction from images; a Free Alternative to Mathpix",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='breezedeus',
@@ -56,7 +59,7 @@ setup(
     platforms=["Mac", "Linux", "Windows"],
     packages=find_packages(),
     include_package_data=True,
-    data_files=[('', ['pix2text/latex_config.yaml',],)],
+    # data_files=[('', ['pix2text/latex_config.yaml',],)],
     entry_points=entry_points,
     install_requires=required,
     extras_require=extras_require,
