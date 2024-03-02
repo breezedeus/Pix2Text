@@ -42,7 +42,11 @@ def test_infer_with_transformers():
     generated_ids = model.generate(pixel_values)
     generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)
     print(f'generated_ids: {generated_ids}, \ngenerated text: {generated_text}')
-    latex_ocr = LatexOCR(transformers=True)
+
+
+def test_infer():
+    more_model_configs = {}
+    latex_ocr = LatexOCR(more_model_configs=more_model_configs)
 
     image_fps = [
         'docs/examples/formula.jpg',
