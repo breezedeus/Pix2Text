@@ -136,8 +136,15 @@ class LatexOCR(object):
             model.to(self.device)
             model.eval()
         else:
+            if 'use_cache' not in more_model_config:
+                more_model_config['use_cache'] = False
+            if (
+                'provider' in more_model_config
+                and more_model_config['provider'] == 'CUDAExecutionProvider'
+            ):
+                more_model_config["use_io_binding"] = more_model_config['use_cache']
             model = ORTModelForVision2Seq.from_pretrained(
-                model_dir, use_cache=False, **more_model_config
+                model_dir, **more_model_config
             )
             model.to(self.device)
         return model, processor
