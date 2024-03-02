@@ -53,7 +53,7 @@ def test_infer():
         'docs/examples/math-formula-42.png',
     ]
     start_time = time.time()
-    outs = latex_ocr.recognize(image_fps)
+    outs = latex_ocr.recognize(image_fps, batch_size=2)
     logger.info(f'average cost time: {(time.time() - start_time) / len(image_fps):.4f} seconds')
     for img, out in zip(image_fps, outs):
         logger.info(f'- image: {img}, out: \n\t{out}')
