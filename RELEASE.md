@@ -1,5 +1,12 @@
 # Release Notes
 
+## Update 2024.03.03：发布 **V1.0.1**
+
+主要变更：
+
+* 修复在 CUDA 环境下使用 `LatexOCR` 时出现的错误，具体见：https://github.com/breezedeus/Pix2Text/issues/65#issuecomment-1973037910 ，感谢 [@MSZ-006NOC](https://github.com/MSZ-006NOC)。
+
+
 ## Update 2024.02.26：发布 **V1.0**
 
 主要变更：
