@@ -73,6 +73,7 @@ class LatexOCR(object):
 
         if model_dir is None:
             model_dir = self._prepare_model_files(root, model_backend, model_info)
+        logger.info(f'Use model dir for LatexOCR: {model_dir}')
 
         more_model_configs = more_model_configs or {}
         if model_backend == 'onnx' and 'provider' not in more_model_configs:
@@ -135,8 +136,15 @@ class LatexOCR(object):
             model.to(self.device)
             model.eval()
         else:
+            if 'use_cache' not in more_model_config:
+                more_model_config['use_cache'] = False
+            if (
+                'provider' in more_model_config
+                and more_model_config['provider'] == 'CUDAExecutionProvider'
+            ):
+                more_model_config["use_io_binding"] = more_model_config['use_cache']
             model = ORTModelForVision2Seq.from_pretrained(
-                model_dir, use_cache=False, **more_model_config
+                model_dir, **more_model_config
             )
             model.to(self.device)
         return model, processor
