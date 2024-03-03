@@ -13,7 +13,8 @@
 ![last-commit](https://img.shields.io/github/last-commit/breezedeus/pix2text)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
-[👩🏻‍💻 Online Demo](https://p2t.breezedeus.com) |
+[👩🏻‍💻Online Service](https://p2t.breezedeus.com) |
+[👨🏻‍💻Online Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo) |
 [💬 Contact](https://www.breezedeus.com/join-group)
 
 </div>

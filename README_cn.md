@@ -14,6 +14,7 @@
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
 [👩🏻‍💻网页版](https://p2t.breezedeus.com) |
+[👨🏻‍💻在线 Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo) |
 [💬 交流群](https://www.breezedeus.com/join-group)
 
 </div>
