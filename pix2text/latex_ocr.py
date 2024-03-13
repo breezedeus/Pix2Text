@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 import re
 
+import torch
 import tqdm
 from optimum.onnxruntime import ORTModelForVision2Seq
 from transformers import (
@@ -156,17 +157,18 @@ class LatexOCR(object):
         self,
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         batch_size: int = 1,
+        use_post_process: bool = True,
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """
         Recognize Math Formula images to LaTeX Expressions
         Args:
             imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
             batch_size (int): The batch size
-            **kwargs (): Special model parameters.
-              - use_post_process (bool): Whether to use post process. Defaults to True.
+            use_post_process (bool): Whether to use post process. Defaults to True.
+            **kwargs (): Special model parameters for generation.
 
-        Returns: The LaTeX Expression or list of LaTeX Expressions
+        Returns: The LaTeX Result or list of LaTeX Results; each result is a dict with `text` and `score` fields.
 
         """
         is_single_image = False
@@ -180,22 +182,47 @@ class LatexOCR(object):
         results = []
         for i in tqdm.tqdm(range(0, len(input_imgs), batch_size)):
             part_imgs = input_imgs[i : i + batch_size]
-            results.extend(self._one_batch(part_imgs))
+            results.extend(self._one_batch(part_imgs, **kwargs))
 
-        if kwargs.get('use_post_process', True):
-            results = [self.post_process(text) for text in results]
+        if use_post_process:
+            for info in results:
+                info['text'] = self.post_process(info['text'])
 
         if is_single_image:
             return results[0]
         return results
 
-    def _one_batch(self, img_list):
+    def _one_batch(self, img_list, **kwargs):
         pixel_values = self.processor(images=img_list, return_tensors="pt").pixel_values
-        generated_ids = self.model.generate(pixel_values.to(self.device))
-        generated_text = self.processor.batch_decode(
-            generated_ids, skip_special_tokens=True
+        outs = self.model.generate(
+            pixel_values.to(self.device),
+            return_dict_in_generate=True,
+            output_logits=True,
+            **kwargs,
         )
-        return generated_text
+        logits = torch.stack(outs.logits, dim=1)
+        scores = torch.softmax(logits, dim=-1).max(dim=2).values
+
+        mean_probs = []
+        for idx, example in enumerate(scores):
+            cur_length = int(
+                (outs.sequences[idx] != self.processor.tokenizer.pad_token_id).sum()
+            )
+            assert cur_length > 1
+            # 获得几何平均值。注意：example中的第一个元素对应sequence中的第二个元素
+            mean_probs.append(
+                float((example[: cur_length - 1] + 1e-8).log().mean().exp())
+            )
+
+        generated_text = self.processor.batch_decode(
+            outs.sequences, skip_special_tokens=True
+        )
+        assert len(img_list) == len(generated_text) == len(mean_probs)
+
+        final_out = []
+        for text, prob in zip(generated_text, mean_probs):
+            final_out.append({'text': text, 'score': prob})
+        return final_out
 
     def post_process(self, text):
         text = remove_redundant_script(text)
