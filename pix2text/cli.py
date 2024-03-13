@@ -7,12 +7,11 @@ import logging
 import glob
 import json
 from multiprocessing import Process
-import subprocess
 from pprint import pformat
 
 import click
 
-from pix2text import set_logger, Pix2Text, merge_line_texts
+from pix2text import set_logger, Pix2Text
 
 _CONTEXT_SETTINGS = {"help_option_names": ['-h', '--help']}
 logger = set_logger(log_level=logging.INFO)
@@ -113,8 +112,14 @@ def cli():
     show_default=True,
 )
 @click.option(
+    "--return-text/--no-return-text",
+    default=True,
+    help="Whether to return only the text result",
+    show_default=True,
+)
+@click.option(
     "--auto-line-break/--no-auto-line-break",
-    default=False,
+    default=True,
     help="Whether to automatically determine to merge adjacent line results into a single line result",
     show_default=True,
 )
@@ -137,6 +142,7 @@ def predict(
     img_file_or_dir,
     save_analysis_res,
     rec_kwargs,
+    return_text,
     auto_line_break,
     log_level,
 ):
@@ -184,13 +190,13 @@ def predict(
             fp,
             resized_shape=resized_shape,
             save_analysis_res=analysis_res,
+            return_text=return_text,
+            auto_line_break=auto_line_break,
             **rec_kwargs,
         )
-        if image_type == 'mixed':
-            res = merge_line_texts(out, auto_line_break=auto_line_break)
-        else:
-            res = out
-        logger.info(f'In image: {fp}\nOuts: \n\t{pformat(out)}\nOnly texts: \n{res}')
+        logger.info(
+            f'In image: {fp}\nOuts: \n{out if isinstance(out, str) else pformat(out)}\n'
+        )
 
 
 @cli.command('serve')
