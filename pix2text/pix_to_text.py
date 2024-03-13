@@ -3,6 +3,7 @@
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 
 import logging
+import re
 from itertools import chain
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Sequence
@@ -19,11 +20,15 @@ from .utils import (
     sort_boxes,
     merge_adjacent_bboxes,
     adjust_line_height,
+    adjust_line_width,
     rotated_box_to_horizontal,
     is_valid_box,
     list2box,
     select_device,
     prepare_imgs,
+    merge_line_texts,
+    remove_overlap_text_bbox,
+    y_overlap,
 )
 from .ocr_engine import prepare_ocr_engine
 
@@ -74,6 +79,7 @@ class Pix2Text(object):
 
         self.analyzer = LayoutAnalyzer(**analyzer_config)
 
+        self.languages = languages
         self.text_ocr = prepare_ocr_engine(languages, text_config)
         self.latex_model = LatexOCR(**formula_config)
 
@@ -114,55 +120,81 @@ class Pix2Text(object):
         return self.recognize(img, **kwargs)
 
     def recognize(
-        self, img: Union[str, Path, Image.Image], **kwargs
+        self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs
     ) -> List[Dict[str, Any]]:
         """
         Analyze the layout of the image, and then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            return_text (bool): Whether to return only the recognized text; default value is `True`
             kwargs ():
                 * resized_shape (int): Resize the image width to this size for processing; default value is `608`
                 * save_analysis_res (str): Save the analysis result image in this file; default is `None`, which means not to save
+                * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
+                * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_only_text` is `True`; default value is `(' $', '$ ')`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_only_text` is `True`; default value is `('$$\n', '\n$$')`
+                * line_sep (str): The separator between lines of text; only effective when `return_only_text` is `True`; default value is `'\n'`
+                * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_only_text` is `True`; default value is `True`
+                * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
+                * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
+                * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.65`.
+                    When the overlap between an embed formula and a text line is greater than or equal to this threshold,
+                    the embed formula and the text line are considered to be on the same line;
+                    otherwise, they are considered to be on different lines.
+                * formula_rec_kwargs (dict): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
+
+        Returns: a str when `return_text` is `True`; or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
+            with each dict representing one detected box, containing keys:
+               * `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
+               * `text`: The recognized text or Latex formula
+               * `score`: The confidence score [0, 1]; the higher, the more confident
+               * `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
+               * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when using `MFD`; default is `(' $', '$ ')`
                 * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when using `MFD`; default is `('$$\n', '\n$$')`
                 * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height
                 * mfr_batch_size (int): batch size for MFR; default value is `1`
 
-        Returns: a list of dicts, with keys:
-           `type`: The category of the image
-           `text`: The recognized text or Latex formula
-           `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
-
         """
         if self.analyzer._model_name == 'mfd':
-            out = self.recognize_by_mfd(img, **kwargs)
+            out = self.recognize_by_mfd(img, return_text=return_text, **kwargs)
         else:
             out = self.recognize_by_layout(img, **kwargs)
         return out
 
     def recognize_by_mfd(
-        self, img: Union[str, Path, Image.Image], **kwargs
-    ) -> List[Dict[str, Any]]:
+        self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs
+    ) -> Union[str, List[Dict[str, Any]]]:
         """
         Perform Mathematical Formula Detection (MFD) on the image, and then recognize the information contained in each section.
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            return_text (bool): Whether to return only the recognized text; default value is `True`
             kwargs ():
                 * resized_shape (int): Resize the image width to this size for processing; default value is `608`
                 * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
-                * embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
-                * isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
-                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
-                * mfr_batch_size (int): batch size for MFR; default value is `1`
+                * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
+                * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_only_text` is `True`; default value is `(' $', '$ ')`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_only_text` is `True`; default value is `('$$\n', '\n$$')`
+                * line_sep (str): The separator between lines of text; only effective when `return_only_text` is `True`; default value is `'\n'`
+                * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_only_text` is `True`; default value is `True`
+                * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
+                * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
+                * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.65`.
+                    When the overlap between an embed formula and a text line is greater than or equal to this threshold,
+                    the embed formula and the text line are considered to be on the same line;
+                    otherwise, they are considered to be on different lines.
+                * formula_rec_kwargs (dict): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
 
-        Returns: a list of ordered (top to bottom, left to right) dicts,
+        Returns: a str when `return_text` is `True`, or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
             with each dict representing one detected box, containing keys:
-           `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
-           `text`: The recognized text or Latex formula
-           `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
-           `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
+               * `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
+               * `text`: The recognized text or Latex formula
+               * `score`: The confidence score [0, 1]; the higher, the more confident
+               * `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
+               * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
 
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
@@ -176,9 +208,7 @@ class Pix2Text(object):
         ratio = resized_shape / w
         resized_shape = (int(h * ratio), resized_shape)  # (H, W)
         analyzer_outs = self.analyzer(img0.copy(), resized_shape=resized_shape)
-        logger.debug('MFD Result: %s', analyzer_outs)
-        embed_sep = kwargs.get('embed_sep', (' $', '$ '))
-        isolated_sep = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
+        # logger.debug('MFD Result: %s', analyzer_outs)
 
         crop_patches = []
         for box_info in analyzer_outs:
@@ -193,18 +223,25 @@ class Pix2Text(object):
             crop_patches.append(crop_patch)
 
         mfr_batch_size = kwargs.get('mfr_batch_size', 1)
-        mf_results = self.latex_model.recognize(crop_patches, batch_size=mfr_batch_size)
+        formula_rec_kwargs = kwargs.get('formula_rec_kwargs', {})
+        mf_results = self.latex_model.recognize(
+            crop_patches, batch_size=mfr_batch_size, **formula_rec_kwargs
+        )
         assert len(mf_results) == len(analyzer_outs)
 
         mf_outs = []
         for box_info, patch_out in zip(analyzer_outs, mf_results):
-            sep = isolated_sep if box_info['type'] == 'isolated' else embed_sep
-            text = sep[0] + patch_out + sep[1]
+            text = patch_out['text']
             mf_outs.append(
-                {'type': box_info['type'], 'text': text, 'position': box_info['box']}
+                {
+                    'type': box_info['type'],
+                    'text': text,
+                    'position': box_info['box'],
+                    'score': patch_out['score'],
+                }
             )
 
-        img = np.array(img0.copy())
+        masked_img = np.array(img0.copy())
         # 把公式部分mask掉，然后对其他部分进行OCR
         for box_info in analyzer_outs:
             if box_info['type'] in ('isolated', 'embedding'):
@@ -214,19 +251,31 @@ class Pix2Text(object):
                     min(img0.size[0], int(box[2][0]) + 1),
                     min(img0.size[1], int(box[2][1]) + 1),
                 )
-                img[ymin:ymax, xmin:xmax, :] = 255
+                masked_img[ymin:ymax, xmin:xmax, :] = 255
+        masked_img = Image.fromarray(masked_img)
 
-        box_infos = self.text_ocr.detect_only(img)
+        box_infos = self.text_ocr.detect_only(np.array(img0))
+        box_infos = box_infos['detected_texts']
+        max_width_expand_ratio = kwargs.get('det_text_bbox_max_width_expand_ratio', 0.3)
+        if self.text_ocr.name == 'cnocr':
+            box_infos: list[dict] = adjust_line_width(
+                text_box_infos=box_infos,
+                formula_box_infos=mf_outs,
+                img_width=img0.size[0],
+                max_expand_ratio=max_width_expand_ratio,
+            )
+        box_infos = remove_overlap_text_bbox(box_infos, mf_outs)
 
         def _to_iou_box(ori):
             return torch.tensor([ori[0][0], ori[0][1], ori[2][0], ori[2][1]]).unsqueeze(
                 0
             )
 
+        embed_ratio_threshold = kwargs.get('embed_ratio_threshold', 0.65)
         total_text_boxes = []
-        for crop_img_info in box_infos['detected_texts']:
+        for crop_img_info in box_infos:
             # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
-            hor_box = rotated_box_to_horizontal(crop_img_info['box'])
+            hor_box = rotated_box_to_horizontal(crop_img_info['position'])
             if not is_valid_box(hor_box, min_height=8, min_width=2):
                 continue
             line_box = _to_iou_box(hor_box)
@@ -234,7 +283,10 @@ class Pix2Text(object):
             for box_info in mf_outs:
                 if box_info['type'] == 'embedding':
                     box2 = _to_iou_box(box_info['position'])
-                    if float(box_partial_overlap(line_box, box2).squeeze()) > 0.7:
+                    if (
+                        float(box_partial_overlap(line_box, box2).squeeze())
+                        >= embed_ratio_threshold
+                    ):
                         embed_mfs.append(
                             {
                                 'position': box2[0].int().tolist(),
@@ -252,10 +304,14 @@ class Pix2Text(object):
             outs.append(box)
         outs = sort_boxes(outs, key='position')
         outs = [merge_adjacent_bboxes(bboxes) for bboxes in outs]
-        max_expand_ratio = kwargs.get('det_bbox_max_expand_ratio', 0.2)
-        outs = adjust_line_height(outs, img0.size[1], max_expand_ratio=max_expand_ratio)
+        max_height_expand_ratio = kwargs.get(
+            'det_text_bbox_max_height_expand_ratio', 0.2
+        )
+        outs = adjust_line_height(
+            outs, img0.size[1], max_expand_ratio=max_height_expand_ratio
+        )
 
-        for line_boxes in outs:
+        for line_idx, line_boxes in enumerate(outs):
             for box in line_boxes:
                 if box['type'] != 'text':
                     continue
@@ -266,9 +322,11 @@ class Pix2Text(object):
                     int(bbox[2][0]),
                     int(bbox[2][1]),
                 )
-                crop_patch = np.array(img0.crop((xmin, ymin, xmax, ymax)))
+                crop_patch = np.array(masked_img.crop((xmin, ymin, xmax, ymax)))
                 part_res = self.text_ocr.recognize_only(crop_patch)
                 box['text'] = part_res['text']
+                box['score'] = part_res['score']
+            outs[line_idx] = [box for box in line_boxes if box['text'].strip()]
 
         logger.debug(outs)
         outs = self._post_process(outs)
@@ -282,18 +340,77 @@ class Pix2Text(object):
                 kwargs.get('save_analysis_res'),
             )
 
+        if return_text:
+            embed_sep = kwargs.get('embed_sep', (' $', '$ '))
+            isolated_sep = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
+            line_sep = kwargs.get('line_sep', '\n')
+            auto_line_break = kwargs.get('auto_line_break', True)
+            outs = merge_line_texts(
+                outs, auto_line_break, line_sep, embed_sep, isolated_sep
+            )
+
         return outs
 
-    @classmethod
-    def _post_process(cls, outs):
-        for line_boxes in outs:
+    def _post_process(self, outs):
+        match_pairs = [
+            (',', ',，'),
+            ('.', '.。'),
+            ('?', '?？'),
+        ]
+        formula_tag = '^[（\(]\d+(\.\d+)*[）\)]$'
+
+        def _match(a1, a2):
+            matched = False
+            for b1, b2 in match_pairs:
+                if a1 in b1 and a2 in b2:
+                    matched = True
+                    break
+            return matched
+
+        for idx, line_boxes in enumerate(outs):
             if (
-                len(line_boxes) > 1
+                any([_lang in ('ch_sim', 'ch_tra') for _lang in self.languages])
+                and len(line_boxes) > 1
                 and line_boxes[-1]['type'] == 'text'
                 and line_boxes[-2]['type'] != 'text'
             ):
                 if line_boxes[-1]['text'].lower() == 'o':
                     line_boxes[-1]['text'] = '。'
+            if len(line_boxes) > 1:
+                # 去掉边界上多余的标点
+                for _idx2, box in enumerate(line_boxes[1:]):
+                    if (
+                        box['type'] == 'text'
+                        and line_boxes[_idx2]['type'] == 'embedding'
+                    ):  # if the current box is text and the previous box is embedding
+                        if _match(line_boxes[_idx2]['text'][-1], box['text'][0]) and (
+                            not line_boxes[_idx2]['text'][:-1].endswith('\\')
+                            and not line_boxes[_idx2]['text'][:-1].endswith(r'\end')
+                        ):
+                            line_boxes[_idx2]['text'] = line_boxes[_idx2]['text'][:-1]
+                # 把 公式 tag 合并到公式里面去
+                for _idx2, box in enumerate(line_boxes[1:]):
+                    if (
+                        box['type'] == 'text'
+                        and line_boxes[_idx2]['type'] == 'isolated'
+                    ):  # if the current box is text and the previous box is embedding
+                        if y_overlap(line_boxes[_idx2], box, key='position') > 0.9:
+                            if re.match(formula_tag, box['text']):
+                                # 去掉开头和结尾的括号
+                                tag_text = box['text'][1:-1]
+                                line_boxes[_idx2]['text'] = line_boxes[_idx2][
+                                    'text'
+                                ] + ' \\tag{{{}}}'.format(tag_text)
+                                new_xmax = max(
+                                    line_boxes[_idx2]['position'][2][0],
+                                    box['position'][2][0],
+                                )
+                                line_boxes[_idx2]['position'][1][0] = line_boxes[_idx2][
+                                    'position'
+                                ][2][0] = new_xmax
+                                box['text'] = ''
+
+            outs[idx] = [box for box in line_boxes if box['text'].strip()]
         return outs
 
     @classmethod
@@ -373,16 +490,21 @@ class Pix2Text(object):
     def recognize_text(
         self,
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+        return_text: bool = True,
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> Union[str, List[str], List[Any], List[List[Any]]]:
         """
         Recognize a pure Text Image.
         Args:
             imgs (Union[str, Path, Image.Image], List[str], List[Path], List[Image.Image]): The image or list of images
+            return_text (bool): Whether to return only the recognized text; default value is `True`
             kwargs (): Other parameters for `text_ocr.ocr()`
 
-        Returns:
-        Returns: Text str or list of text strs
+        Returns: Text str or list of text strs when `return_text` is True;
+                 `List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
+                    * `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
+                    * `text`: The recognized text
+                    * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
         is_single_image = False
@@ -395,8 +517,9 @@ class Pix2Text(object):
         outs = []
         for image in input_imgs:
             result = self.text_ocr.ocr(np.array(image), **kwargs)
-            texts = [_one['text'] for _one in result]
-            result = '\n'.join(texts)
+            if return_text:
+                texts = [_one['text'] for _one in result]
+                result = '\n'.join(texts)
             outs.append(result)
 
         if is_single_image:
@@ -407,19 +530,32 @@ class Pix2Text(object):
         self,
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         batch_size: int = 1,
+        return_text: bool = True,
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
         """
         Recognize pure Math Formula images to LaTeX Expressions
         Args:
             imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
             batch_size (int): The batch size
+            return_text (bool): Whether to return only the recognized text; default value is `True`
             **kwargs (): Special model parameters. Not used for now
 
-        Returns: The LaTeX Expression or list of LaTeX Expressions
+        Returns: The LaTeX Expression or list of LaTeX Expressions;
+                 str or List[str] when `return_text` is True;
+                 Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
+                    * `text`: The recognized LaTeX text
+                    * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
-        return self.latex_model.recognize(imgs, batch_size=batch_size, **kwargs)
+        outs = self.latex_model.recognize(imgs, batch_size=batch_size, **kwargs)
+        if return_text:
+            if isinstance(outs, dict):
+                outs = outs['text']
+            elif isinstance(outs, list):
+                outs = [one['text'] for one in outs]
+
+        return outs
 
 
 if __name__ == '__main__':
