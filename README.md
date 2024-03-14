@@ -453,8 +453,8 @@ where the input parameters are described as follows.
   - `mfr_batch_size` (`int`): The batch size used for MFR (Mathematical Formula Recognition) prediction; the default value is `1`.
   - `embed_sep` (`tuple`): LaTeX delimiter for embedded formulas. Only useful with MFD. Default: `(' $', '$ ')`.
   - `isolated_sep` (`tuple`): LaTeX delimiter for isolated formulas. Only useful with MFD. Default: `('$$\n', '\n$$')`.
-  - `line_sep` (`str`): The separator between lines of text; only effective when `return_only_text` is `True`; default value is `'\n'`
-  - `auto_line_break` (`bool`): Automatically line break the recognized text; only effective when `return_only_text` is `True`; default value is `True`
+  - `line_sep` (`str`): The separator between lines of text; only effective when `return_text` is `True`; default value is `'\n'`
+  - `auto_line_break` (`bool`): Automatically line break the recognized text; only effective when `return_text` is `True`; default value is `True`
   - `det_text_bbox_max_width_expand_ratio` (`float`): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
   - `det_text_bbox_max_height_expand_ratio` (`float`): Expand the height of the detected text bounding box (bbox). This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`.
   - `embed_ratio_threshold` (`float`): The overlap threshold for embed formulas and text lines; default value is `0.6`.

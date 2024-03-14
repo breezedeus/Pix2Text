@@ -474,8 +474,8 @@ def recognize(
   - `mfr_batch_size` (`int`): 用于 MFR (Mathematical Formula Recognition) 预测的批处理大小；默认值为 `1`。
   - `embed_sep` (`tuple`): 用于嵌入式公式的 LaTeX 分隔符。仅在 MFD 中有效。默认值为 `(' $', '$ ')`。
   - `isolated_sep` (`tuple`): 用于孤立公式的 LaTeX 分隔符。仅在 MFD 中有效。默认值为 `('$$\n', '\n$$')`。
-  - `line_sep` (`str`): 文本行之间的分隔符；仅在 `return_only_text` 为 `True` 时有效；默认值为 `'\n'`。
-  - `auto_line_break` (`bool`): 自动换行识别的文本；仅在 `return_only_text` 为 `True` 时有效；默认值为 `True`。
+  - `line_sep` (`str`): 文本行之间的分隔符；仅在 `return_text` 为 `True` 时有效；默认值为 `'\n'`。
+  - `auto_line_break` (`bool`): 自动换行识别的文本；仅在 `return_text` 为 `True` 时有效；默认值为 `True`。
   - `det_text_bbox_max_width_expand_ratio` (`float`): 扩展检测到的文本框的宽度。该值表示相对于原始框高度的最大扩展比率，上下各一半；默认值为 `0.3`。
   - `det_text_bbox_max_height_expand_ratio` (`float`): 扩展检测到的文本边界框（bbox）的高度。该值表示相对于原始 bbox 高度的最大扩展比率，上下各一半；默认值为 `0.2`。
   - `embed_ratio_threshold` (`float`): 嵌入式公式和文本行的重叠阈值；默认值为 `0.6`。
