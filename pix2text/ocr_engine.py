@@ -159,7 +159,9 @@ class EasyOCREngineWrapper(OcrEngineWrapper):
         results = self.ocr_engine.readtext(img)
         outs = []
         for result in results:
-            outs.append({'text': result[1], 'score': result[2], 'position': result[0]})
+            outs.append(
+                {'text': result[1], 'score': result[2], 'position': np.array(result[0])}
+            )
         return outs
 
 
