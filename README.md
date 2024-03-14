@@ -204,11 +204,8 @@ from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/en1.jpg'
 p2t = Pix2Text()
-outs = p2t.recognize(img_fp, resized_shape=608)  # You can also use `p2t(img_fp)` to get the same result
+outs = p2t.recognize(img_fp, resized_shape=608, return_text=True)  # You can also use `p2t(img_fp)` to get the same result
 print(outs)
-# If you only need the recognized texts and LaTeX representations, use the following line of code to merge all results
-only_text = merge_line_texts(outs, auto_line_break=True)
-print(only_text)
 ```
 
 The returned result `outs` is a `dict`, where the key `position` indicates Box location information, `type` indicates the category information, and `text` represents the recognition result. For more details, see [API Interfaces](#api-interfaces).
@@ -267,13 +264,13 @@ The returned result is a string, which is the corresponding sequence of text. Fo
 **Recognition Command**:
 
 ```bash
-$ p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
+p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
 ```
 
 > Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
 >
 > ```bash
-> $ p2t predict -l en -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
+> p2t predict -l en -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
 > ```
 
 ### Simplified Chinese
@@ -285,13 +282,13 @@ $ p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/m
 **Recognition Command**:
 
 ```bash
-$ p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
+p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
 ```
 
 > Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
 >
 > ```bash
-> $ p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
+> p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
 > ```
 
 ### Traditional Chinese
@@ -303,13 +300,13 @@ $ p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/ana
 **Recognition Command**:
 
 ```bash
-$ p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg
+p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/ch_tra.jpg
 ```
 
 > Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
 >
 > ```bash
-> $ p2t predict -l en,ch_tra -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg
+> p2t predict -l en,ch_tra -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/ch_tra.jpg
 > ```
 
 ### Vietnamese
@@ -321,13 +318,13 @@ $ p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/ana
 **Recognition Command**:
 
 ```bash
-$ p2t predict -l en,vi -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
+p2t predict -l en,vi -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i docs/examples/vietnamese.jpg
 ```
 
 > Note ⚠️: The above command uses premium models. A free version of the models can also be used as follows, although the results may be slightly inferior:
 >
 > ```bash
-> $ p2t predict -l en,vi -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
+> p2t predict -l en,vi -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i docs/examples/vietnamese.jpg
 > ```
 
 
@@ -441,47 +438,52 @@ The parameters are described as follows:
 The text or Latex recognition of one specified image is done by invoking the class function `.recognize()` of class **`Pix2Text`**. The class function `.recognize()` is described as follows.
 
 ```python
-    def recognize(
-        self, img: Union[str, Path, Image.Image], **kwargs
-    ) -> List[Dict[str, Any]]:
+def recognize(
+    self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs
+) -> Union[str, List[Dict[str, Any]]]:
 ```
 
 where the input parameters are described as follows.
 
 * `img` (`str` or `Image.Image`): the path of the image to be recognized, or the image `Image` that has been read by using `Image.open()`.
+* `return_text` (`bool`): Whether to return only the recognized text; default value is `True`
 * `**kwargs`: Can contain:
-  - `resized_shape`: Resize image width to this before processing. Default: `700`.
-  - `save_analysis_res`: Save analysis visualization to this file/dir. Default: `None` meaning not saving.
-  - `embed_sep`: LaTeX delimiter for embedded formulas. Only useful with MFD. Default: `(' $', '$ ')`.
-  - `isolated_sep`: LaTeX delimiter for isolated formulas. Only useful with MFD. Default: `('$$\n', '\n$$')`.
-  - `det_bbox_max_expand_ratio (float)`: Expand the height of the detected text bounding box (bbox). This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`.
-  - `mfr_batch_size` (int): The batch size used for MFR (Mathematical Formula Recognition) prediction; the default value is `1`.
+  - `resized_shape` (`int`): Resize image width to this before processing. Default: `608`.
+  - `save_analysis_res` (`str`): Save analysis visualization to this file/dir. Default: `None` meaning not saving.
+  - `mfr_batch_size` (`int`): The batch size used for MFR (Mathematical Formula Recognition) prediction; the default value is `1`.
+  - `embed_sep` (`tuple`): LaTeX delimiter for embedded formulas. Only useful with MFD. Default: `(' $', '$ ')`.
+  - `isolated_sep` (`tuple`): LaTeX delimiter for isolated formulas. Only useful with MFD. Default: `('$$\n', '\n$$')`.
+  - `line_sep` (`str`): The separator between lines of text; only effective when `return_only_text` is `True`; default value is `'\n'`
+  - `auto_line_break` (`bool`): Automatically line break the recognized text; only effective when `return_only_text` is `True`; default value is `True`
+  - `det_text_bbox_max_width_expand_ratio` (`float`): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
+  - `det_text_bbox_max_height_expand_ratio` (`float`): Expand the height of the detected text bounding box (bbox). This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`.
+  - `embed_ratio_threshold` (`float`): The overlap threshold for embed formulas and text lines; default value is `0.6`.
+      When the overlap between an embed formula and a text line is greater than or equal to this threshold,
+      the embed formula and the text line are considered to be on the same line;
+      otherwise, they are considered to be on different lines.
+  - `formula_rec_kwargs` (`dict`): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
 
-It returns a `list` of `dict`, each `dict` contains:
+It returns a str when `return_text` is `True`; or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
+with each dict representing one detected box, containing keys:
 
 - `type`: The category of the recognized image;
   - For **MFD Analyzer** (Mathematical Formula Detection), the values can be `text` (pure text), `isolated` (mathematical formulas in isolated lines), or `embedding` (mathematical formulas embedded in lines).
   - For **Layout Analyzer** (Layout Analysis), the values correspond to the categories of layout analysis results.
 - `text`: Recognized text or latex.
+- `score`: The confidence score `[0, 1]`; the higher, the more confident.
 - `position`: Detected box coordinates, `np.ndarray`, with shape `[4, 2]`.
 - `line_number`: Exists only when using **MFD Analyzer**. Indicates the line number (starting from 0) of the box. Boxes with the same `line_number` are on the same line.
-
-  > Note: This is new since P2T **v0.2.3**. Not in previous versions.
-
 
 
 The `Pix2Text` class also implements the `__call__()` function, which does exactly the same thing as the `.recognize()` function.  So you can call it like:
 
 ```python
-from pix2text import Pix2Text, merge_line_texts
+from pix2text import Pix2Text
 
 img_fp = './docs/examples/formula.jpg'
 p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
-outs = p2t.recognize(img_fp, resized_shape=608) # Equal to p2t(img_fp, resized_shape=608)
+outs = p2t.recognize(img_fp, resized_shape=608, return_text=True) # Equal to p2t(img_fp, resized_shape=608)
 print(outs)
-# To get just the text contents, use: 
-only_text = merge_line_texts(outs, auto_line_break=True)
-print(only_text)
 ```
 
 #### Recognizing Pure Text Images
@@ -489,40 +491,53 @@ print(only_text)
 The class method `.recognize_text()` of the class **`Pix2Text`** is used to perform text recognition on specified images. In this case, Pix2Text provides general text recognition functionality. The class function `.recognize_text()` is described as follows:
 
 ```python
-    def recognize_text(
-        self,
-        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
-        **kwargs,
-    ) -> Union[str, List[str]]:
+def recognize_text(
+    self,
+    imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+    return_text: bool = True,
+    **kwargs,
+) -> Union[str, List[str], List[Any], List[List[Any]]]:
 ```
 
 The input parameters are explained as follows:
 
 * `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): The path of the image(s) to be recognized, or `Image` objects that has been read in using `Image.open()`. Supports a single image or a list of multiple images.
+* `return_text` (`bool`): Whether to return only the recognized text; default value is `True`.
 * `kwargs`: Other parameters passed to the text recognition interface.
 
-The return result is the recognized text string (when the input is multiple images, a list of the same length is returned).
+The return result is the recognized text string (when the input is multiple images, a list of the same length is returned) when `return_text` is `True`;
+`List[Any]` or `List[List[Any]]` when `return_text` is `False`, with the same length as `imgs` and the following keys:
+
+* `position`: Position information of the block, `np.ndarray`, with a shape of `[4, 2]`.
+* `text`: The recognized text.
+* `score`: The confidence score `[0, 1]`; the higher, the more confident.
 
 #### Recognizing Pure Formula Images
 
 The class method `.recognize_formula()` of the class **`Pix2Text`** is used to recognize mathematical formulas in specified images and convert them into Latex representation. The class function `.recognize_formula()` is described as follows:
 
 ```python
-    def recognize_formula(
-        self,
-        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
-        batch_size: int = 1,
-        **kwargs,
-    ) -> Union[str, List[str]]:
+def recognize_formula(
+    self,
+    imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+    batch_size: int = 1,
+    return_text: bool = True,
+    **kwargs,
+) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
 ```
 
 The input parameters are explained as follows:
 
 * `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): The path of the image(s) to be recognized, or `Image` objects that has been read in using `Image.open()`. Supports a single image or a list of multiple images.
-* `batch_size`: The batch size for processing.
+* `batch_size` (`int`): The batch size for processing.
+* `return_text` (`bool`): Whether to return only the recognized text; default value is `True`.
 * `kwargs`: Additional parameters to be passed to the formula recognition interface.
 
-The return result is the recognized LaTeX representation string (when the input is multiple images, a list of the same length is returned).
+The return result is the recognized LaTeX representation string (when the input is multiple images, a list of the same length is returned) when `return_text` is `True`;
+`Dict[str, Any]` or `List[Dict[str, Any]]` when `return_text` is `False`, with the following keys:
+
+* `text`: The recognized LaTeX text.
+* `score`: The confidence score `[0, 1]`; the higher, the more confident.
 
 
 ## Script Usage
@@ -576,10 +591,13 @@ Options:
                                   `None` for not saving
   --rec-kwargs TEXT               kwargs for calling .recognize(), in JSON
                                   string format
+  --return-text / --no-return-text
+                                  Whether to return only the text result
+                                  [default: return-text]
   --auto-line-break / --no-auto-line-break
                                   Whether to automatically determine to merge
                                   adjacent line results into a single line
-                                  result  [default: no-auto-line-break]
+                                  result  [default: auto-line-break]
   --log-level TEXT                Log Level, such as `INFO`, `DEBUG`
                                   [default: INFO]
   -h, --help                      Show this message and exit.

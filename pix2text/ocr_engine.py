@@ -29,11 +29,11 @@ class OcrEngineWrapper:
         Returns:
             Dict[str, List[dict]]: The dictionary contains the following keys:
                * 'detected_texts': list, each element stores the information of a detected box, recorded in a dictionary, including the following values:
-                   'box': The rectangular box corresponding to the detected text; np.ndarray, shape: (4, 2), representing the coordinates (x, y) of the 4 points of the box;
+                   'position': The rectangular box corresponding to the detected text; np.ndarray, shape: (4, 2), representing the coordinates (x, y) of the 4 points of the box;
 
                  Example:
                    {'detected_texts':
-                       [{'box': array([[416,  77],
+                       [{'position': array([[416,  77],
                                        [486,  13],
                                        [800, 325],
                                        [730, 390]], dtype=int32),
@@ -77,13 +77,24 @@ class OcrEngineWrapper:
             list of detected texts, which element is a dict, with keys:
                 - 'text' (str): The recognized text
                 - 'score' (float): The score of the recognition result (confidence level), ranging from `[0, 1]`; the higher the score, the more reliable it is
+                - 'position' (np.ndarray): 4 x 2 array, representing the coordinates (x, y) of the 4 points of the box
 
             Example:
             ```
              [{'score': 0.88,
-              'text': 'Line 1'},
+              'text': 'Line 1',
+              'position': array([[146, 22],
+                                 [179, 22],
+                                 [179, 60],
+                                 [146, 60]], dtype=int32)
+              },
               {'score': 0.78,
-              'text': 'Line 2'}]
+              'text': 'Line 2'
+              'position': array([[641, 115],
+                                 [1180, 115],
+                                 [1180, 244],
+                                 [641, 244]], dtype=int32)
+              }]
             ```
         """
 
@@ -94,7 +105,10 @@ class CnOCREngineWrapper(OcrEngineWrapper):
     name = 'cnocr'
 
     def detect_only(self, img: np.ndarray, **kwargs):
-        return self.ocr_engine.det_model.detect(img)
+        outs = self.ocr_engine.det_model.detect(img)
+        for out in outs['detected_texts']:
+            out['position'] = out.pop('box')
+        return outs
 
     def recognize_only(self, img: np.ndarray, **kwargs):
         try:
@@ -103,7 +117,8 @@ class CnOCREngineWrapper(OcrEngineWrapper):
             return {'text': '', 'score': 0.0}
 
     def ocr(self, img: np.ndarray, **kwargs) -> str:
-        return self.ocr_engine.ocr(img)
+        outs = self.ocr_engine.ocr(img)
+        return outs
 
 
 class EasyOCREngineWrapper(OcrEngineWrapper):
@@ -122,10 +137,10 @@ class EasyOCREngineWrapper(OcrEngineWrapper):
             ymin = clip(ymin, 0, height)
             ymax = clip(ymax, 0, height)
             box = np.array([[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]])
-            bboxes.append({'box': box})
+            bboxes.append({'position': box})
         for bbox in free_list:
             if bbox:
-                bboxes.append({'box': np.array(bbox)})
+                bboxes.append({'position': np.array(bbox)})
         return {'detected_texts': bboxes}
 
     def recognize_only(self, img: np.ndarray, **kwargs) -> dict:
@@ -144,7 +159,9 @@ class EasyOCREngineWrapper(OcrEngineWrapper):
         results = self.ocr_engine.readtext(img)
         outs = []
         for result in results:
-            outs.append({'text': result[1], 'score': result[2]})
+            outs.append(
+                {'text': result[1], 'score': result[2], 'position': np.array(result[0])}
+            )
         return outs
 
 

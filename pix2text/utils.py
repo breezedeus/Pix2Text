@@ -5,6 +5,7 @@
 import hashlib
 import os
 import re
+from copy import deepcopy
 from functools import cmp_to_key
 from pathlib import Path
 import logging
@@ -256,11 +257,15 @@ def list2box(xmin, ymin, xmax, ymax, dtype=float):
     )
 
 
-def overlap(box1, box2, key='position'):
+def y_overlap(box1, box2, key='position'):
     # 计算它们在y轴上的IOU: Interaction / min(height1, height2)
+    if key:
+        box1 = [box1[key][0][0], box1[key][0][1], box1[key][2][0], box1[key][2][1]]
+        box2 = [box2[key][0][0], box2[key][0][1], box2[key][2][0], box2[key][2][1]]
+    else:
+        box1 = [box1[0][0], box1[0][1], box1[2][0], box1[2][1]]
+        box2 = [box2[0][0], box2[0][1], box2[2][0], box2[2][1]]
     # 判断是否有交集
-    box1 = [box1[key][0][0], box1[key][0][1], box1[key][2][0], box1[key][2][1]]
-    box2 = [box2[key][0][0], box2[key][0][1], box2[key][2][0], box2[key][2][1]]
     if box1[3] <= box2[1] or box2[3] <= box1[1]:
         return 0
     # 计算交集的高度
@@ -269,19 +274,40 @@ def overlap(box1, box2, key='position'):
     return (y_max - y_min) / max(1, min(box1[3] - box1[1], box2[3] - box2[1]))
 
 
+def x_overlap(box1, box2, key='position'):
+    # 计算它们在x轴上的IOU: Interaction / min(width1, width2)
+    if key:
+        box1 = [box1[key][0][0], box1[key][0][1], box1[key][2][0], box1[key][2][1]]
+        box2 = [box2[key][0][0], box2[key][0][1], box2[key][2][0], box2[key][2][1]]
+    else:
+        box1 = [box1[0][0], box1[0][1], box1[2][0], box1[2][1]]
+        box2 = [box2[0][0], box2[0][1], box2[2][0], box2[2][1]]
+    # 判断是否有交集
+    if box1[2] <= box2[0] or box2[2] <= box1[0]:
+        return 0
+    # 计算交集的宽度
+    x_min = max(box1[0], box2[0])
+    x_max = min(box1[2], box2[2])
+    return (x_max - x_min) / max(1, min(box1[2] - box1[0], box2[2] - box2[0]))
+
+
+def overlap(box1, box2, key='position'):
+    return x_overlap(box1, box2, key) * y_overlap(box1, box2, key)
+
+
 def get_same_line_boxes(anchor, total_boxes):
     line_boxes = [anchor]
     for box in total_boxes:
         if box['line_number'] >= 0:
             continue
-        if max([overlap(box, l_box) for l_box in line_boxes]) > 0.1:
+        if max([y_overlap(box, l_box) for l_box in line_boxes]) > 0.1:
             line_boxes.append(box)
     return line_boxes
 
 
 def _compare_box(box1, box2, anchor, key, left_best: bool = True):
-    over1 = overlap(box1, anchor, key)
-    over2 = overlap(box2, anchor, key)
+    over1 = y_overlap(box1, anchor, key)
+    over2 = y_overlap(box2, anchor, key)
     if box1[key][2, 0] < box2[key][0, 0] - 3:
         return -1
     elif box2[key][2, 0] < box1[key][0, 0] - 3:
@@ -505,6 +531,129 @@ def adjust_line_height(bboxes, img_height, max_expand_ratio=0.2):
     return bboxes
 
 
+def adjust_line_width(
+    text_box_infos, formula_box_infos, img_width, max_expand_ratio=0.2
+):
+    """
+    如果不与其他 box 重叠，就把 text box 往左右稍微扩展一些（检测出来的 text box 在边界上可能会切掉边界字符的一部分）。
+    Args:
+        text_box_infos (List[dict]): 文本框信息，其中 'box' 字段包含四个角点的坐标。
+        formula_box_infos (List[dict]): 公式框信息，其中 'position' 字段包含四个角点的坐标。
+        img_width (int): 原始图像的宽度。
+        max_expand_ratio (float): 相对于 box 高度来说的左右最大扩展比率。
+
+    Returns: 扩展后的 text_box_infos。
+    """
+
+    def _expand_left_right(box):
+        expanded_box = box.copy()
+        xmin, xmax = box[0, 0], box[2, 0]
+        box_height = box[2, 1] - box[0, 1]
+        expand_size = int(max_expand_ratio * box_height)
+        expanded_box[3, 0] = expanded_box[0, 0] = max(xmin - expand_size, 0)
+        expanded_box[2, 0] = expanded_box[1, 0] = min(xmax + expand_size, img_width - 1)
+        return expanded_box
+
+    def _is_adjacent(anchor_box, text_box):
+        if overlap(anchor_box, text_box, key=None) < 1e-6:
+            return False
+        anchor_xmin, anchor_xmax = anchor_box[0, 0], anchor_box[2, 0]
+        text_xmin, text_xmax = text_box[0, 0], text_box[2, 0]
+        if (
+            text_xmin < anchor_xmin < text_xmax < anchor_xmax
+            or anchor_xmin < text_xmin < anchor_xmax < text_xmax
+        ):
+            return True
+        return False
+
+    for idx, text_box in enumerate(text_box_infos):
+        expanded_box = _expand_left_right(text_box['position'])
+        overlapped = False
+        cand_boxes = [
+            _text_box['position']
+            for _idx, _text_box in enumerate(text_box_infos)
+            if _idx != idx
+        ]
+        cand_boxes.extend(
+            [_formula_box['position'] for _formula_box in formula_box_infos]
+        )
+        for cand_box in cand_boxes:
+            if _is_adjacent(expanded_box, cand_box):
+                overlapped = True
+                break
+        if not overlapped:
+            text_box_infos[idx]['position'] = expanded_box
+
+    return text_box_infos
+
+
+def crop_box(text_box, formula_box, min_crop_width=2) -> List[np.ndarray]:
+    """
+    将 text_box 与 formula_box 相交的部分裁剪掉
+    Args:
+        text_box ():
+        formula_box ():
+        min_crop_width (int): 裁剪后新的 text box 被保留的最小宽度，低于此宽度的 text box 会被删除。
+
+    Returns:
+
+    """
+    text_xmin, text_xmax = text_box[0, 0], text_box[2, 0]
+    text_ymin, text_ymax = text_box[0, 1], text_box[2, 1]
+    formula_xmin, formula_xmax = formula_box[0, 0], formula_box[2, 0]
+
+    cropped_boxes = []
+    if text_xmin < formula_xmin:
+        new_text_xmax = min(text_xmax, formula_xmin)
+        if new_text_xmax - text_xmin >= min_crop_width:
+            cropped_boxes.append((text_xmin, text_ymin, new_text_xmax, text_ymax))
+
+    if text_xmax > formula_xmax:
+        new_text_xmin = max(text_xmin, formula_xmax)
+        if text_xmax - new_text_xmin >= min_crop_width:
+            cropped_boxes.append((new_text_xmin, text_ymin, text_xmax, text_ymax))
+
+    return [list2box(*box, dtype=None) for box in cropped_boxes]
+
+
+def remove_overlap_text_bbox(text_box_infos, formula_box_infos):
+    """
+    如果一个 text box 与 formula_box 相交，则裁剪 text box。
+    Args:
+        text_box_infos ():
+        formula_box_infos ():
+
+    Returns:
+
+    """
+
+    new_text_box_infos = []
+    for idx, text_box in enumerate(text_box_infos):
+        max_overlap_val = 0
+        max_overlap_fbox = None
+
+        for formula_box in formula_box_infos:
+            cur_val = overlap(text_box['position'], formula_box['position'], key=None)
+            if cur_val > max_overlap_val:
+                max_overlap_val = cur_val
+                max_overlap_fbox = formula_box
+
+        if max_overlap_val < 0.1:  # overlap 太少的情况不做任何处理
+            new_text_box_infos.append(text_box)
+            continue
+        # if max_overlap_val > 0.8:  # overlap 太多的情况，直接扔掉 text box
+        #     continue
+
+        cropped_text_boxes = crop_box(text_box['position'], max_overlap_fbox['position'])
+        if cropped_text_boxes:
+            for _box in cropped_text_boxes:
+                new_box = deepcopy(text_box)
+                new_box['position'] = _box
+                new_text_box_infos.append(new_box)
+
+    return new_text_box_infos
+
+
 def is_chinese(ch):
     """
     判断一个字符是否为中文字符
@@ -538,38 +687,48 @@ def smart_join(str_list):
 
 
 def merge_line_texts(
-    out: List[Dict[str, Any]], auto_line_break: bool = True, line_sep='\n'
+    outs: List[Dict[str, Any]],
+    auto_line_break: bool = True,
+    line_sep='\n',
+    embed_sep=(' $', '$ '),
+    isolated_sep=('$$\n', '\n$$'),
 ) -> str:
     """
     把 Pix2Text.recognize_by_mfd() 的返回结果，合并成单个字符串
     Args:
-        out (List[Dict[str, Any]]):
+        outs (List[Dict[str, Any]]):
         auto_line_break: 基于box位置自动判断是否该换行
         line_sep: 行与行之间的分隔符
+        embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
+        isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
 
     Returns: 合并后的字符串
 
     """
-    if not out:
+    if not outs:
         return ''
     out_texts = []
-    line_margin_list = []  # 每行的最左边和左右边的x坐标
+    line_margin_list = []  # 每行的最左边和最右边的x坐标
     isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
-    for o in out:
-        line_number = o.get('line_number', 0)
+    for _out in outs:
+        line_number = _out.get('line_number', 0)
         if len(out_texts) <= line_number:
             out_texts.append([])
             line_margin_list.append([0, 0])
             isolated_included.append(False)
-        if o['type'] == 'isolated':
+        cur_text = _out['text']
+        if _out['type'] in ('embedding', 'isolated'):
+            sep = isolated_sep if _out['type'] == 'isolated' else embed_sep
+            cur_text = sep[0] + cur_text + sep[1]
+        if _out['type'] == 'isolated':
             isolated_included[line_number] = True
-            o['text'] = line_sep + o['text'] + line_sep
-        out_texts[line_number].append(o['text'])
+            cur_text = line_sep + cur_text + line_sep
+        out_texts[line_number].append(cur_text)
         line_margin_list[line_number][1] = max(
-            line_margin_list[line_number][1], float(o['position'][2, 0])
+            line_margin_list[line_number][1], float(_out['position'][2, 0])
         )
         line_margin_list[line_number][0] = min(
-            line_margin_list[line_number][0], float(o['position'][0, 0])
+            line_margin_list[line_number][0], float(_out['position'][0, 0])
         )
 
     line_text_list = [smart_join(o) for o in out_texts]
@@ -603,5 +762,5 @@ def merge_line_texts(
             tmp = tmp + line_sep
         res_line_texts[idx] = tmp
 
-    out = smart_join(res_line_texts)
-    return re.sub(rf'{line_sep}+', line_sep, out)  # 把多个 '\n' 替换为 '\n'
+    outs = smart_join(res_line_texts)
+    return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'

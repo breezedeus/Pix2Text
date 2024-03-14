@@ -217,11 +217,8 @@ from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/en1.jpg'
 p2t = Pix2Text()
-outs = p2t.recognize(img_fp, resized_shape=608)  # 也可以使用 `p2t(img_fp)` 获得相同的结果
+outs = p2t.recognize(img_fp, resized_shape=608, return_text=True)  # 也可以使用 `p2t(img_fp)` 获得相同的结果
 print(outs)
-# 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
-only_text = merge_line_texts(outs, auto_line_break=True)
-print(only_text)
 ```
 
 返回结果 `outs` 是个 `dict`，其中 key `position` 表示Box位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体说明见[接口说明](#接口说明)。
@@ -286,13 +283,13 @@ print(outs)
 **识别命令**：
 
 ```bash
-$ p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
+p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/en1.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
+> p2t predict -l en -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/en1.jpg
 > ```
 
 
@@ -306,13 +303,13 @@ $ p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/m
 **识别命令**：
 
 ```bash
-$ p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
+p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i docs/examples/mixed.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
+> p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/mixed.jpg
 > ```
 
 ### 繁体中文
@@ -324,13 +321,13 @@ $ p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/ana
 **识别命令**：
 
 ```bash
-$ p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg
+p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/ch_tra.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en,ch_tra -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/ch_tra.jpg
+> p2t predict -l en,ch_tra -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i docs/examples/ch_tra.jpg
 > ```
 
 
@@ -343,13 +340,13 @@ $ p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/ana
 **识别命令**：
 
 ```bash
-$ p2t predict -l en,vi -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
+p2t predict -l en,vi -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i docs/examples/vietnamese.jpg
 ```
 
 > 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
 >
 > ```bash
-> $ p2t predict -l en,vi -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg -i docs/examples/vietnamese.jpg
+> p2t predict -l en,vi -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i docs/examples/vietnamese.jpg
 > ```
 
 
@@ -462,37 +459,38 @@ class Pix2Text(object):
 通过调用类 **`Pix2Text`** 的类函数 `.recognize()` 完成对指定图片进行识别。类函数 `.recognize()` 说明如下：
 
 ```python
-    def recognize(
-        self, img: Union[str, Path, Image.Image], **kwargs
-    ) -> List[Dict[str, Any]]:
+def recognize(
+    self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs
+) -> Union[str, List[Dict[str, Any]]]:
 ```
-
-
 
 其中的输入参数说明如下：
 
-* `img` (`str` or `Image.Image`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。
-* `kwargs`: 保留字段，可以包含以下值：
-  * `resized_shape` (`int`): 把图片宽度resize到此大小再进行处理；默认值为 `700`；
-  * `save_analysis_res` (`str`): 把解析结果图片存在此文件中；默认值为 `None`，表示不存储；
-  * `embed_sep` (`tuple`): embedding latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `(' $', '$ ')`；
-  * `isolated_sep` (`tuple`): isolated latex的前后缀；只针对使用 `MFD` 时才有效；默认值为 `('$$\n', '\n$$')`；
-  * `det_bbox_max_expand_ratio (float)`: 扩展检测到的文本边界框（bbox）的高度。这个值表示相对于原始 bbox 高度的上下最大扩展比例；默认值为 `0.2`。
-  * `mfr_batch_size (int)`: MFR 预测时使用的 batch size；默认值为 `1`。
+* `img` (`str` 或 `Image.Image`): 待识别的图像的路径，或者已经使用 `Image.open()` 读取的图像 `Image`。
+* `return_text` (`bool`): 是否仅返回识别的文本；默认值为 `True`。
+* `**kwargs`: 可以包含以下参数：
+  - `resized_shape` (`int`): 在处理之前将图像的宽度调整为此大小。默认值为 `608`。
+  - `save_analysis_res` (`str`): 将分析可视化结果保存到此文件/目录。默认值为 `None`，表示不保存。
+  - `mfr_batch_size` (`int`): 用于 MFR (Mathematical Formula Recognition) 预测的批处理大小；默认值为 `1`。
+  - `embed_sep` (`tuple`): 用于嵌入式公式的 LaTeX 分隔符。仅在 MFD 中有效。默认值为 `(' $', '$ ')`。
+  - `isolated_sep` (`tuple`): 用于孤立公式的 LaTeX 分隔符。仅在 MFD 中有效。默认值为 `('$$\n', '\n$$')`。
+  - `line_sep` (`str`): 文本行之间的分隔符；仅在 `return_only_text` 为 `True` 时有效；默认值为 `'\n'`。
+  - `auto_line_break` (`bool`): 自动换行识别的文本；仅在 `return_only_text` 为 `True` 时有效；默认值为 `True`。
+  - `det_text_bbox_max_width_expand_ratio` (`float`): 扩展检测到的文本框的宽度。该值表示相对于原始框高度的最大扩展比率，上下各一半；默认值为 `0.3`。
+  - `det_text_bbox_max_height_expand_ratio` (`float`): 扩展检测到的文本边界框（bbox）的高度。该值表示相对于原始 bbox 高度的最大扩展比率，上下各一半；默认值为 `0.2`。
+  - `embed_ratio_threshold` (`float`): 嵌入式公式和文本行的重叠阈值；默认值为 `0.6`。
+      当嵌入式公式与文本行的重叠程度大于或等于此阈值时，认为嵌入式公式和文本行在同一行上；否则，认为它们在不同行上。
+  - `formula_rec_kwargs` (`dict`): 传递给公式识别器 `latex_ocr` 的生成参数；默认值为 `{}`。
 
+当 `return_text` 为 `True` 时返回 str；当 `return_text` 为 `False` 时返回有序的（从上到下，从左到右）字典列表，每个字典表示一个检测到的框，包含以下 keys：
 
-
-返回结果为列表（`list`），列表中的每个元素为`dict`，包含如下 `key`：
-
-* `type`：识别出的图像类别；
-  * 对于 **MFD Analyzer**（数学公式检测），取值为 `text`（纯文本）、`isolated`（独立行的数学公式） 或者 `embedding`（行内的数学公式）；
-  * 对于 **Layout Analyzer**（版面分析），取值为版面分析结果类别。
-* `text`：识别出的文字或Latex表达式；
-* `position`：所在块的位置信息，`np.ndarray`, with shape of `[4, 2]`；
-* `line_number`：仅在使用 **MFD Analyzer** 时，才会包含此字段。此字段为 Box 所在的行号（第一行 **`line_number=0`**），值相同的 Box 表示它们在同一行。
-
-  > 注意：此取值从 P2T **v0.2.3** 开始才有，之前版本没有此 `key`。
-
+- `type`: 识别图像的类别；
+  - 对于 **MFD 分析器**（Mathematical Formula Detection），值可以是 `text`（纯文本）、`isolated`（独立行中的数学公式）或 `embedding`（行内的数学公式）。
+  - 对于 **布局分析器**（Layout Analysis），值对应于布局分析结果的类别。
+- `text`：识别出的文字或Latex表达式；
+- `score`: 置信度分数 `[0, 1]`；分数越高，置信度越高。
+- `position`: 检测到的框坐标，`np.ndarray`，形状为 `[4, 2]`。
+- `line_number`: 仅在使用 **MFD 分析器** 时存在。指示框的行号（从 0 开始）。具有相同 `line_number` 的框在同一行上。
 
 
 `Pix2Text` 类也实现了 `__call__()` 函数，其功能与 `.recognize()` 函数完全相同。所以才会有以下的调用方式：
@@ -502,13 +500,9 @@ from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './docs/examples/formula.jpg'
 p2t = Pix2Text(analyzer_config=dict(model_name='mfd'))
-outs = p2t.recognize(img_fp, resized_shape=608)  # 也可以使用 `p2t(img_fp, resized_shape=608)` 获得相同的结果
+outs = p2t.recognize(img_fp, resized_shape=608, return_text=True)  # 也可以使用 `p2t(img_fp, resized_shape=608)` 获得相同的结果
 print(outs)
-# 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
-only_text = merge_line_texts(outs, auto_line_break=True)
-print(only_text)
 ```
-
 
 
 #### 识别纯文字图片
@@ -516,22 +510,26 @@ print(only_text)
 通过调用类 **`Pix2Text`** 的类函数 `.recognize_text()` 完成对指定图片进行文字识别。此时，Pix2Text 提供了一般的文字识别功能。类函数 `.recognize_text()` 说明如下：
 
 ```python
-    def recognize_text(
-        self,
-        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
-        **kwargs,
-    ) -> Union[str, List[str]]:
+def recognize_text(
+    self,
+    imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+    return_text: bool = True,
+    **kwargs,
+) -> Union[str, List[str], List[Any], List[List[Any]]]:
 ```
-
-
 
 其中的输入参数说明如下：
 
-* `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。支持单张图片，或者多张图片列表。
-* `kwargs`: 传入文字识别接口的其他参数。
+* `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): 待识别的图像的路径，或者已经使用 `Image.open()` 读取的图像 `Image` 对象。支持单个图像或多个图像的列表。
+* `return_text` (`bool`): 是否仅返回识别的文本；默认值为 `True`。
+* `kwargs`: 传递给文本识别接口的其他参数。
 
-返回结果为识别后文本字符串（输入为多张图片时返回是同样长度的列表）。
+当 `return_text` 为 `True` 时，返回结果是识别的文本字符串（当输入为多个图像时，返回具有相同长度的列表）；
+当 `return_text` 为 `False` 时，返回类型为 `List[Any]` 或 `List[List[Any]]`，与 `imgs` 的长度相同，具有以下 keys：
 
+* `position`: 区块的位置信息，`np.ndarray`，形状为 `[4, 2]`。
+* `text`: 识别的文本。
+* `score`: 置信度分数 `[0, 1]`；分数越高，置信度越高。
 
 
 #### 识别纯公式图片
@@ -539,27 +537,27 @@ print(only_text)
 通过调用类 **`Pix2Text`** 的类函数 `.recognize_formula()` 识别指定图片中的数学公式，并转化为 Latex 表示。类函数 `.recognize_formula()` 说明如下：
 
 ```python
-    def recognize_formula(
+def recognize_formula(
         self,
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         batch_size: int = 1,
+        return_text: bool = True,
         **kwargs,
-    ) -> Union[str, List[str]]:
+) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
 ```
-
-
 
 其中的输入参数说明如下：
 
-* `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`)：待识别图片的路径，或者利用 `Image.open()` 已读入的图片 `Image` 。支持单张图片，或者多张图片列表。
-* `batch_size`：batch size。
-* `kwargs`: 传入公式识别接口的其他参数。
+* `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): 待识别的图像的路径，或者已经使用 `Image.open()` 读取的图像 `Image` 对象。支持单个图像或多个图像的列表。
+* `batch_size` (`int`): 处理的批处理大小。
+* `return_text` (`bool`): 是否仅返回识别的文本；默认值为 `True`。
+* `kwargs`: 传递给公式识别接口的其他参数。
 
-返回结果为识别后的 Latex 表示字符串（输入为多张图片时返回是同样长度的列表）。
+当 `return_text` 为 `True` 时，返回结果是识别的 LaTeX 表示字符串（当输入为多个图像时，返回具有相同长度的列表）；
+当 `return_text` 为 `False` 时，返回类型为 `Dict[str, Any]` 或 `List[Dict[str, Any]]`，具有以下 keys：
 
-
-
-
+* `text`: 识别的 LaTeX 文本。
+* `score`: 置信度分数 `[0, 1]`；分数越高，置信度越高。
 
 
 ## 脚本使用
@@ -603,9 +601,11 @@ $ p2t predict -h
                                   则 '--save-analysis-res' 也应是文件/目录）。
                                   设为 `无` 表示不保存
   --rec-kwargs TEXT               调用 .recognize() 的 kwargs，以 JSON 字符串格式
+  --return-text / --no-return-text
+                                  是否仅返回文本结果  [默认值: return-text]
   --auto-line-break / --no-auto-line-break
                                   是否自动确定将相邻行结果合并为单行结果
-                                  [默认值: no-auto-line-break]
+                                  [默认值: auto-line-break]
   --log-level TEXT                日志级别，如 `INFO`, `DEBUG`
                                   [默认值: INFO]
   -h, --help                      显示此消息并退出。
