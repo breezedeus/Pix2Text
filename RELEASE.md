@@ -1,6 +1,6 @@
 # Release Notes
 
-## Update 2024.03.13：**V1.0.2** Released
+## Update 2024.03.14：**V1.0.2** Released
 
 Major Changes:
 
