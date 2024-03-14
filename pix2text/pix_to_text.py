@@ -211,8 +211,8 @@ class Pix2Text(object):
         # logger.debug('MFD Result: %s', analyzer_outs)
 
         crop_patches = []
-        for box_info in analyzer_outs:
-            box = box_info['box']
+        for mf_box_info in analyzer_outs:
+            box = mf_box_info['box']
             xmin, ymin, xmax, ymax = (
                 int(box[0][0]),
                 int(box[0][1]),
@@ -230,22 +230,22 @@ class Pix2Text(object):
         assert len(mf_results) == len(analyzer_outs)
 
         mf_outs = []
-        for box_info, patch_out in zip(analyzer_outs, mf_results):
+        for mf_box_info, patch_out in zip(analyzer_outs, mf_results):
             text = patch_out['text']
             mf_outs.append(
                 {
-                    'type': box_info['type'],
+                    'type': mf_box_info['type'],
                     'text': text,
-                    'position': box_info['box'],
+                    'position': mf_box_info['box'],
                     'score': patch_out['score'],
                 }
             )
 
         masked_img = np.array(img0.copy())
         # 把公式部分mask掉，然后对其他部分进行OCR
-        for box_info in analyzer_outs:
-            if box_info['type'] in ('isolated', 'embedding'):
-                box = box_info['box']
+        for mf_box_info in analyzer_outs:
+            if mf_box_info['type'] in ('isolated', 'embedding'):
+                box = mf_box_info['box']
                 xmin, ymin = max(0, int(box[0][0]) - 1), max(0, int(box[0][1]) - 1)
                 xmax, ymax = (
                     min(img0.size[0], int(box[2][0]) + 1),
@@ -254,8 +254,14 @@ class Pix2Text(object):
                 masked_img[ymin:ymax, xmin:xmax, :] = 255
         masked_img = Image.fromarray(masked_img)
 
-        box_infos = self.text_ocr.detect_only(np.array(img0))
-        box_infos = box_infos['detected_texts']
+        text_box_infos = self.text_ocr.detect_only(np.array(img0))
+        box_infos = []
+        for line_box_info in text_box_infos['detected_texts']:
+            # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
+            _text_box = rotated_box_to_horizontal(line_box_info['position'])
+            if not is_valid_box(_text_box, min_height=8, min_width=2):
+                continue
+            box_infos.append({'position': _text_box})
         max_width_expand_ratio = kwargs.get('det_text_bbox_max_width_expand_ratio', 0.3)
         if self.text_ocr.name == 'cnocr':
             box_infos: list[dict] = adjust_line_width(
@@ -271,31 +277,31 @@ class Pix2Text(object):
                 0
             )
 
-        embed_ratio_threshold = kwargs.get('embed_ratio_threshold', 0.65)
+        embed_ratio_threshold = kwargs.get('embed_ratio_threshold', 0.6)
         total_text_boxes = []
-        for crop_img_info in box_infos:
-            # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
-            hor_box = rotated_box_to_horizontal(crop_img_info['position'])
-            if not is_valid_box(hor_box, min_height=8, min_width=2):
-                continue
-            line_box = _to_iou_box(hor_box)
-            embed_mfs = []
-            for box_info in mf_outs:
-                if box_info['type'] == 'embedding':
-                    box2 = _to_iou_box(box_info['position'])
-                    if (
-                        float(box_partial_overlap(line_box, box2).squeeze())
-                        >= embed_ratio_threshold
+        for line_box_info in box_infos:
+            _line_box = _to_iou_box(line_box_info['position'])
+            _embed_mfs = []
+            for mf_box_info in mf_outs:
+                if mf_box_info['type'] == 'embedding':
+                    _mf_box = _to_iou_box(mf_box_info['position'])
+                    overlap_area_ratio = float(
+                        box_partial_overlap(_line_box, _mf_box).squeeze()
+                    )
+                    if overlap_area_ratio >= embed_ratio_threshold or (
+                        overlap_area_ratio > 0
+                        and y_overlap(line_box_info, mf_box_info, key='position')
+                        > embed_ratio_threshold
                     ):
-                        embed_mfs.append(
+                        _embed_mfs.append(
                             {
-                                'position': box2[0].int().tolist(),
-                                'text': box_info['text'],
-                                'type': box_info['type'],
+                                'position': _mf_box[0].int().tolist(),
+                                'text': mf_box_info['text'],
+                                'type': mf_box_info['type'],
                             }
                         )
 
-            ocr_boxes = self._split_line_image(line_box, embed_mfs)
+            ocr_boxes = self._split_line_image(_line_box, _embed_mfs)
             total_text_boxes.extend(ocr_boxes)
 
         outs = copy(mf_outs)
@@ -429,6 +435,8 @@ class Pix2Text(object):
             if start + 8 < _xmax:
                 outs.append({'position': [start, ymin, _xmax, ymax], 'type': 'text'})
             start = int(mf['position'][2])
+            if _xmax >= xmax:
+                break
         if start < xmax:
             outs.append({'position': [start, ymin, xmax, ymax], 'type': 'text'})
         return outs
