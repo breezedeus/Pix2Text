@@ -587,7 +587,7 @@ def adjust_line_width(
     return text_box_infos
 
 
-def crop_box(text_box, formula_box, min_crop_width=4) -> List[np.ndarray]:
+def crop_box(text_box, formula_box, min_crop_width=2) -> List[np.ndarray]:
     """
     将 text_box 与 formula_box 相交的部分裁剪掉
     Args:
