@@ -1,5 +1,19 @@
 # Release Notes
 
+## Update 2024.03.13：**V1.0.2** Released
+
+Major Changes:
+
+* Optimized the recognition process, improving the recognition of boundary punctuation that may have been missed before.
+* Enhanced the LaTeX recognition results by restoring the formula tags to the formulas.
+* Adjusted the output format of the recognition results, adding the `return_text` parameter to control whether to return only text or more detailed information. When returning more detailed information, confidence score `score` and position information `position` will also be provided.
+
+主要变更：
+
+* 优化了识别的逻辑，以前可能漏识的边界标点现在可以比较好的识别。
+* 对 Latex 识别结果进行了优化，把公式的 tag 还原到公式中。
+* 调整了识别结果的输出格式，增加了参数 `return_text` 来控制结果是只返回文本还是更丰富的信息。当返回更丰富信息时，会返回置信度 `score` 以及位置信息 `position`。
+
 ## Update 2024.03.03：发布 **V1.0.1**
 
 主要变更：
