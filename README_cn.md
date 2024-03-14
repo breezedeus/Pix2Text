@@ -488,7 +488,7 @@ def recognize(
   - 对于 **MFD 分析器**（Mathematical Formula Detection），值可以是 `text`（纯文本）、`isolated`（独立行中的数学公式）或 `embedding`（行内的数学公式）。
   - 对于 **布局分析器**（Layout Analysis），值对应于布局分析结果的类别。
 - `text`：识别出的文字或Latex表达式；
-- `score`: 置信度分数 [0, 1]；分数越高，置信度越高。
+- `score`: 置信度分数 `[0, 1]`；分数越高，置信度越高。
 - `position`: 检测到的框坐标，`np.ndarray`，形状为 `[4, 2]`。
 - `line_number`: 仅在使用 **MFD 分析器** 时存在。指示框的行号（从 0 开始）。具有相同 `line_number` 的框在同一行上。
 
@@ -529,7 +529,7 @@ def recognize_text(
 
 * `position`: 区块的位置信息，`np.ndarray`，形状为 `[4, 2]`。
 * `text`: 识别的文本。
-* `score`: 置信度分数 [0, 1]；分数越高，置信度越高。
+* `score`: 置信度分数 `[0, 1]`；分数越高，置信度越高。
 
 
 #### 识别纯公式图片
@@ -553,11 +553,11 @@ def recognize_formula(
 * `return_text` (`bool`): 是否仅返回识别的文本；默认值为 `True`。
 * `kwargs`: 传递给公式识别接口的其他参数。
 
-当 `return_text` 为 True 时，返回结果是识别的 LaTeX 表示字符串（当输入为多个图像时，返回具有相同长度的列表）；
-当 `return_text` 为 False 时，返回类型为 `Dict[str, Any]` 或 `List[Dict[str, Any]]`，具有以下 keys：
+当 `return_text` 为 `True` 时，返回结果是识别的 LaTeX 表示字符串（当输入为多个图像时，返回具有相同长度的列表）；
+当 `return_text` 为 `False` 时，返回类型为 `Dict[str, Any]` 或 `List[Dict[str, Any]]`，具有以下 keys：
 
 * `text`: 识别的 LaTeX 文本。
-* `score`: 置信度分数 [0, 1]；分数越高，置信度越高。
+* `score`: 置信度分数 `[0, 1]`；分数越高，置信度越高。
 
 
 ## 脚本使用

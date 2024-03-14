@@ -470,7 +470,7 @@ with each dict representing one detected box, containing keys:
   - For **MFD Analyzer** (Mathematical Formula Detection), the values can be `text` (pure text), `isolated` (mathematical formulas in isolated lines), or `embedding` (mathematical formulas embedded in lines).
   - For **Layout Analyzer** (Layout Analysis), the values correspond to the categories of layout analysis results.
 - `text`: Recognized text or latex.
-- `score`: The confidence score [0, 1]; the higher, the more confident.
+- `score`: The confidence score `[0, 1]`; the higher, the more confident.
 - `position`: Detected box coordinates, `np.ndarray`, with shape `[4, 2]`.
 - `line_number`: Exists only when using **MFD Analyzer**. Indicates the line number (starting from 0) of the box. Boxes with the same `line_number` are on the same line.
 
@@ -505,12 +505,12 @@ The input parameters are explained as follows:
 * `return_text` (`bool`): Whether to return only the recognized text; default value is `True`.
 * `kwargs`: Other parameters passed to the text recognition interface.
 
-The return result is the recognized text string (when the input is multiple images, a list of the same length is returned) when `return_text` is True;
-`List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
+The return result is the recognized text string (when the input is multiple images, a list of the same length is returned) when `return_text` is `True`;
+`List[Any]` or `List[List[Any]]` when `return_text` is `False`, with the same length as `imgs` and the following keys:
 
-* `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2].
+* `position`: Position information of the block, `np.ndarray`, with a shape of `[4, 2]`.
 * `text`: The recognized text.
-* `score`: The confidence score [0, 1]; the higher, the more confident.
+* `score`: The confidence score `[0, 1]`; the higher, the more confident.
 
 #### Recognizing Pure Formula Images
 
@@ -533,11 +533,11 @@ The input parameters are explained as follows:
 * `return_text` (`bool`): Whether to return only the recognized text; default value is `True`.
 * `kwargs`: Additional parameters to be passed to the formula recognition interface.
 
-The return result is the recognized LaTeX representation string (when the input is multiple images, a list of the same length is returned) when `return_text` is True;
-Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
+The return result is the recognized LaTeX representation string (when the input is multiple images, a list of the same length is returned) when `return_text` is `True`;
+`Dict[str, Any]` or `List[Dict[str, Any]]` when `return_text` is `False`, with the following keys:
 
 * `text`: The recognized LaTeX text.
-* `score`: The confidence score [0, 1]; the higher, the more confident.
+* `score`: The confidence score `[0, 1]`; the higher, the more confident.
 
 
 ## Script Usage
