@@ -83,17 +83,17 @@ class OcrEngineWrapper:
             ```
              [{'score': 0.88,
               'text': 'Line 1',
-              'position': array([[416,  77],
-                                 [486,  13],
-                                 [800, 325],
-                                 [730, 390]], dtype=int32)
+              'position': array([[146, 22],
+                                 [179, 22],
+                                 [179, 60],
+                                 [146, 60]], dtype=int32)
               },
               {'score': 0.78,
               'text': 'Line 2'
-              'position': array([[  0,  77],
-                                 [  0,  13],
-                                 [  0, 325],
-                                 [  0, 390]], dtype=int32)
+              'position': array([[641, 115],
+                                 [1180, 115],
+                                 [1180, 244],
+                                 [641, 244]], dtype=int32)
               }]
             ```
         """
