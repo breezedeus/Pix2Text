@@ -121,7 +121,7 @@ class Pix2Text(object):
 
     def recognize(
         self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs
-    ) -> List[Dict[str, Any]]:
+    ) -> Union[str, List[Dict[str, Any]]]:
         """
         Analyze the layout of the image, and then recognize the information contained in each section.
 
@@ -138,7 +138,7 @@ class Pix2Text(object):
                 * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_only_text` is `True`; default value is `True`
                 * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
                 * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
-                * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.65`.
+                * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.6`.
                     When the overlap between an embed formula and a text line is greater than or equal to this threshold,
                     the embed formula and the text line are considered to be on the same line;
                     otherwise, they are considered to be on different lines.
@@ -151,10 +151,6 @@ class Pix2Text(object):
                * `score`: The confidence score [0, 1]; the higher, the more confident
                * `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
                * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
-                * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when using `MFD`; default is `(' $', '$ ')`
-                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when using `MFD`; default is `('$$\n', '\n$$')`
-                * det_bbox_max_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height
-                * mfr_batch_size (int): batch size for MFR; default value is `1`
 
         """
         if self.analyzer._model_name == 'mfd':
@@ -182,7 +178,7 @@ class Pix2Text(object):
                 * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_only_text` is `True`; default value is `True`
                 * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
                 * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
-                * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.65`.
+                * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.6`.
                     When the overlap between an embed formula and a text line is greater than or equal to this threshold,
                     the embed formula and the text line are considered to be on the same line;
                     otherwise, they are considered to be on different lines.
