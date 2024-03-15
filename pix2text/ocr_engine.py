@@ -1,7 +1,7 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
-from typing import Sequence, List
+from typing import Sequence, List, Optional
 
 import numpy as np
 import cv2
@@ -65,12 +65,13 @@ class OcrEngineWrapper:
         """
         pass
 
-    def ocr(self, img: np.ndarray, **kwargs):
+    def ocr(self, img: np.ndarray, rec_config: Optional[dict] = None, **kwargs):
         """
         Detect texts first, and then recognize the texts for detected bbox patches.
         Args:
-            img (): RGB image with shape [height, width] or [height, width, channel].
+            img (np.ndarray): RGB image with shape [height, width] or [height, width, channel].
                     channel should be 1 (gray image) or 3 (RGB formatted color image). scaled in [0, 255];
+            rec_config (Optional[dict]): The config for recognition
             kwargs: more configs
 
         Returns:
@@ -116,8 +117,9 @@ class CnOCREngineWrapper(OcrEngineWrapper):
         except:
             return {'text': '', 'score': 0.0}
 
-    def ocr(self, img: np.ndarray, **kwargs) -> str:
-        outs = self.ocr_engine.ocr(img)
+    def ocr(self, img: np.ndarray, rec_config: Optional[dict] = None, **kwargs) -> str:
+        rec_config = rec_config or {}
+        outs = self.ocr_engine.ocr(img, **rec_config)
         return outs
 
 
@@ -154,9 +156,12 @@ class EasyOCREngineWrapper(OcrEngineWrapper):
             pass
         return out
 
-    def ocr(self, img: np.ndarray, **kwargs) -> List[dict]:
+    def ocr(
+        self, img: np.ndarray, rec_config: Optional[dict] = None, **kwargs
+    ) -> List[dict]:
+        rec_config = rec_config or {}
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        results = self.ocr_engine.readtext(img)
+        results = self.ocr_engine.readtext(img, **rec_config)
         outs = []
         for result in results:
             outs.append(

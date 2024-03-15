@@ -1,7 +1,7 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
-
+import string
 from typing import Optional, Union, List, Dict, Any
 import logging
 from pathlib import Path
@@ -158,6 +158,7 @@ class LatexOCR(object):
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         batch_size: int = 1,
         use_post_process: bool = True,
+        rec_config: Optional[dict] = None,
         **kwargs,
     ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """
@@ -165,8 +166,9 @@ class LatexOCR(object):
         Args:
             imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
             batch_size (int): The batch size
-            use_post_process (bool): Whether to use post process. Defaults to True.
-            **kwargs (): Special model parameters for generation.
+            use_post_process (bool): Whether to use post process. Defaults to True
+            rec_config (Optional[dict]): The generation config
+            **kwargs (): Other arguments. Not used for now
 
         Returns: The LaTeX Result or list of LaTeX Results; each result is a dict with `text` and `score` fields.
 
@@ -182,7 +184,7 @@ class LatexOCR(object):
         results = []
         for i in tqdm.tqdm(range(0, len(input_imgs), batch_size)):
             part_imgs = input_imgs[i : i + batch_size]
-            results.extend(self._one_batch(part_imgs, **kwargs))
+            results.extend(self._one_batch(part_imgs, rec_config, **kwargs))
 
         if use_post_process:
             for info in results:
@@ -192,13 +194,14 @@ class LatexOCR(object):
             return results[0]
         return results
 
-    def _one_batch(self, img_list, **kwargs):
+    def _one_batch(self, img_list, rec_config, **kwargs):
+        rec_config = rec_config or {}
         pixel_values = self.processor(images=img_list, return_tensors="pt").pixel_values
         outs = self.model.generate(
             pixel_values.to(self.device),
             return_dict_in_generate=True,
             output_logits=True,
-            **kwargs,
+            **rec_config,
         )
         logits = torch.stack(outs.logits, dim=1)
         scores = torch.softmax(logits, dim=-1).max(dim=2).values

@@ -495,6 +495,7 @@ class Pix2Text(object):
         self,
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         return_text: bool = True,
+        rec_config: Optional[dict] = None,
         **kwargs,
     ) -> Union[str, List[str], List[Any], List[List[Any]]]:
         """
@@ -502,6 +503,7 @@ class Pix2Text(object):
         Args:
             imgs (Union[str, Path, Image.Image], List[str], List[Path], List[Image.Image]): The image or list of images
             return_text (bool): Whether to return only the recognized text; default value is `True`
+            rec_config (Optional[dict]): The config for recognition
             kwargs (): Other parameters for `text_ocr.ocr()`
 
         Returns: Text str or list of text strs when `return_text` is True;
@@ -535,6 +537,7 @@ class Pix2Text(object):
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         batch_size: int = 1,
         return_text: bool = True,
+        rec_config: Optional[dict] = None,
         **kwargs,
     ) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
         """
@@ -543,6 +546,7 @@ class Pix2Text(object):
             imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
             batch_size (int): The batch size
             return_text (bool): Whether to return only the recognized text; default value is `True`
+            rec_config (Optional[dict]): The config for recognition
             **kwargs (): Special model parameters. Not used for now
 
         Returns: The LaTeX Expression or list of LaTeX Expressions;
@@ -552,7 +556,9 @@ class Pix2Text(object):
                     * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
-        outs = self.latex_model.recognize(imgs, batch_size=batch_size, **kwargs)
+        outs = self.latex_model.recognize(
+            imgs, batch_size=batch_size, rec_config=rec_config, **kwargs
+        )
         if return_text:
             if isinstance(outs, dict):
                 outs = outs['text']
