@@ -1,5 +1,17 @@
 # Release Notes
 
+## Update 2024.03.15：**V1.0.2.1** Released
+
+Major Changes:
+
+* Fixed mishandling of LaTeX expressions during post-processing, such as replacing `\rightarrow` with `arrow`.
+* Added `rec_config` parameter to `.recognize_text()` and `.recognize_formula()` methods for passing additional parameters for recognition.
+
+主要变更：
+
+* 修复对 LaTeX 表达式进行后处理时引入的误操作，如 `\rightarrow` 被替换为 `arrow`。
+* 对 `.recognize_text()` 和 `.recognize_formula()` 加入了 `rec_config` 参数，以便传入用于识别的额外参数。
+
 ## Update 2024.03.14：**V1.0.2** Released
 
 Major Changes:

@@ -495,6 +495,7 @@ def recognize_text(
     self,
     imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
     return_text: bool = True,
+    rec_config: Optional[dict] = None,
     **kwargs,
 ) -> Union[str, List[str], List[Any], List[List[Any]]]:
 ```
@@ -503,6 +504,7 @@ The input parameters are explained as follows:
 
 * `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): The path of the image(s) to be recognized, or `Image` objects that has been read in using `Image.open()`. Supports a single image or a list of multiple images.
 * `return_text` (`bool`): Whether to return only the recognized text; default value is `True`.
+* `rec_config` (`Optional[dict]`): The config for recognition.
 * `kwargs`: Other parameters passed to the text recognition interface.
 
 The return result is the recognized text string (when the input is multiple images, a list of the same length is returned) when `return_text` is `True`;
@@ -522,6 +524,7 @@ def recognize_formula(
     imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
     batch_size: int = 1,
     return_text: bool = True,
+    rec_config: Optional[dict] = None,
     **kwargs,
 ) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
 ```
@@ -531,6 +534,7 @@ The input parameters are explained as follows:
 * `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): The path of the image(s) to be recognized, or `Image` objects that has been read in using `Image.open()`. Supports a single image or a list of multiple images.
 * `batch_size` (`int`): The batch size for processing.
 * `return_text` (`bool`): Whether to return only the recognized text; default value is `True`.
+* `rec_config` (`Optional[dict]`): The config for recognition.
 * `kwargs`: Additional parameters to be passed to the formula recognition interface.
 
 The return result is the recognized LaTeX representation string (when the input is multiple images, a list of the same length is returned) when `return_text` is `True`;

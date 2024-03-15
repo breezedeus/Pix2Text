@@ -514,6 +514,7 @@ def recognize_text(
     self,
     imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
     return_text: bool = True,
+    rec_config: Optional[dict] = None,
     **kwargs,
 ) -> Union[str, List[str], List[Any], List[List[Any]]]:
 ```
@@ -522,6 +523,7 @@ def recognize_text(
 
 * `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): 待识别的图像的路径，或者已经使用 `Image.open()` 读取的图像 `Image` 对象。支持单个图像或多个图像的列表。
 * `return_text` (`bool`): 是否仅返回识别的文本；默认值为 `True`。
+* `rec_config` (`Optional[dict]`): 传递给识别接口的参数。
 * `kwargs`: 传递给文本识别接口的其他参数。
 
 当 `return_text` 为 `True` 时，返回结果是识别的文本字符串（当输入为多个图像时，返回具有相同长度的列表）；
@@ -542,6 +544,7 @@ def recognize_formula(
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         batch_size: int = 1,
         return_text: bool = True,
+        rec_config: Optional[dict] = None,
         **kwargs,
 ) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
 ```
@@ -551,6 +554,7 @@ def recognize_formula(
 * `imgs` (`Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]`): 待识别的图像的路径，或者已经使用 `Image.open()` 读取的图像 `Image` 对象。支持单个图像或多个图像的列表。
 * `batch_size` (`int`): 处理的批处理大小。
 * `return_text` (`bool`): 是否仅返回识别的文本；默认值为 `True`。
+* `rec_config` (`Optional[dict]`): 传递给识别接口的参数。
 * `kwargs`: 传递给公式识别接口的其他参数。
 
 当 `return_text` 为 `True` 时，返回结果是识别的 LaTeX 表示字符串（当输入为多个图像时，返回具有相同长度的列表）；
