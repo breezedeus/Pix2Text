@@ -321,6 +321,8 @@ def find_all_left_or_right(latex, left_or_right='left'):
     # 匹配出latex中所有的 '\left' 后面跟着的第一个非空格字符，定位它们所在的位置
     for m in re.finditer(rf'\\{left_or_right}\s*\S', latex):
         start, end = m.span()
+        if latex[end - 1] in string.ascii_letters:
+            continue
         # 如果最后一个字符为 "\"，则往前继续匹配，直到匹配到一个非字母的字符
         # 如 "\left \big("
         while latex[end - 1] in ('\\', ' '):
@@ -388,11 +390,11 @@ def fix_latex(latex: str) -> str:
     for left_bracket_info in left_bracket_infos:
         for right_bracket_info in right_bracket_infos:
             if (
-                    not right_bracket_info.get('matched', False)
-                    and right_bracket_info['start'] > left_bracket_info['start']
-                    and match_left_right(
-                right_bracket_info['str'], left_bracket_info['str']
-            )
+                not right_bracket_info.get('matched', False)
+                and right_bracket_info['start'] > left_bracket_info['start']
+                and match_left_right(
+                    right_bracket_info['str'], left_bracket_info['str']
+                )
             ):
                 left_bracket_info['matched'] = True
                 right_bracket_info['matched'] = True
@@ -405,9 +407,9 @@ def fix_latex(latex: str) -> str:
             start_idx = left_bracket_info['start']
             end_idx = start_idx + left_len
             latex = (
-                    latex[: left_bracket_info['start']]
-                    + ' ' * (end_idx - start_idx)
-                    + latex[end_idx:]
+                latex[: left_bracket_info['start']]
+                + ' ' * (end_idx - start_idx)
+                + latex[end_idx:]
             )
     for right_bracket_info in right_bracket_infos:
         # 把没有匹配的 '\right'替换为等长度的空格
@@ -416,11 +418,11 @@ def fix_latex(latex: str) -> str:
             start_idx = right_bracket_info['start']
             end_idx = start_idx + right_len
             latex = (
-                    latex[: right_bracket_info['start']]
-                    + ' ' * (end_idx - start_idx)
-                    + latex[end_idx:]
+                latex[: right_bracket_info['start']]
+                + ' ' * (end_idx - start_idx)
+                + latex[end_idx:]
             )
 
     # 把 latex 中的连续空格替换为一个空格
     latex = re.sub(r'\s+', ' ', latex)
-    return latex
+    return latex.strip()
