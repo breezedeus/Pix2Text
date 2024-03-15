@@ -1,7 +1,7 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
-
+import string
 from typing import Optional, Union, List, Dict, Any
 import logging
 from pathlib import Path
@@ -158,6 +158,7 @@ class LatexOCR(object):
         imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
         batch_size: int = 1,
         use_post_process: bool = True,
+        rec_config: Optional[dict] = None,
         **kwargs,
     ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """
@@ -165,8 +166,9 @@ class LatexOCR(object):
         Args:
             imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
             batch_size (int): The batch size
-            use_post_process (bool): Whether to use post process. Defaults to True.
-            **kwargs (): Special model parameters for generation.
+            use_post_process (bool): Whether to use post process. Defaults to True
+            rec_config (Optional[dict]): The generation config
+            **kwargs (): Other arguments. Not used for now
 
         Returns: The LaTeX Result or list of LaTeX Results; each result is a dict with `text` and `score` fields.
 
@@ -182,7 +184,7 @@ class LatexOCR(object):
         results = []
         for i in tqdm.tqdm(range(0, len(input_imgs), batch_size)):
             part_imgs = input_imgs[i : i + batch_size]
-            results.extend(self._one_batch(part_imgs, **kwargs))
+            results.extend(self._one_batch(part_imgs, rec_config, **kwargs))
 
         if use_post_process:
             for info in results:
@@ -192,13 +194,14 @@ class LatexOCR(object):
             return results[0]
         return results
 
-    def _one_batch(self, img_list, **kwargs):
+    def _one_batch(self, img_list, rec_config, **kwargs):
+        rec_config = rec_config or {}
         pixel_values = self.processor(images=img_list, return_tensors="pt").pixel_values
         outs = self.model.generate(
             pixel_values.to(self.device),
             return_dict_in_generate=True,
             output_logits=True,
-            **kwargs,
+            **rec_config,
         )
         logits = torch.stack(outs.logits, dim=1)
         scores = torch.softmax(logits, dim=-1).max(dim=2).values
@@ -321,6 +324,8 @@ def find_all_left_or_right(latex, left_or_right='left'):
     # 匹配出latex中所有的 '\left' 后面跟着的第一个非空格字符，定位它们所在的位置
     for m in re.finditer(rf'\\{left_or_right}\s*\S', latex):
         start, end = m.span()
+        if latex[end - 1] in string.ascii_letters:
+            continue
         # 如果最后一个字符为 "\"，则往前继续匹配，直到匹配到一个非字母的字符
         # 如 "\left \big("
         while latex[end - 1] in ('\\', ' '):
@@ -388,11 +393,11 @@ def fix_latex(latex: str) -> str:
     for left_bracket_info in left_bracket_infos:
         for right_bracket_info in right_bracket_infos:
             if (
-                    not right_bracket_info.get('matched', False)
-                    and right_bracket_info['start'] > left_bracket_info['start']
-                    and match_left_right(
-                right_bracket_info['str'], left_bracket_info['str']
-            )
+                not right_bracket_info.get('matched', False)
+                and right_bracket_info['start'] > left_bracket_info['start']
+                and match_left_right(
+                    right_bracket_info['str'], left_bracket_info['str']
+                )
             ):
                 left_bracket_info['matched'] = True
                 right_bracket_info['matched'] = True
@@ -405,9 +410,9 @@ def fix_latex(latex: str) -> str:
             start_idx = left_bracket_info['start']
             end_idx = start_idx + left_len
             latex = (
-                    latex[: left_bracket_info['start']]
-                    + ' ' * (end_idx - start_idx)
-                    + latex[end_idx:]
+                latex[: left_bracket_info['start']]
+                + ' ' * (end_idx - start_idx)
+                + latex[end_idx:]
             )
     for right_bracket_info in right_bracket_infos:
         # 把没有匹配的 '\right'替换为等长度的空格
@@ -416,11 +421,11 @@ def fix_latex(latex: str) -> str:
             start_idx = right_bracket_info['start']
             end_idx = start_idx + right_len
             latex = (
-                    latex[: right_bracket_info['start']]
-                    + ' ' * (end_idx - start_idx)
-                    + latex[end_idx:]
+                latex[: right_bracket_info['start']]
+                + ' ' * (end_idx - start_idx)
+                + latex[end_idx:]
             )
 
     # 把 latex 中的连续空格替换为一个空格
     latex = re.sub(r'\s+', ' ', latex)
-    return latex
+    return latex.strip()
