@@ -61,3 +61,14 @@ def test_remove_unnecessary_spaces():
 
     for ori, res in latex_strs:
         assert remove_unnecessary_spaces(ori) == res
+
+
+def test_fix_latex():
+    latex_strs = [
+        ('\\left \\frac{1}{2}', '\\frac{1}{2}'),
+        ('\\left ( \\frac{1}{2} + \\left \\frac{1}{2} \\right )', '\\left ( \\frac{1}{2} + \\frac{1}{2} \\right )'),
+        ('\\left( \\frac{1}{2} + \\left \\frac{1}{2} \\right)', '\\left( \\frac{1}{2} + \\frac{1}{2} \\right)'),
+    ]
+
+    for ori, res in latex_strs:
+        assert fix_latex(ori) == res
