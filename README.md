@@ -730,7 +730,9 @@ Please refer to the `curl` format for your own implementation.
 
 Please refer to [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) for installing the Pix2Text desktop App for MacOS.
 
-![Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg)
+<div align="center">
+  <img src="https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg" alt="Pix2Text Mac App" width="400px"/>
+</div>
 
 
 ## A cup of coffee for the author

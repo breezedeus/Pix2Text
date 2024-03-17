@@ -739,7 +739,9 @@ $ curl -F image=@docs/examples/mixed.jpg --form 'image_type=mixed' --form 'resiz
 
 请参考 [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) 安装 Pix2Text 的 MacOS 桌面客户端。
 
-![Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg)
+<div align="center">
+  <img src="https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg" alt="Pix2Text Mac 客户端" width="400px"/>
+</div>
 
 
 ## 给作者来杯咖啡
