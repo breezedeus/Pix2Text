@@ -726,6 +726,12 @@ $ curl -F image=@docs/examples/mixed.jpg --form 'image_type=mixed' --form 'resiz
 
 Please refer to the `curl` format for your own implementation.
 
+## MacOS Desktop Application
+
+Please refer to [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) for installing the Pix2Text desktop App for MacOS.
+
+![Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg)
+
 
 ## A cup of coffee for the author
 

@@ -735,6 +735,11 @@ $ curl -F image=@docs/examples/mixed.jpg --form 'image_type=mixed' --form 'resiz
 请参照 `curl` 的调用方式自行实现。
 
 
+## Mac 桌面客户端
+
+请参考 [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) 安装 Pix2Text 的 MacOS 桌面客户端。
+
+![Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg)
 
 
 ## 给作者来杯咖啡
