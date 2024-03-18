@@ -47,7 +47,7 @@ async def ocr(
     isolated_sep = isolated_sep.split(',')
     # use_analyzer = use_analyzer.lower() != 'false' if isinstance(use_analyzer, str) else use_analyzer
 
-    params = dict(resized_shape=int(resized_shape),)
+    params = dict(resized_shape=int(resized_shape), return_text=True)
     if len(embed_sep) == 2:
         params['embed_sep'] = embed_sep
     if len(isolated_sep) == 2:
@@ -61,9 +61,6 @@ async def ocr(
     elif image_type == 'text':
         func = P2T.recognize_text
     res = func(image, **params)
-    if image_type == 'mixed':
-        for out in res:
-            out['position'] = out['position'].tolist()
     logger.info(f'output {res=}')
 
     return Pix2TextResponse(results=res).dict()

@@ -200,10 +200,10 @@ class LatexOCR(object):
         outs = self.model.generate(
             pixel_values.to(self.device),
             return_dict_in_generate=True,
-            output_logits=True,
+            output_scores=True,
             **rec_config,
         )
-        logits = torch.stack(outs.logits, dim=1)
+        logits = torch.stack(outs.scores, dim=1)
         scores = torch.softmax(logits, dim=-1).max(dim=2).values
 
         mean_probs = []

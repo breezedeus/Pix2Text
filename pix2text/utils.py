@@ -16,7 +16,6 @@ from PIL import Image, ImageOps
 import numpy as np
 from numpy import random
 import torch
-from torch import Tensor
 from torchvision.utils import save_image
 
 
@@ -156,8 +155,8 @@ def read_img(
     return torch.tensor(img.transpose((2, 0, 1)))
 
 
-def save_img(img: Union[Tensor, np.ndarray], path):
-    if not isinstance(img, Tensor):
+def save_img(img: Union[torch.Tensor, np.ndarray], path):
+    if not isinstance(img, torch.Tensor):
         img = torch.from_numpy(img)
     img = (img - img.min()) / (img.max() - img.min() + 1e-6)
     # img *= 255
