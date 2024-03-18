@@ -4,12 +4,12 @@
 
 Main changes:
 
-* The previously used `output_logits` argument is incompatible with transformers < 4.38.0, replaced by the `output_scores` argument.
+* The previously used `output_logits` argument is incompatible with transformers < 4.38.0, replaced by the `output_scores` argument. https://github.com/breezedeus/Pix2Text/issues/81
 * Fixed a bug in `serve.py` that was not compatible with the new pix2text version.
 
 主要变更： 
 
-* 之前使用的 `output_logits` 参数不兼容 transformers < 4.38.0，换为 `output_scores` 参数。
+* 之前使用的 `output_logits` 参数不兼容 transformers < 4.38.0，换为 `output_scores` 参数。 https://github.com/breezedeus/Pix2Text/issues/81
 * 修复 `serve.py` 中未兼容新版接口的 bug。
 
 ## Update 2024.03.15：**V1.0.2.1** Released
