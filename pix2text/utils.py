@@ -256,6 +256,10 @@ def list2box(xmin, ymin, xmax, ymax, dtype=float):
     )
 
 
+def box2list(bbox):
+    return [bbox[0, 0], bbox[0, 1], bbox[2, 0], bbox[2, 1]]
+
+
 def y_overlap(box1, box2, key='position'):
     # 计算它们在y轴上的IOU: Interaction / min(height1, height2)
     if key:
