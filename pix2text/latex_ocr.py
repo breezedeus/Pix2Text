@@ -230,6 +230,7 @@ class LatexOCR(object):
     def post_process(self, text):
         text = remove_redundant_script(text)
         text = remove_trailing_whitespace(text)
+        text = replace_illegal_symbols(text)
         for _ in range(10):
             new_text = remove_empty_text(text)
             if new_text == text:
@@ -249,6 +250,18 @@ def remove_redundant_script(text):
     pattern = r'^_\s*{\s*(.*?)\s*}'
     result = re.sub(pattern, r'\1', result)
     return result.strip()
+
+
+def replace_illegal_symbols(text):
+    illegal_to_legals = [
+        (r'\\\.', r'\\ .'),   # \. -> \ .
+        (r'\\=', r'\\ ='),   # \= -> \ =
+        (r'\\-', r'\\ -'),   # \- -> \ -
+        (r'\\~', r'\\ ~'),   # \~ -> \ ~
+    ]
+    for illegal, legal in illegal_to_legals:
+        text = re.sub(illegal, legal, text)
+    return text
 
 
 def remove_empty_text(latex_expression):

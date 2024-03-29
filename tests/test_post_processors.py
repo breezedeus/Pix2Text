@@ -72,3 +72,15 @@ def test_fix_latex():
 
     for ori, res in latex_strs:
         assert fix_latex(ori) == res
+
+
+def test_replace_illegal_symbols():
+    latex_strs = [
+        (r'a^2 \.', r'a^2 \ .'),
+        (r'a^2 \= \.', r'a^2 \ = \ .'),
+        (r'a^2 \- \.', r'a^2 \ - \ .'),
+        (r'a^2 \~ \.', r'a^2 \ ~ \ .'),
+    ]
+
+    for ori, res in latex_strs:
+        assert replace_illegal_symbols(ori) == res
