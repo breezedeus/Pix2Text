@@ -396,7 +396,7 @@ class Pix2Text(object):
                         box['type'] == 'text'
                         and line_boxes[_idx2]['type'] == 'isolated'
                     ):  # if the current box is text and the previous box is embedding
-                        if y_overlap(line_boxes[_idx2], box, key='position') > 0.9:
+                        if y_overlap(line_boxes[_idx2], box, key='position') > 0.85:
                             if re.match(formula_tag, box['text']):
                                 # 去掉开头和结尾的括号
                                 tag_text = box['text'][1:-1]
