@@ -711,7 +711,7 @@ def merge_line_texts(
     isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
     for _out in outs:
         line_number = _out.get('line_number', 0)
-        if len(out_texts) <= line_number:
+        while len(out_texts) <= line_number:
             out_texts.append([])
             line_margin_list.append([0, 0])
             isolated_included.append(False)
