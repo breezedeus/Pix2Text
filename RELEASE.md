@@ -1,8 +1,20 @@
 # Release Notes
 
+## Update 2024.03.18：**V1.0.2.3** Released
+
+Major changes:
+
+* Fixed the issue caused by `merge_line_texts`, see details at: https://github.com/breezedeus/Pix2Text/issues/84.
+* Optimized the post-processing logic to handle some abnormal sequences.
+
+主要变更： 
+
+* 修复 `merge_line_texts` 带来的错误，具体见：https://github.com/breezedeus/Pix2Text/issues/84 。
+* 优化了后处理逻辑，处理部分不正常的序列。
+
 ## Update 2024.03.18：**V1.0.2.2** Released
 
-Main changes:
+Major changes:
 
 * The previously used `output_logits` argument is incompatible with transformers < 4.38.0, replaced by the `output_scores` argument. https://github.com/breezedeus/Pix2Text/issues/81
 * Fixed a bug in `serve.py` that was not compatible with the new pix2text version.
