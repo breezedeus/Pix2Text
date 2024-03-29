@@ -33,6 +33,7 @@ required = [
     "torchvision",
     "transformers>=4.37.0",
     "optimum[onnxruntime]",
+    "PyMuPDF",
 ]
 extras_require = {
     "multilingual": ["easyocr"],
