@@ -107,7 +107,7 @@ class CnOCREngine(TextOcrEngine):
     name = 'cnocr'
 
     def detect_only(self, img: np.ndarray, **kwargs):
-        outs = self.ocr_engine.det_model.detect(img)
+        outs = self.ocr_engine.det_model.detect(img, **kwargs)
         for out in outs['detected_texts']:
             out['position'] = out.pop('box')
         return outs
