@@ -191,6 +191,9 @@ COLOR_LIST = [
     [50, 205, 50],  # 石灰绿色
     [60, 20, 220],  # 猩红色
     [130, 0, 75],  # 靛蓝色
+    [255, 0, 0],  # 红色
+    [0, 255, 0],  # 绿色
+    [0, 0, 255],  # 蓝色
 ]
 
 
@@ -202,7 +205,7 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
     if isinstance(img0, Image.Image):
         img0 = cv2.cvtColor(np.asarray(img0.convert('RGB')), cv2.COLOR_RGB2BGR)
 
-    if len(categories) > 10:
+    if len(categories) > 13:
         colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
     else:
         colors = COLOR_LIST
@@ -210,7 +213,7 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
         _type = one_box['type']
         box = one_box[key]
         xyxy = [box[0, 0], box[0, 1], box[2, 0], box[2, 1]]
-        label = f'{_type}'
+        label = str(_type)
         plot_one_box(
             xyxy,
             img0,
@@ -257,7 +260,14 @@ def list2box(xmin, ymin, xmax, ymax, dtype=float):
 
 
 def box2list(bbox):
-    return [bbox[0, 0], bbox[0, 1], bbox[2, 0], bbox[2, 1]]
+    return [int(bbox[0, 0]), int(bbox[0, 1]), int(bbox[2, 0]), int(bbox[2, 1])]
+
+
+def clipbox(box, img_height, img_width):
+    new_box = np.zeros_like(box)
+    new_box[:, 0] = np.clip(box[:, 0], 0, img_width - 1)
+    new_box[:, 1] = np.clip(box[:, 1], 0, img_height - 1)
+    return new_box
 
 
 def y_overlap(box1, box2, key='position'):
@@ -720,10 +730,11 @@ def merge_line_texts(
             line_margin_list.append([0, 0])
             isolated_included.append(False)
         cur_text = _out['text']
-        if _out['type'] in ('embedding', 'isolated'):
+        cur_type = _out.get('type', 'text')
+        if cur_type in ('embedding', 'isolated'):
             sep = isolated_sep if _out['type'] == 'isolated' else embed_sep
             cur_text = sep[0] + cur_text + sep[1]
-        if _out['type'] == 'isolated':
+        if cur_type == 'isolated':
             isolated_included[line_number] = True
             cur_text = line_sep + cur_text + line_sep
         out_texts[line_number].append(cur_text)
