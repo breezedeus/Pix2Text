@@ -6,7 +6,7 @@ from pix2text import TextFormulaOCR, merge_line_texts
 
 
 def test_mfd():
-    config = dict(mfd=dict(model_name='mfd'))
+    config = dict()
     model = TextFormulaOCR.from_config(config)
 
     res = model.recognize(
@@ -36,14 +36,13 @@ def test_blog_example():
     img_fp = './docs/examples/mixed.jpg'
 
     total_config = dict(
-        mfd = dict(  # 声明 LayoutAnalyzer 的初始化参数
-            model_name='mfd',
+        mfd=dict(  # 声明 LayoutAnalyzer 的初始化参数
             model_type='yolov7',  # 表示使用的是 YoloV7 模型，而不是 YoloV7_Tiny 模型
             model_fp=os.path.expanduser(
                 '~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt'
             ),  # 注：修改成你的模型文件所存储的路径
         ),
-        formula = dict(
+        formula=dict(
             model_name='mfr-pro',
             model_backend='onnx',
             model_dir=os.path.expanduser(
@@ -52,7 +51,9 @@ def test_blog_example():
         ),
     )
     p2t = TextFormulaOCR.from_config(total_configs=total_config)
-    outs = p2t.recognize(img_fp, resized_shape=608, return_text=False)  # 也可以使用 `p2t(img_fp)` 获得相同的结果
+    outs = p2t.recognize(
+        img_fp, resized_shape=608, return_text=False
+    )  # 也可以使用 `p2t(img_fp)` 获得相同的结果
     print(outs)
     # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
     only_text = merge_line_texts(outs, auto_line_break=True)
@@ -65,7 +66,6 @@ def test_blog_pro_example():
     total_config = dict(
         languages=('en', 'ch_sim'),
         mfd=dict(  # 声明 LayoutAnalyzer 的初始化参数
-            model_name='mfd',
             model_type='yolov7',  # 表示使用的是 YoloV7 模型，而不是 YoloV7_Tiny 模型
             model_fp=os.path.expanduser(
                 '~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt'
@@ -88,7 +88,9 @@ def test_blog_pro_example():
         ),
     )
     p2t = TextFormulaOCR.from_config(total_configs=total_config)
-    outs = p2t.recognize(img_fp, resized_shape=608, return_text=False)  # 也可以使用 `p2t(img_fp)` 获得相同的结果
+    outs = p2t.recognize(
+        img_fp, resized_shape=608, return_text=False
+    )  # 也可以使用 `p2t(img_fp)` 获得相同的结果
     print(outs)
     # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
     only_text = merge_line_texts(outs, auto_line_break=True)
@@ -97,8 +99,10 @@ def test_blog_pro_example():
 
 def test_example_mixed():
     img_fp = './docs/examples/en1.jpg'
-    p2t = TextFormulaOCR()
-    outs = p2t.recognize(img_fp, resized_shape=608, return_text=False)  # 也可以使用 `p2t(img_fp)` 获得相同的结果
+    p2t = TextFormulaOCR.from_config()
+    outs = p2t.recognize(
+        img_fp, resized_shape=608, return_text=False
+    )  # 也可以使用 `p2t(img_fp)` 获得相同的结果
     print(outs)
     # 如果只需要识别出的文字和Latex表示，可以使用下面行的代码合并所有结果
     only_text = merge_line_texts(outs, auto_line_break=True)
@@ -106,17 +110,13 @@ def test_example_mixed():
 
 
 def test_example_formula():
-    from pix2text import TextFormulaOCR
-
     img_fp = './docs/examples/math-formula-42.png'
-    p2t = TextFormulaOCR()
+    p2t = TextFormulaOCR.from_config()
     outs = p2t.recognize_formula(img_fp)
     print(outs)
 
 
 def test_example_text():
-    from pix2text import TextFormulaOCR
-
     img_fp = './docs/examples/general.jpg'
     p2t = TextFormulaOCR()
     outs = p2t.recognize_text(img_fp)

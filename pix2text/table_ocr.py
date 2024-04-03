@@ -5,6 +5,7 @@ from collections import defaultdict, OrderedDict
 from itertools import chain
 from pathlib import Path
 from typing import Union, Optional, Dict, Any
+from copy import deepcopy
 import xml.etree.ElementTree as ET
 
 import torch
@@ -33,6 +34,27 @@ from .utils import (
 from . import table_postprocess as postprocess
 
 
+# detection_class_thresholds = {"table": 0.5, "table rotated": 0.5, "no object": 10}
+DEFAULT_STRUCTURE_THRESHOLDS = {
+    "table": 0.5,
+    "table column": 0.5,
+    "table row": 0.5,
+    "table column header": 0.5,
+    "table projected row header": 0.5,
+    "table spanning cell": 0.5,
+    "no object": 10,
+}
+
+
+DEFAULT_CONFIGS = {
+    'model_dir': None,
+    'root': data_dir(),
+    'structure_thresholds': DEFAULT_STRUCTURE_THRESHOLDS,
+    'table_expansion_margin': 10,
+    'threshold_percentage': 0.10,
+}
+
+
 class TableOCR(object):
     """
     Represents a table extractor for extracting tables from a document.
@@ -44,8 +66,10 @@ class TableOCR(object):
         device: str = None,
         model_dir: Optional[Union[str, Path]] = None,
         root: Union[str, Path] = data_dir(),
+        structure_thresholds=None,
         table_expansion_margin=10,
         threshold_percentage=0.10,
+        **kwargs,
     ):
         """
         Initialize an TableDataExtractor object.
@@ -55,7 +79,7 @@ class TableOCR(object):
         self.str_device = select_device(device)
         self.str_class_name2idx = get_class_map('structure')
         self.str_class_idx2name = {v: k for k, v in self.str_class_name2idx.items()}
-        self.str_class_thresholds = structure_class_thresholds
+        self.str_class_thresholds = structure_thresholds or DEFAULT_STRUCTURE_THRESHOLDS
 
         if model_dir is None:
             model_dir = self._prepare_model_files(root, None)
@@ -75,6 +99,31 @@ class TableOCR(object):
         # Use a percentage (e.g., 10%) of the average height as the threshold for a new row
         self._threshold_percentage = threshold_percentage
         self.test = []
+
+    @classmethod
+    def from_config(
+        cls,
+        text_ocr: TextOcrEngine,
+        configs: Optional[dict] = None,
+        device: str = None,
+        **kwargs,
+    ):
+        configs = configs or {}
+        def_configs = deepcopy(DEFAULT_CONFIGS)
+        def_configs.update(configs)
+        configs = def_configs
+        configs['device'] = select_device(device)
+
+        return cls(
+            text_ocr=text_ocr,
+            device=device,
+            model_dir=configs['model_dir'],
+            root=configs['root'],
+            structure_thresholds=configs['structure_thresholds'],
+            table_expansion_margin=configs['table_expansion_margin'],
+            threshold_percentage=configs['threshold_percentage'],
+            **kwargs,
+        )
 
     def _prepare_model_files(self, root, model_info):
         model_root_dir = Path(root) / MODEL_VERSION
@@ -99,6 +148,7 @@ class TableOCR(object):
         out_html=False,
         out_csv=False,
         out_markdown=True,
+        **kwargs,
     ) -> Dict[str, Any]:
         out_formats = {}
         if self.str_model is None:
@@ -213,24 +263,8 @@ class MaxResize(object):
         return resized_image
 
 
-detection_transform = transforms.Compose(
-    [
-        MaxResize(800),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]
-)
-
-structure_transform = transforms.Compose(
-    [
-        MaxResize(1000),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]
-)
-
-
 def get_class_map(data_type):
+    class_map = {}
     if data_type == 'structure':
         class_map = {
             'table': 0,
@@ -246,17 +280,21 @@ def get_class_map(data_type):
     return class_map
 
 
-detection_class_thresholds = {"table": 0.5, "table rotated": 0.5, "no object": 10}
+detection_transform = transforms.Compose(
+    [
+        MaxResize(800),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+)
 
-structure_class_thresholds = {
-    "table": 0.5,
-    "table column": 0.5,
-    "table row": 0.5,
-    "table column header": 0.5,
-    "table projected row header": 0.5,
-    "table spanning cell": 0.5,
-    "no object": 10,
-}
+structure_transform = transforms.Compose(
+    [
+        MaxResize(1000),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+)
 
 
 def box_cxcywh_to_xyxy(x):

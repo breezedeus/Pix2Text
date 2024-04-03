@@ -7,13 +7,12 @@ import re
 from itertools import chain
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List, Sequence
-from copy import copy
+from copy import copy, deepcopy
 
 from PIL import Image
 import numpy as np
 import torch
 from cnstd import LayoutAnalyzer
-from cnstd.yolov7.consts import CATEGORY_DICT
 from cnstd.yolov7.general import box_partial_overlap
 
 from .utils import (
@@ -30,9 +29,7 @@ from .utils import (
     remove_overlap_text_bbox,
     y_overlap,
 )
-from .ocr_engine import prepare_ocr_engine
-
-from .consts import MODEL_VERSION
+from .ocr_engine import prepare_ocr_engine, TextOcrEngine
 from .latex_ocr import LatexOCR
 from .utils import (
     read_img,
@@ -43,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_CONFIGS = {
-    'analyzer': {'model_name': 'mfd'},
+    'mfd': {},
     'text': {},
     'formula': {},
 }
@@ -53,23 +50,40 @@ class TextFormulaOCR(object):
     def __init__(
         self,
         *,
-        mfd=None,
-        text_ocr=None,
-        latex_ocr=None,
+        text_ocr: Optional[TextOcrEngine] = None,
+        mfd: Optional[LayoutAnalyzer] = None,
+        latex_ocr: Optional[LatexOCR] = None,
         **kwargs,
     ):
-        if mfd is None or text_ocr is None or latex_ocr is None:
-            default_ocr =TextFormulaOCR.from_config()
-            mfd = default_ocr.mfd if mfd is None else mfd
-            text_ocr = default_ocr.text_ocr if text_ocr is None else text_ocr
-            latex_ocr = default_ocr.latex_ocr if latex_ocr is None else latex_ocr
+        if text_ocr is None:
+            text_config = deepcopy(DEFAULT_CONFIGS['text'])
+            device = select_device(device=None)
+            text_config['context'] = device
+            logger.warning(
+                f'text_ocr must not be None. Using default text_ocr engine instead, with config: {text_config}.'
+            )
+            text_ocr = prepare_ocr_engine(
+                languages=('en', 'ch_sim'), ocr_engine_config=text_config
+            )
+        # if mfd is None or latex_ocr is None:
+        #     default_ocr = TextFormulaOCR.from_config()
+        #     mfd = default_ocr.mfd if mfd is None else mfd
+        #     text_ocr = default_ocr.text_ocr if text_ocr is None else text_ocr
+        #     latex_ocr = default_ocr.latex_ocr if latex_ocr is None else latex_ocr
+        #     del default_ocr
 
-        self.mfd = mfd
         self.text_ocr = text_ocr
+        self.mfd = mfd
         self.latex_ocr = latex_ocr
 
     @classmethod
-    def from_config(cls, total_configs: Optional[dict] = None, device: str = None, **kwargs):
+    def from_config(
+        cls,
+        total_configs: Optional[dict] = None,
+        enable_formula: bool = True,
+        device: str = None,
+        **kwargs,
+    ):
         """
         Args:
             total_configs (dict): Configuration information for Pix2Text; defaults to `None`, which means using the default configuration. Usually the following keys are used:
@@ -77,13 +91,14 @@ class TextFormulaOCR(object):
               * mfd (dict): Configuration information for the Analyzer model; defaults to `None`, which means using the default configuration.
               * text (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
               * formula (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
+            enable_formula (bool): Whether to enable the capability of Math Formula Detection (MFD) and Recognition (MFR); defaults to True.
             device (str, optional): What device to use for computation, supports `['cpu', 'cuda', 'gpu', 'mps']`; defaults to None, which selects the device automatically.
             **kwargs (): Reserved for other parameters; not currently used.
         """
         total_configs = total_configs or DEFAULT_CONFIGS
         languages = total_configs.get('languages', ('en', 'ch_sim'))
-        mfd_config = total_configs.get('mfd', dict())
         text_config = total_configs.get('text', dict())
+        mfd_config = total_configs.get('mfd', dict())
         formula_config = total_configs.get('formula', dict())
 
         device = select_device(device)
@@ -91,30 +106,36 @@ class TextFormulaOCR(object):
             mfd_config, text_config, formula_config, device,
         )
 
-        mfd = LayoutAnalyzer(**mfd_config)
-
         text_ocr = prepare_ocr_engine(languages, text_config)
-        latex_ocr = LatexOCR(**formula_config)
-        return cls(mfd=mfd, text_ocr=text_ocr, latex_ocr=latex_ocr)
+
+        if enable_formula:
+            if 'model_name' in mfd_config:
+                mfd_config.pop('model_name')
+            mfd = LayoutAnalyzer(model_name='mfd', **mfd_config)
+            latex_ocr = LatexOCR(**formula_config)
+        else:
+            mfd = None
+            latex_ocr = None
+        return cls(text_ocr=text_ocr, mfd=mfd, latex_ocr=latex_ocr, **kwargs)
 
     @classmethod
     def prepare_configs(
-            cls, analyzer_config, text_config, formula_config, device,
+        cls, mfd_config, text_config, formula_config, device,
     ):
         def _to_default(_conf, _def_val):
             if not _conf:
                 _conf = _def_val
             return _conf
 
-        analyzer_config = _to_default(analyzer_config, DEFAULT_CONFIGS['analyzer'])
+        mfd_config = _to_default(mfd_config, DEFAULT_CONFIGS['mfd'])
         # FIXME
-        analyzer_config['device'] = device if device != 'mps' else 'cpu'
+        mfd_config['device'] = device if device != 'mps' else 'cpu'
         text_config = _to_default(text_config, DEFAULT_CONFIGS['text'])
         text_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
         formula_config['device'] = device
         return (
-            analyzer_config,
+            mfd_config,
             text_config,
             formula_config,
         )
@@ -164,6 +185,8 @@ class TextFormulaOCR(object):
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
         # 具体参考：cnstd.yolov7.layout_analyzer.LayoutAnalyzer._preprocess_images 中的 `letterbox` 行
+        if self.mfd is None or self.latex_ocr is None:
+            raise RuntimeError('`mfd` and `latex_ocr` models MUST NOT be None')
         resized_shape = kwargs.get('resized_shape', 608)
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
@@ -219,7 +242,7 @@ class TextFormulaOCR(object):
                 masked_img[ymin:ymax, xmin:xmax, :] = 255
         masked_img = Image.fromarray(masked_img)
 
-        text_box_infos = self.text_ocr.detect_only(np.array(img0))
+        text_box_infos = self.text_ocr.detect_only(np.array(img0), resized_shape=resized_shape)
         box_infos = []
         for line_box_info in text_box_infos['detected_texts']:
             # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
@@ -437,7 +460,7 @@ class TextFormulaOCR(object):
 
         outs = []
         for image in input_imgs:
-            result = self.text_ocr.ocr(np.array(image), **kwargs)
+            result = self.text_ocr.ocr(np.array(image), rec_config=rec_config, **kwargs)
             if return_text:
                 texts = [_one['text'] for _one in result]
                 result = '\n'.join(texts)
@@ -471,6 +494,8 @@ class TextFormulaOCR(object):
                     * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
+        if self.latex_ocr is None:
+            raise RuntimeError('`latex_ocr` model MUST NOT be None')
         outs = self.latex_ocr.recognize(
             imgs, batch_size=batch_size, rec_config=rec_config, **kwargs
         )
