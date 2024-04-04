@@ -6,7 +6,7 @@ from typing import Sequence, Any, Union, Optional
 from PIL import Image
 
 from .table_ocr import visualize_cells
-from .utils import merge_line_texts
+from .utils import merge_line_texts, smart_join
 from .layout_parser import ElementType
 
 
@@ -64,6 +64,8 @@ class Element(object):
             outs = merge_line_texts(
                 self.meta, auto_line_break, line_sep, embed_sep, isolated_sep, self.spellchecker
             )
+            if self.type == ElementType.TITLE:
+                outs = smart_join(outs.split('\n'), self.spellchecker)
         elif self.type == ElementType.FORMULA:
             if isinstance(self.meta, dict):
                 outs = self.meta['text']
