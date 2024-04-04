@@ -11,6 +11,7 @@ from pathlib import Path
 import logging
 import platform
 from typing import Union, List, Any, Dict
+from collections import Counter
 
 from PIL import Image, ImageOps
 import numpy as np
@@ -164,6 +165,52 @@ def save_img(img: Union[torch.Tensor, np.ndarray], path):
     save_image(img, path)
 
     # Image.fromarray(img).save(path)
+
+
+def get_background_color(image: Image.Image, margin=2):
+    width, height = image.size
+
+    # 边缘区域的像素采样
+    edge_pixels = []
+    for x in range(width):
+        for y in range(height):
+            if (
+                x <= margin
+                or y <= margin
+                or x >= width - margin
+                or y >= height - margin
+            ):
+                edge_pixels.append(image.getpixel((x, y)))
+
+    # 统计边缘像素颜色频率
+    color_counter = Counter(edge_pixels)
+
+    # 获取频率最高的颜色
+    background_color = color_counter.most_common(1)[0][0]
+
+    return background_color
+
+
+def add_img_margin(
+    image: Image.Image, left_right_margin, top_bottom_margin, background_color=None
+):
+    if background_color is None:
+        background_color = get_background_color(image)
+
+    # 获取原始图片尺寸
+    width, height = image.size
+
+    # 计算新图片的尺寸
+    new_width = width + left_right_margin * 2
+    new_height = height + top_bottom_margin * 2
+
+    # 创建新图片对象，并填充指定背景色
+    new_image = Image.new("RGB", (new_width, new_height), background_color)
+
+    # 将原始图片粘贴到新图片中央
+    new_image.paste(image, (left_right_margin, top_bottom_margin))
+
+    return new_image
 
 
 def prepare_imgs(imgs: List[Union[str, Path, Image.Image]]) -> List[Image.Image]:
@@ -657,7 +704,9 @@ def remove_overlap_text_bbox(text_box_infos, formula_box_infos):
         # if max_overlap_val > 0.8:  # overlap 太多的情况，直接扔掉 text box
         #     continue
 
-        cropped_text_boxes = crop_box(text_box['position'], max_overlap_fbox['position'])
+        cropped_text_boxes = crop_box(
+            text_box['position'], max_overlap_fbox['position']
+        )
         if cropped_text_boxes:
             for _box in cropped_text_boxes:
                 new_box = deepcopy(text_box)
@@ -674,7 +723,17 @@ def is_chinese(ch):
     return '\u4e00' <= ch <= '\u9fff'
 
 
-def smart_join(str_list):
+def find_first_punctuation_position(text):
+    # 匹配常见标点符号的正则表达式
+    pattern = re.compile(r'[,.!?;:()\[\]{}\'\"\\/-]')
+    match = pattern.search(text)
+    if match:
+        return match.start()
+    else:
+        return len(text)
+
+
+def smart_join(str_list, spellchecker=None):
     """
     对字符串列表进行拼接，如果相邻的两个字符串都是中文或包含空白符号，则不加空格；其他情况则加空格
     """
@@ -694,8 +753,35 @@ def smart_join(str_list):
             res[-1] + str_list[i][0]
         ):
             res += str_list[i]
+        elif spellchecker is not None and res.endswith('-'):
+            fields = res.rsplit(' ', maxsplit=1)
+            if len(fields) > 1:
+                new_res, prev_word = fields[0], fields[1]
+            else:
+                new_res, prev_word = '', res
+
+            fields = str_list[i].split(' ', maxsplit=1)
+            if len(fields) > 1:
+                next_word, new_next = fields[0], fields[1]
+            else:
+                next_word, new_next = str_list[i], ''
+
+            punct_idx = find_first_punctuation_position(next_word)
+            next_word = next_word[:punct_idx]
+            new_next = str_list[i][len(next_word) :]
+            new_word = prev_word[:-1] + next_word
+            if (
+                next_word
+                and spellchecker.unknown([prev_word + next_word])
+                and spellchecker.known([new_word])
+            ):
+                res = new_res + ' ' + new_word + new_next
+            else:
+                new_word = prev_word + next_word
+                res = new_res + ' ' + new_word + new_next
         else:
             res += ' ' + str_list[i]
+        res = res.strip()
     return res
 
 
@@ -705,6 +791,7 @@ def merge_line_texts(
     line_sep='\n',
     embed_sep=(' $', '$ '),
     isolated_sep=('$$\n', '\n$$'),
+    spellchecker=None,
 ) -> str:
     """
     把 Pix2Text.recognize_by_mfd() 的返回结果，合并成单个字符串
@@ -714,6 +801,7 @@ def merge_line_texts(
         line_sep: 行与行之间的分隔符
         embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
         isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
+        spellchecker: Spell Checker
 
     Returns: 合并后的字符串
 
@@ -776,5 +864,5 @@ def merge_line_texts(
             tmp = tmp + line_sep
         res_line_texts[idx] = tmp
 
-    outs = smart_join(res_line_texts)
+    outs = smart_join(res_line_texts, spellchecker)
     return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'

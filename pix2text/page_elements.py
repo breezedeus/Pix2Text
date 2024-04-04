@@ -19,6 +19,7 @@ class Element(object):
     type: ElementType
     total_img: Image.Image
     score: float = 1.0
+    spellchecker = None
     kwargs: dict = dataclasses.field(default_factory=dict)
 
     def __init__(
@@ -30,6 +31,7 @@ class Element(object):
         total_img: Image.Image,
         score: float,
         text: Optional[str] = None,
+        spellchecker=None,
         configs: Optional[dict] = None,
     ):
         self.total_img = total_img
@@ -38,6 +40,7 @@ class Element(object):
         self.meta = meta
         self.type = type
         self.score = score
+        self.spellchecker = spellchecker
         self.kwargs = configs or {}
 
         if self.meta is not None and text is None:
@@ -59,7 +62,7 @@ class Element(object):
                     if box_info['type'] == 'isolated':
                         box_info['type'] = 'embedding'
             outs = merge_line_texts(
-                self.meta, auto_line_break, line_sep, embed_sep, isolated_sep
+                self.meta, auto_line_break, line_sep, embed_sep, isolated_sep, self.spellchecker
             )
         elif self.type == ElementType.FORMULA:
             if isinstance(self.meta, dict):
@@ -188,7 +191,7 @@ class Page(object):
             element.total_img.crop(element.box).save(str(out_path))
 
             _url = self._map_path_to_url(out_path, out_dir)
-            return f'![{self.id}]({_url})'
+            return f'![]({_url})'
         return ''
 
     def _map_path_to_url(self, path: Path, out_dir: Path):
