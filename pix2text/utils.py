@@ -11,7 +11,7 @@ from pathlib import Path
 import logging
 import platform
 from typing import Union, List, Any, Dict
-from collections import Counter
+from collections import Counter, defaultdict
 
 from PIL import Image, ImageOps
 import numpy as np
@@ -450,6 +450,29 @@ def sort_and_filter_line_boxes(line_boxes, key):
     return res_boxes
 
 
+def merge_boxes(bbox1, bbox2):
+    """
+    Merge two bounding boxes to get a bounding box that encompasses both.
+
+    Parameters:
+    - bbox1, bbox2: The bounding boxes to merge. Each box is np.ndarray, with shape of [4, 2]
+
+    Returns: new merged box, with shape of [4, 2]
+    """
+    # 解包两个边界框的坐标
+    x_min1, y_min1, x_max1, y_max1 = box2list(bbox1)
+    x_min2, y_min2, x_max2, y_max2 = box2list(bbox2)
+
+    # 计算合并后边界框的坐标
+    x_min = min(x_min1, x_min2)
+    y_min = min(y_min1, y_min2)
+    x_max = max(x_max1, x_max2)
+    y_max = max(y_max1, y_max2)
+
+    # 返回合并后的边界框
+    return list2box(x_min, y_min, x_max, y_max)
+
+
 def sort_boxes(boxes: List[dict], key='position') -> List[List[dict]]:
     # 按y坐标排序所有的框
     boxes.sort(key=lambda box: box[key][0, 1])
@@ -811,14 +834,18 @@ def merge_line_texts(
     out_texts = []
     line_margin_list = []  # 每行的最左边和最右边的x坐标
     isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
+    line_height_dict = defaultdict(list)  # 每行中每个块对应的高度
+    line_ymin_ymax_dict = defaultdict(list)  # 每行的最上边和最下边的y坐标
     for _out in outs:
         line_number = _out.get('line_number', 0)
         while len(out_texts) <= line_number:
             out_texts.append([])
-            line_margin_list.append([0, 0])
+            line_margin_list.append([100000, 0])
             isolated_included.append(False)
+            line_ymin_ymax_dict[line_number] = [100000, 0]
         cur_text = _out['text']
         cur_type = _out.get('type', 'text')
+        box = _out['position']
         if cur_type in ('embedding', 'isolated'):
             sep = isolated_sep if _out['type'] == 'isolated' else embed_sep
             cur_text = sep[0] + cur_text + sep[1]
@@ -827,13 +854,27 @@ def merge_line_texts(
             cur_text = line_sep + cur_text + line_sep
         out_texts[line_number].append(cur_text)
         line_margin_list[line_number][1] = max(
-            line_margin_list[line_number][1], float(_out['position'][2, 0])
+            line_margin_list[line_number][1], float(box[2, 0])
         )
         line_margin_list[line_number][0] = min(
-            line_margin_list[line_number][0], float(_out['position'][0, 0])
+            line_margin_list[line_number][0], float(box[0, 0])
         )
+        if cur_type == 'text':
+            line_height_dict[line_number].append(box[2, 1] - box[1, 1])
+            line_ymin_ymax_dict[line_number][0] = min(
+                line_ymin_ymax_dict[line_number][0], float(box[0, 1])
+            )
+            line_ymin_ymax_dict[line_number][1] = max(
+                line_ymin_ymax_dict[line_number][1], float(box[2, 1])
+            )
 
     line_text_list = [smart_join(o) for o in out_texts]
+
+    for _line_number in line_height_dict.keys():
+        if line_height_dict[_line_number]:
+            line_height_dict[_line_number] = np.mean(line_height_dict[_line_number])
+    _line_heights = list(line_height_dict.values())
+    mean_height = np.mean(_line_heights) if _line_heights else None
 
     if not auto_line_break:
         return re.sub(rf'{line_sep}+', line_sep, line_sep.join(line_text_list))
@@ -848,9 +889,12 @@ def merge_line_texts(
             if isolated_included[idx] or line_lengths[idx] >= line_length_thrsh
         ]
     )
-    min_x, max_x = lines.max(axis=0)
+    min_x, max_x = min(lines[:, 0]), max(lines[:, 1])
 
     indentation_thrsh = (max_x - min_x) * 0.1
+    if mean_height is not None:
+        indentation_thrsh = 1.5 * mean_height
+
     res_line_texts = [''] * len(line_text_list)
     for idx, txt in enumerate(line_text_list):
         if isolated_included[idx]:
@@ -862,6 +906,15 @@ def merge_line_texts(
             tmp = line_sep + txt
         if line_margin_list[idx][1] < max_x - indentation_thrsh:
             tmp = tmp + line_sep
+        if idx < len(line_text_list) - 1:
+            cur_height = line_ymin_ymax_dict[idx][1] - line_ymin_ymax_dict[idx][0]
+            if (
+                cur_height > 0
+                and line_ymin_ymax_dict[idx + 1][0] < line_ymin_ymax_dict[idx + 1][1]
+                and line_ymin_ymax_dict[idx + 1][0] - line_ymin_ymax_dict[idx][1]
+                > cur_height
+            ):  # 当前行与下一行的间距超过了一行的行高，则认为它们之间应该是不同的段落
+                tmp = tmp + line_sep
         res_line_texts[idx] = tmp
 
     outs = smart_join(res_line_texts, spellchecker)
