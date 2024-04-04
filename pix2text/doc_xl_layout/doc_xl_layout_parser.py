@@ -3,6 +3,7 @@
 import json
 import os
 import shutil
+from copy import deepcopy
 from pathlib import Path
 import logging
 from typing import Union, List, Dict, Any, Optional
@@ -16,7 +17,8 @@ from .detectors.detector_factory import detector_factory
 from .wrapper import wrap_result
 from ..consts import MODEL_VERSION
 from ..layout_parser import LayoutParser, ElementType
-from ..utils import select_device, read_img, data_dir, save_layout_img, clipbox, overlap
+from ..utils import select_device, read_img, data_dir, save_layout_img, clipbox, overlap, box2list, x_overlap, \
+    merge_boxes
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +81,7 @@ class DocXLayoutParser(LayoutParser):
             'arch': 'dlav0subfield_34',
             'input_res': 768,
             'num_classes': 13,
-            'scores_thresh': kwargs.get('structure_thresholds', 0.45),
+            'scores_thresh': kwargs.get('scores_thresh', 0.35),
             'load_model': str(model_fp),
             'debug': kwargs.get('debug', 0),
         }
@@ -181,7 +183,9 @@ class DocXLayoutParser(LayoutParser):
         else:
             layout_out = []
 
-        expansion_margin = kwargs.get('expansion_margin', 10)
+        layout_out = self._merge_overlapped_boxes(layout_out)
+
+        expansion_margin = kwargs.get('expansion_margin', 8)
         layout_out = self._expand_boxes(
             layout_out, expansion_margin, height=img_height, width=img_width
         )
@@ -218,6 +222,39 @@ class DocXLayoutParser(LayoutParser):
             )
         return final_out
 
+    def _merge_overlapped_boxes(self, layout_out):
+        if len(layout_out) < 2:
+            return layout_out
+        layout_out = deepcopy(layout_out)
+
+        def _overlay_vertically(box1, box2):
+            if x_overlap(box1, box2, key=None) < 0.8:
+                return False
+            box1 = box2list(box1)
+            box2 = box2list(box2)
+            # 判断是否有交集
+            if box1[3] <= box2[1] or box2[3] <= box1[1]:
+                return False
+            # 计算交集的高度
+            y_min = max(box1[1], box2[1])
+            y_max = min(box1[3], box2[3])
+            return y_max - y_min > 10
+
+        for anchor_idx, anchor_box_info in enumerate(layout_out):
+            if anchor_box_info['type'] != ElementType.TEXT or anchor_box_info.get('used', False):
+                continue
+            for cand_idx, cand_box_info in enumerate(layout_out):
+                if anchor_idx == cand_idx:
+                    continue
+                if cand_box_info['type'] != ElementType.TEXT or cand_box_info.get('used', False):
+                    continue
+                if not _overlay_vertically(anchor_box_info['position'], cand_box_info['position']):
+                    continue
+                anchor_box_info['position'] = merge_boxes(anchor_box_info['position'], cand_box_info['position'])
+                cand_box_info['used'] = True
+
+        return [box_info for box_info in layout_out if not box_info.get('used', False)]
+
     def _expand_boxes(self, layout_out, expansion_margin, height, width):
         def _overlap_with_some_box(idx, anchor_box):
             # anchor_box = layout_out[idx]
@@ -237,20 +274,38 @@ class DocXLayoutParser(LayoutParser):
 
             # expand xmin and xmax
             new_box = box_info['position'].copy()
-            new_box[0, 0] -= expansion_margin
-            new_box[3, 0] -= expansion_margin
-            new_box[1, 0] += expansion_margin
-            new_box[2, 0] += expansion_margin
+            xmin, xmax = new_box[0, 0], new_box[1, 0]
+            xmin -= expansion_margin
+            xmax += expansion_margin
+            if xmin <= 8:
+                xmin = 0
+            if xmax + 8 >= width:
+                xmax = width
+            new_box[0, 0] = new_box[3, 0] = xmin
+            new_box = clipbox(new_box, height, width)
+            if not _overlap_with_some_box(idx, new_box):
+                layout_out[idx]['position'] = new_box
+            new_box = layout_out[idx]['position'].copy()
+            new_box[1, 0] = new_box[2, 0] = xmax
             new_box = clipbox(new_box, height, width)
             if not _overlap_with_some_box(idx, new_box):
                 layout_out[idx]['position'] = new_box
 
             # expand ymin and ymax
             new_box = layout_out[idx]['position'].copy()
-            new_box[0, 1] -= expansion_margin
-            new_box[1, 1] -= expansion_margin
-            new_box[2, 1] += expansion_margin
-            new_box[3, 1] += expansion_margin
+            ymin, ymax = new_box[0, 1], new_box[2, 1]
+            ymin -= expansion_margin
+            ymax += expansion_margin
+            if ymin <= 8:
+                ymin = 0
+            if ymax + 8 >= height:
+                ymax = height
+            new_box[0, 1] = new_box[1, 1] = ymin
+            new_box = clipbox(new_box, height, width)
+            if not _overlap_with_some_box(idx, new_box):
+                layout_out[idx]['position'] = new_box
+            new_box = layout_out[idx]['position'].copy()
+            new_box[2, 1] = new_box[3, 1] = ymax
             new_box = clipbox(new_box, height, width)
             if not _overlap_with_some_box(idx, new_box):
                 layout_out[idx]['position'] = new_box
