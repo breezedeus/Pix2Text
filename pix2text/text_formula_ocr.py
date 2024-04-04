@@ -14,6 +14,7 @@ import numpy as np
 import torch
 from cnstd import LayoutAnalyzer
 from cnstd.yolov7.general import box_partial_overlap
+from spellchecker import SpellChecker
 
 from .utils import (
     sort_boxes,
@@ -44,6 +45,8 @@ DEFAULT_CONFIGS = {
     'text': {},
     'formula': {},
 }
+# see: https://pypi.org/project/pyspellchecker
+CHECKER_SUPPORTED_LANGUAGES = {'en', 'es', 'fr', 'pt', 'de', 'it', 'ru', 'ar', 'eu', 'lv', 'nl'}
 
 
 class TextFormulaOCR(object):
@@ -53,6 +56,7 @@ class TextFormulaOCR(object):
         text_ocr: Optional[TextOcrEngine] = None,
         mfd: Optional[LayoutAnalyzer] = None,
         latex_ocr: Optional[LatexOCR] = None,
+        spellchecker: Optional[SpellChecker] = None,
         **kwargs,
     ):
         if text_ocr is None:
@@ -75,12 +79,14 @@ class TextFormulaOCR(object):
         self.text_ocr = text_ocr
         self.mfd = mfd
         self.latex_ocr = latex_ocr
+        self.spellchecker = spellchecker
 
     @classmethod
     def from_config(
         cls,
         total_configs: Optional[dict] = None,
         enable_formula: bool = True,
+        enable_spell_checker: bool = True,
         device: str = None,
         **kwargs,
     ):
@@ -92,6 +98,7 @@ class TextFormulaOCR(object):
               * text (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
               * formula (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
             enable_formula (bool): Whether to enable the capability of Math Formula Detection (MFD) and Recognition (MFR); defaults to True.
+            enable_spell_checker (bool): Whether to enable the capability of Spell Checker; defaults to True.
             device (str, optional): What device to use for computation, supports `['cpu', 'cuda', 'gpu', 'mps']`; defaults to None, which selects the device automatically.
             **kwargs (): Reserved for other parameters; not currently used.
         """
@@ -116,7 +123,14 @@ class TextFormulaOCR(object):
         else:
             mfd = None
             latex_ocr = None
-        return cls(text_ocr=text_ocr, mfd=mfd, latex_ocr=latex_ocr, **kwargs)
+
+        spellchecker = None
+        if enable_spell_checker:
+            checker_languages = set(languages) & CHECKER_SUPPORTED_LANGUAGES
+            if checker_languages:
+                spellchecker = SpellChecker(language=checker_languages)
+
+        return cls(text_ocr=text_ocr, mfd=mfd, latex_ocr=latex_ocr, spellchecker=spellchecker, **kwargs)
 
     @classmethod
     def prepare_configs(
@@ -159,7 +173,7 @@ class TextFormulaOCR(object):
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             return_text (bool): Whether to return only the recognized text; default value is `True`
             kwargs ():
-                * resized_shape (int): Resize the image width to this size for processing; default value is `608`
+                * resized_shape (int): Resize the image width to this size for processing; default value is `768`
                 * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
@@ -187,7 +201,7 @@ class TextFormulaOCR(object):
         # 具体参考：cnstd.yolov7.layout_analyzer.LayoutAnalyzer._preprocess_images 中的 `letterbox` 行
         if self.mfd is None or self.latex_ocr is None:
             raise RuntimeError('`mfd` and `latex_ocr` models MUST NOT be None')
-        resized_shape = kwargs.get('resized_shape', 608)
+        resized_shape = kwargs.get('resized_shape', 768)
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
@@ -340,7 +354,7 @@ class TextFormulaOCR(object):
             line_sep = kwargs.get('line_sep', '\n')
             auto_line_break = kwargs.get('auto_line_break', True)
             outs = merge_line_texts(
-                outs, auto_line_break, line_sep, embed_sep, isolated_sep
+                outs, auto_line_break, line_sep, embed_sep, isolated_sep, self.spellchecker
             )
 
         return outs

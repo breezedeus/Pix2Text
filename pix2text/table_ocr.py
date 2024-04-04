@@ -1,6 +1,7 @@
 # coding: utf-8
 # Adapted from https://github.com/microsoft/table-transformer/blob/main/src/inference.py
 import os
+import shutil
 from collections import defaultdict, OrderedDict
 from itertools import chain
 from pathlib import Path
@@ -63,6 +64,7 @@ class TableOCR(object):
     def __init__(
         self,
         text_ocr: TextOcrEngine,
+        spellchecker=None,
         device: str = None,
         model_dir: Optional[Union[str, Path]] = None,
         root: Union[str, Path] = data_dir(),
@@ -75,6 +77,7 @@ class TableOCR(object):
         Initialize an TableDataExtractor object.
         """
         self.text_ocr = text_ocr
+        self.spellchecker = spellchecker
 
         self.str_device = select_device(device)
         self.str_class_name2idx = get_class_map('structure')
@@ -104,6 +107,7 @@ class TableOCR(object):
     def from_config(
         cls,
         text_ocr: TextOcrEngine,
+        spellchecker=None,
         configs: Optional[dict] = None,
         device: str = None,
         **kwargs,
@@ -116,6 +120,7 @@ class TableOCR(object):
 
         return cls(
             text_ocr=text_ocr,
+            spellchecker=spellchecker,
             device=device,
             model_dir=configs['model_dir'],
             root=configs['root'],
@@ -133,9 +138,11 @@ class TableOCR(object):
             return model_dir
         model_dir.mkdir(parents=True)
         download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False breezedeus/pix2text-table-rec --local-dir {model_dir}'
-        try:
-            os.system(download_cmd)
-        except:
+        os.system(download_cmd)
+        # 如果当前目录下无文件，就从huggingface上下载
+        if not list(model_dir.glob('**/[!.]*')):
+            if model_dir.exists():
+                shutil.rmtree(str(model_dir))
             os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
         return model_dir
 
@@ -235,7 +242,10 @@ class TableOCR(object):
                 t_cell['text_bboxes'] = outs
                 outs = list(chain(*outs))
                 t_cell['cell text'] = merge_line_texts(
-                    outs, auto_line_break=True, line_sep=' '
+                    outs,
+                    auto_line_break=True,
+                    line_sep=' ',
+                    spellchecker=self.spellchecker,
                 )
 
 

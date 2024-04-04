@@ -11,7 +11,7 @@ from PIL import Image
 from .utils import (
     select_device,
     box2list,
-    read_img,
+    read_img, add_img_margin,
 )
 from .layout_parser import LayoutParser, ElementType
 from .doc_xl_layout import DocXLayoutParser
@@ -79,7 +79,7 @@ class Pix2Text(object):
         )
         if enable_table:
             table_ocr = TableOCR.from_config(
-                text_formula_ocr.text_ocr, table_config, device=device
+                text_formula_ocr.text_ocr, text_formula_ocr.spellchecker, table_config, device=device
             )
         else:
             table_ocr = None
@@ -108,7 +108,7 @@ class Pix2Text(object):
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             page_id (str): page id
             kwargs ():
-                * resized_shape (int): Resize the image width to this size for processing; default value is `608`
+                * resized_shape (int): Resize the image width to this size for processing; default value is `768`
                 * save_layout_res (str): Save the layout result image in this file; default is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
@@ -138,7 +138,7 @@ class Pix2Text(object):
         else:
             img0 = read_img(img, return_type='Image')
 
-        resized_shape = kwargs.get('resized_shape', 608)
+        resized_shape = kwargs.get('resized_shape', 768)
         table_as_image = kwargs.get('table_as_image', False)
         layout_out = self.layout_parser.parse(
             img0.copy(),
@@ -155,11 +155,12 @@ class Pix2Text(object):
             image_type = box_info['type']
             score = 1.0
             if image_type in (ElementType.TEXT, ElementType.TITLE):
-                resized_shape = kwargs.get('resized_shape', 608)
-                while crop_width > 1.5 * resized_shape and resized_shape < 2048:
-                    resized_shape = min(int(1.5 * resized_shape), 2048)
+                _resized_shape = resized_shape
+                while crop_width > 1.5 * _resized_shape and _resized_shape < 2048:
+                    _resized_shape = min(int(1.5 * _resized_shape), 2048)
+                padding_patch = add_img_margin(crop_patch, left_right_margin=20, top_bottom_margin=20)
                 _out = self.text_formula_ocr.recognize(
-                    crop_patch, return_text=False, resized_shape=resized_shape, save_analysis_res=f'{_id}-{image_type.name}.png', **kwargs
+                    padding_patch, return_text=False, resized_shape=_resized_shape, save_analysis_res=f'{_id}-{image_type.name}.png', **kwargs
                 )
                 text, meta = None, _out
                 score = float(np.mean([x['score'] for x in _out]))
@@ -200,6 +201,7 @@ class Pix2Text(object):
                     type=image_type,
                     score=score,
                     total_img=img0,
+                    spellchecker=self.text_formula_ocr.spellchecker,
                     configs=kwargs,
                 )
             )
