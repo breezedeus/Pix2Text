@@ -804,7 +804,6 @@ def smart_join(str_list, spellchecker=None):
                 res = new_res + ' ' + new_word + new_next
         else:
             res += ' ' + str_list[i]
-        res = res.strip()
     return res
 
 
@@ -835,14 +834,14 @@ def merge_line_texts(
     line_margin_list = []  # 每行的最左边和最右边的x坐标
     isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
     line_height_dict = defaultdict(list)  # 每行中每个块对应的高度
-    line_ymin_ymax_dict = defaultdict(list)  # 每行的最上边和最下边的y坐标
+    line_ymin_ymax_list = []  # 每行的最上边和最下边的y坐标
     for _out in outs:
         line_number = _out.get('line_number', 0)
         while len(out_texts) <= line_number:
             out_texts.append([])
             line_margin_list.append([100000, 0])
             isolated_included.append(False)
-            line_ymin_ymax_dict[line_number] = [100000, 0]
+            line_ymin_ymax_list.append([100000, 0])
         cur_text = _out['text']
         cur_type = _out.get('type', 'text')
         box = _out['position']
@@ -861,11 +860,11 @@ def merge_line_texts(
         )
         if cur_type == 'text':
             line_height_dict[line_number].append(box[2, 1] - box[1, 1])
-            line_ymin_ymax_dict[line_number][0] = min(
-                line_ymin_ymax_dict[line_number][0], float(box[0, 1])
+            line_ymin_ymax_list[line_number][0] = min(
+                line_ymin_ymax_list[line_number][0], float(box[0, 1])
             )
-            line_ymin_ymax_dict[line_number][1] = max(
-                line_ymin_ymax_dict[line_number][1], float(box[2, 1])
+            line_ymin_ymax_list[line_number][1] = max(
+                line_ymin_ymax_list[line_number][1], float(box[2, 1])
             )
 
     line_text_list = [smart_join(o) for o in out_texts]
@@ -895,23 +894,25 @@ def merge_line_texts(
     if mean_height is not None:
         indentation_thrsh = 1.5 * mean_height
 
+    line_text_list = [(idx, txt) for idx, txt in enumerate(line_text_list) if txt]
     res_line_texts = [''] * len(line_text_list)
-    for idx, txt in enumerate(line_text_list):
-        if isolated_included[idx]:
-            res_line_texts[idx] = line_sep + txt + line_sep
+    for idx, (line_number, txt) in enumerate(line_text_list):
+        if isolated_included[line_number]:
+            res_line_texts[line_number] = line_sep + txt + line_sep
             continue
 
         tmp = txt
-        if line_margin_list[idx][0] > min_x + indentation_thrsh:
+        if line_margin_list[line_number][0] > min_x + indentation_thrsh:
             tmp = line_sep + txt
-        if line_margin_list[idx][1] < max_x - indentation_thrsh:
+        if line_margin_list[line_number][1] < max_x - indentation_thrsh:
             tmp = tmp + line_sep
         if idx < len(line_text_list) - 1:
-            cur_height = line_ymin_ymax_dict[idx][1] - line_ymin_ymax_dict[idx][0]
+            cur_height = line_ymin_ymax_list[line_number][1] - line_ymin_ymax_list[line_number][0]
+            next_line_number = line_text_list[idx + 1][0]
             if (
                 cur_height > 0
-                and line_ymin_ymax_dict[idx + 1][0] < line_ymin_ymax_dict[idx + 1][1]
-                and line_ymin_ymax_dict[idx + 1][0] - line_ymin_ymax_dict[idx][1]
+                and line_ymin_ymax_list[next_line_number][0] < line_ymin_ymax_list[next_line_number][1]
+                and line_ymin_ymax_list[next_line_number][0] - line_ymin_ymax_list[line_number][1]
                 > cur_height
             ):  # 当前行与下一行的间距超过了一行的行高，则认为它们之间应该是不同的段落
                 tmp = tmp + line_sep

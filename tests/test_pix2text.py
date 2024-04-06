@@ -8,7 +8,8 @@ from pix2text import Pix2Text
 
 def test_example():
     # img_fp = './docs/examples/formula.jpg'
-    img_fp = './docs/examples/page.png'
+    img_fp = './docs/examples/page3.png'
+    # img_fp = './docs/examples/mixed.jpg'
     total_config = {
         'layout': {'scores_thresh': 0.45},
         'text_formula': {
@@ -16,7 +17,7 @@ def test_example():
         }
     }
     p2t = Pix2Text.from_config(total_configs=total_config)
-    out_page = p2t.recognize_page(img_fp, page_id='test_page_1', save_layout_res='./layout_res.jpg')
+    out_page = p2t.recognize_page(img_fp, page_id='test_page_1', save_debug_res='./outputs')
     # print(out_page)
     out_page.to_markdown('page-output')
     # out_page.to_docx('page-output', 'page-output/output.docx')
