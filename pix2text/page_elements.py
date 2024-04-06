@@ -1,6 +1,7 @@
 # coding: utf-8
 import dataclasses
 from pathlib import Path
+import re
 from typing import Sequence, Any, Union, Optional
 
 from PIL import Image
@@ -18,14 +19,17 @@ class Element(object):
     meta: Any
     type: ElementType
     total_img: Image.Image
+    col_number: int = -1
     score: float = 1.0
     spellchecker = None
     kwargs: dict = dataclasses.field(default_factory=dict)
 
     def __init__(
         self,
+        *,
         id: str,
         box: Sequence,
+        col_number: int,
         meta: Any,
         type: ElementType,
         total_img: Image.Image,
@@ -37,6 +41,7 @@ class Element(object):
         self.total_img = total_img
         self.id = id
         self.box = box
+        self.col_number = col_number
         self.meta = meta
         self.type = type
         self.score = score
@@ -62,7 +67,12 @@ class Element(object):
                     if box_info['type'] == 'isolated':
                         box_info['type'] = 'embedding'
             outs = merge_line_texts(
-                self.meta, auto_line_break, line_sep, embed_sep, isolated_sep, self.spellchecker
+                self.meta,
+                auto_line_break,
+                line_sep,
+                embed_sep,
+                isolated_sep,
+                self.spellchecker,
             )
             if self.type == ElementType.TITLE:
                 outs = smart_join(outs.split('\n'), self.spellchecker)
@@ -79,7 +89,7 @@ class Element(object):
         return outs
 
     def __repr__(self) -> str:
-        return f"Element(box={self.box}, text={self.text}, meta={self.meta}, type={self.type.name}, score={self.score})"
+        return f"Element({self.to_dict()})"
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -100,7 +110,7 @@ class Element(object):
         """
 
         if not isinstance(other, Element):
-            raise TypeError("other must be an instance or subclass of ElementOutput")
+            raise TypeError("other must be an instance or subclass of Element")
 
         return self._column_before(other) or (
             self._same_column(other) and (self.box[1] < other.box[1])
@@ -119,10 +129,11 @@ class Element(object):
         """
 
         if not isinstance(other, Element):
-            raise TypeError("other must be an instance or subclass of ElementOutput")
+            raise TypeError("other must be an instance or subclass of Element")
 
-        max_width = max(box_width(self.box), box_width(other.box))
-        return self.box[0] < other.box[0] - max_width / 2
+        return self.col_number < other.col_number
+        # max_width = max(box_width(self.box), box_width(other.box))
+        # return self.box[0] < other.box[0] - max_width / 2
 
     def _same_column(self, other) -> bool:
         """
@@ -138,8 +149,9 @@ class Element(object):
         if not isinstance(other, Element):
             raise TypeError("other must be an instance or subclass of ElementOutput")
 
-        max_width = max(box_width(self.box), box_width(other.box))
-        return abs(self.box[0] - other.box[0]) < max_width / 2
+        return self.col_number == other.col_number
+        # max_width = max(box_width(self.box), box_width(other.box))
+        # return abs(self.box[0] - other.box[0]) < max_width / 2
 
 
 def box_width(box):
@@ -163,10 +175,28 @@ class Page(object):
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.elements.sort()
-        text_outs = []
-        for element in self.elements:
-            text_outs.append(self._ele_to_markdown(element, out_dir))
-        md_out = '\n\n'.join(text_outs)
+        if not self.elements:
+            return ''
+        md_out = self._ele_to_markdown(self.elements[0], out_dir)
+        for idx, element in enumerate(self.elements[1:]):
+            prev_element = self.elements[idx]
+            cur_txt = self._ele_to_markdown(element, out_dir)
+            if (
+                prev_element.col_number + 1 == element.col_number
+                and prev_element.type == element.type
+                and prev_element.type in (ElementType.TEXT, ElementType.TITLE)
+                and md_out
+                and md_out[-1] != '\n'
+                and cur_txt
+                and cur_txt[0] != '\n'
+            ):
+                # column continuation
+                md_out = smart_join([md_out, cur_txt], element.spellchecker)
+            else:
+                md_out += '\n\n' + cur_txt
+
+        line_sep = '\n'
+        md_out = re.sub(rf'{line_sep}{{2,}}', f'{line_sep}{line_sep}', md_out)  # 把2个以上的连续 '\n' 替换为 '\n\n'
         with open(out_dir / f'output.md', 'w') as f:
             f.write(md_out)
 
