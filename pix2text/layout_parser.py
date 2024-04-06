@@ -11,6 +11,8 @@ from .utils import read_img, save_layout_img, select_device
 
 
 class ElementType(Enum):
+    ABANDONED = -2  # 可以指定有些区域不做识别，如 Image 与 Image caption 中间地带
+    IGNORED = -1
     UNKNOWN = 0
     TEXT = 1
     TITLE = 2
@@ -18,6 +20,11 @@ class ElementType(Enum):
     TABLE = 4
     FORMULA = 5
 
+    def __repr__(self) -> str:
+        return self.name
+
+    def __str__(self) -> str:
+        return self.name
 
 class LayoutParser(object):
     def __init__(
@@ -71,7 +78,7 @@ class LayoutParser(object):
         resized_shape: int = 608,
         table_as_image: bool = False,
         **kwargs
-    ) -> List[Dict[str, Any]]:
+    ) -> (List[Dict[str, Any]], Dict[str, Any]):
         """
 
         Args:
@@ -80,10 +87,12 @@ class LayoutParser(object):
             table_as_image ():
             **kwargs ():
 
-        Returns: list of dict with keys: 'type', 'position', 'score':
+        Returns: parsed results & column meta information;
+            the parsed results is a list of dict with keys: 'type', 'position', 'score':
                  * type: ElementType
                  * position: np.ndarray, with shape of (4, 2)
                  * score: float
+            the column meta is a dict, with column number as its keys.
 
         """
         if isinstance(img, Image.Image):
@@ -117,4 +126,4 @@ class LayoutParser(object):
                 }
             )
 
-        return final_out
+        return final_out, {}
