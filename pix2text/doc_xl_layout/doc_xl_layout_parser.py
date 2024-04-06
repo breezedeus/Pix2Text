@@ -3,6 +3,7 @@
 import json
 import os
 import shutil
+from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 import logging
@@ -17,8 +18,17 @@ from .detectors.detector_factory import detector_factory
 from .wrapper import wrap_result
 from ..consts import MODEL_VERSION
 from ..layout_parser import LayoutParser, ElementType
-from ..utils import select_device, read_img, data_dir, save_layout_img, clipbox, overlap, box2list, x_overlap, \
-    merge_boxes
+from ..utils import (
+    select_device,
+    read_img,
+    data_dir,
+    save_layout_img,
+    clipbox,
+    overlap,
+    box2list,
+    x_overlap,
+    merge_boxes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -154,10 +164,21 @@ class DocXLayoutParser(LayoutParser):
     def parse(
         self,
         img: Union[str, Path, Image.Image],
-        # resized_shape: int = 608,
         table_as_image: bool = False,
         **kwargs,
-    ) -> List[Dict[str, Any]]:
+    ) -> (List[Dict[str, Any]], Dict[str, Any]):
+        """
+
+        Args:
+            img ():
+            table_as_image ():
+            **kwargs ():
+              * save_debug_res (str): if `save_debug_res` is set, the directory to save the debug results; default value is `None`, which means not to save
+              * expansion_margin (int): expansion margin
+
+        Returns:
+
+        """
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
         else:
@@ -177,11 +198,22 @@ class DocXLayoutParser(LayoutParser):
             out = DocXLayoutOutput([], [], message=repr(e))
 
         layout_out = out.to_json()
-        json.dump(layout_out, open('layout_out.json', 'w'), indent=2, ensure_ascii=False)
+        debug_dir = None
+        if kwargs.get('save_debug_res', None):
+            debug_dir = Path(kwargs.get('save_debug_res'))
+            debug_dir.mkdir(exist_ok=True, parents=True)
+        if debug_dir is not None:
+            json.dump(
+                layout_out,
+                open(debug_dir / 'layout_out.json', 'w'),
+                indent=2,
+                ensure_ascii=False,
+            )
         if layout_out:
-            layout_out = self._format_outputs(img0, layout_out, table_as_image)
+            layout_out = self._preprocess_outputs(img0, layout_out)
+            layout_out, column_meta = self._format_outputs(img0, layout_out, table_as_image)
         else:
-            layout_out = []
+            layout_out, column_meta = [], {}
 
         layout_out = self._merge_overlapped_boxes(layout_out)
 
@@ -190,39 +222,104 @@ class DocXLayoutParser(LayoutParser):
             layout_out, expansion_margin, height=img_height, width=img_width
         )
 
-        if kwargs.get('save_layout_res'):
+        save_layout_fp = kwargs.get(
+            'save_layout_res',
+            debug_dir / 'layout_res.jpg' if debug_dir is not None else None,
+        )
+        if save_layout_fp:
             element_type_list = [t for t in ElementType]
             save_layout_img(
                 img0,
                 element_type_list,
                 layout_out,
-                kwargs.get('save_layout_res'),
+                save_path=save_layout_fp,
                 key='position',
             )
 
-        return layout_out
+        return layout_out, column_meta
 
-    def _format_outputs(self, img0, out, table_as_image: bool):
-        layout_out = out['layouts']
+    def _preprocess_outputs(self, img0, outs):
         width, height = img0.size
 
-        final_out = []
-        for box_info in layout_out:
-            image_type = box_info['category']
-            if image_type in self.ignored_types:
+        subfields = outs['subfields']
+        for column_info in subfields:
+            layout_out = column_info['layouts']
+            if len(layout_out) < 2:
                 continue
-            image_type = self.type_mappings.get(image_type, ElementType.UNKNOWN)
-            if table_as_image and image_type == ElementType.TABLE:
-                image_type = ElementType.FIGURE
-            # if image_type == ElementType.TITLE:
-            #     breakpoint()
-            box = clipbox(np.array(box_info['pts']).reshape(4, 2), height, width)
-            final_out.append(
-                {'type': image_type, 'position': box, 'score': box_info['confidence'],}
-            )
-        return final_out
+            for idx, cur_box_info in enumerate(layout_out[:-1]):
+                next_box_info = layout_out[idx + 1]
+                cur_box_ymax = cur_box_info['pts'][-1]
+                next_box_ymin = next_box_info['pts'][1]
+                if cur_box_info['category'] == 'figure' and  next_box_info['category'] == 'figure caption' and -6 < next_box_ymin - cur_box_ymax < 80:
+                    new_xmin = min(cur_box_info['pts'][0], next_box_info['pts'][0])
+                    # new_xmin = max(new_xmin, 0, col_pts[0])
+                    new_xmax = max(cur_box_info['pts'][2], next_box_info['pts'][2])
+                    # new_xmax = min(new_xmax, )
+                    new_ymin = max(0, cur_box_info['pts'][1])
+                    new_ymax = max(cur_box_ymax, next_box_ymin - 16)
+                    new_box = [new_xmin, new_ymin, new_xmax, new_ymin, new_xmax, new_ymax, new_xmin, new_ymax]
+                    layout_out[idx]['pts'] = new_box
+
+        return outs
+
+    def _format_outputs(self, img0, out, table_as_image: bool):
+        width, height = img0.size
+
+        column_meta = defaultdict(dict)
+        final_out = []
+        subfields = out['subfields']
+        col_number = 0
+        for column_info in subfields:
+            if column_info['category'] == 'sub column':
+                cur_col_number = col_number
+                col_number += 1
+            elif column_info['category'] == 'full column':  # == 'full column'
+                cur_col_number = -1
+            else:  # '其他'
+                cur_col_number = -2
+            box = clipbox(np.array(column_info['pts']).reshape(4, 2), height, width)
+            column_meta[cur_col_number]['position'] = box
+            column_meta[cur_col_number]['score'] = column_info['confidence']
+            layout_out = column_info['layouts']
+            for box_info in layout_out:
+                image_type = box_info['category']
+                if image_type in self.ignored_types:
+                    image_type = ElementType.IGNORED
+                else:
+                    image_type = self.type_mappings.get(image_type, ElementType.UNKNOWN)
+                if table_as_image and image_type == ElementType.TABLE:
+                    image_type = ElementType.FIGURE
+                box = clipbox(np.array(box_info['pts']).reshape(4, 2), height, width)
+                final_out.append(
+                    {
+                        'type': image_type,
+                        'position': box,
+                        'score': box_info['confidence'],
+                        'col_number': cur_col_number,
+                    }
+                )
+
+        # handle abnormal elements (col_number == -2)
+        if -2 in column_meta:
+            column_meta.pop(-2)
+        # guess which column the box belongs to
+        for _box_info in final_out:
+            if _box_info['col_number'] != -2:
+                continue
+            overlap_vals = []
+            for col_number, col_info in column_meta.items():
+                overlap_val = x_overlap(_box_info, col_info, key='position')
+                overlap_vals.append([col_number, overlap_val])
+            overlap_vals.sort(key=lambda x: (x[1], x[0]), reverse=True)
+            match_col_number = overlap_vals[0][0]
+            _box_info['col_number'] = match_col_number
+
+        return final_out, column_meta
 
     def _merge_overlapped_boxes(self, layout_out):
+        """
+        Detected bounding boxes may overlap; merge these overlapping boxes into a single one.
+        """
         if len(layout_out) < 2:
             return layout_out
         layout_out = deepcopy(layout_out)
@@ -241,21 +338,41 @@ class DocXLayoutParser(LayoutParser):
             return y_max - y_min > 10
 
         for anchor_idx, anchor_box_info in enumerate(layout_out):
-            if anchor_box_info['type'] != ElementType.TEXT or anchor_box_info.get('used', False):
+            if anchor_box_info['type'] != ElementType.TEXT or anchor_box_info.get(
+                'used', False
+            ):
                 continue
             for cand_idx, cand_box_info in enumerate(layout_out):
                 if anchor_idx == cand_idx:
                     continue
-                if cand_box_info['type'] != ElementType.TEXT or cand_box_info.get('used', False):
+                if cand_box_info['type'] != ElementType.TEXT or cand_box_info.get(
+                    'used', False
+                ):
                     continue
-                if not _overlay_vertically(anchor_box_info['position'], cand_box_info['position']):
+                if not _overlay_vertically(
+                    anchor_box_info['position'], cand_box_info['position']
+                ):
                     continue
-                anchor_box_info['position'] = merge_boxes(anchor_box_info['position'], cand_box_info['position'])
+                anchor_box_info['position'] = merge_boxes(
+                    anchor_box_info['position'], cand_box_info['position']
+                )
                 cand_box_info['used'] = True
 
         return [box_info for box_info in layout_out if not box_info.get('used', False)]
 
     def _expand_boxes(self, layout_out, expansion_margin, height, width):
+        """
+        Expand boxes with some margin to get better results
+        Args:
+            layout_out (): layout_out
+            expansion_margin (int): expansion margin
+            height (int): height of the image
+            width (int): width of the image
+
+        Returns: layout_out with expanded boxes
+
+        """
+
         def _overlap_with_some_box(idx, anchor_box):
             # anchor_box = layout_out[idx]
             return any(
@@ -267,7 +384,11 @@ class DocXLayoutParser(LayoutParser):
             )
 
         for idx, box_info in enumerate(layout_out):
-            if box_info['type'] not in (ElementType.TEXT, ElementType.TITLE, ElementType.FORMULA):
+            if box_info['type'] not in (
+                ElementType.TEXT,
+                ElementType.TITLE,
+                ElementType.FORMULA,
+            ):
                 continue
             if _overlap_with_some_box(idx, box_info['position']):
                 continue
