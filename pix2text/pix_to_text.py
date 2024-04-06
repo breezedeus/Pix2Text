@@ -3,6 +3,7 @@
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 import logging
 from copy import deepcopy
+from functools import cmp_to_key
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List
 
@@ -14,6 +15,10 @@ from .utils import (
     box2list,
     read_img,
     add_img_margin,
+    get_background_color,
+    x_overlap,
+    list2box,
+    merge_line_texts,
 )
 from .layout_parser import LayoutParser, ElementType
 from .doc_xl_layout import DocXLayoutParser
@@ -128,6 +133,7 @@ class Pix2Text(object):
                     otherwise, they are considered to be on different lines.
                 * table_as_image (bool): If `True`, the table will be recognized as an image; default value is `False`
                 * formula_rec_kwargs (dict): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
+                * save_debug_res (str): if `save_debug_res` is set, the directory to save the debug results; default value is `None`, which means not to save
 
         Returns: a Page object.
         """
@@ -136,23 +142,32 @@ class Pix2Text(object):
         else:
             img0 = read_img(img, return_type='Image')
 
+        kwargs['embed_sep'] = kwargs.get('embed_sep', (' $', '$ '))
+        kwargs['isolated_sep'] = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
+        kwargs['line_sep'] = kwargs.get('line_sep', '\n')
+        kwargs['auto_line_break'] = kwargs.get('auto_line_break', True)
         resized_shape = kwargs.get('resized_shape', 768)
         kwargs['resized_shape'] = resized_shape
         table_as_image = kwargs.get('table_as_image', False)
         layout_kwargs = deepcopy(kwargs)
         layout_kwargs['resized_shape'] = resized_shape
-        layout_out = self.layout_parser.parse(
-            img0.copy(),
-            table_as_image=table_as_image,
-            **layout_kwargs,
+        layout_out, column_meta = self.layout_parser.parse(
+            img0.copy(), table_as_image=table_as_image, **layout_kwargs,
         )
+
+        debug_dir = None
+        if kwargs.get('save_debug_res', None):
+            debug_dir = Path(kwargs.get('save_debug_res'))
+            debug_dir.mkdir(exist_ok=True, parents=True)
 
         outs = []
         for _id, box_info in enumerate(layout_out):
+            image_type = box_info['type']
+            if image_type == ElementType.IGNORED:
+                continue
             box = box2list(box_info['position'])
             crop_patch = img0.crop(box)
             crop_width, crop_height = crop_patch.size
-            image_type = box_info['type']
             score = 1.0
             if image_type in (ElementType.TEXT, ElementType.TITLE):
                 _resized_shape = resized_shape
@@ -163,11 +178,14 @@ class Pix2Text(object):
                 )
                 text_formula_kwargs = deepcopy(kwargs)
                 text_formula_kwargs.pop('resized_shape')
+                save_analysis_res = (
+                    debug_dir / f'{_id}-{image_type.name}.png' if debug_dir else None
+                )
                 _out = self.text_formula_ocr.recognize(
                     padding_patch,
                     return_text=False,
                     resized_shape=_resized_shape,
-                    save_analysis_res=f'{_id}-{image_type.name}.png',
+                    save_analysis_res=save_analysis_res,
                     **text_formula_kwargs,
                 )
                 text, meta = None, _out
@@ -212,6 +230,7 @@ class Pix2Text(object):
                     box=box,
                     meta=meta,
                     text=text,
+                    col_number=box_info['col_number'],
                     type=image_type,
                     score=score,
                     total_img=img0,
@@ -220,13 +239,93 @@ class Pix2Text(object):
                 )
             )
 
+        remaining_blocks = self._parse_remaining(
+            img0, layout_out, column_meta, debug_dir, **kwargs
+        )
+        for box_info in remaining_blocks:
+            outs.append(
+                Element(
+                    id=f'{page_id}-{len(outs)}-remaining',
+                    box=box2list(box_info['position']),
+                    meta=None,
+                    text=box_info['text'],
+                    col_number=box_info['col_number'],
+                    type=ElementType.TEXT,
+                    score=box_info['score'],
+                    total_img=img0,
+                    spellchecker=self.text_formula_ocr.spellchecker,
+                    configs=kwargs,
+                )
+            )
         return Page(id=page_id, elements=outs, config=kwargs)
 
+    def _parse_remaining(self, img0, layout_out, column_meta, debug_dir, **kwargs):
+        masked_img = np.array(img0.copy())
+        bg_color = get_background_color(img0)
+        # 把layout parser 已解析出的部分mask掉，然后对其他部分进行OCR
+        for _box_info in layout_out:
+            xmin, ymin, xmax, ymax = box2list(_box_info['position'])
+            masked_img[ymin:ymax, xmin:xmax, :] = bg_color
+        masked_img = Image.fromarray(masked_img)
+
+        text_formula_kwargs = deepcopy(kwargs)
+        text_formula_kwargs.pop('resized_shape')
+        save_analysis_res = debug_dir / f'layout-remaining.png' if debug_dir else None
+        _resized_shape = kwargs.get('resized_shape')
+        _out = self.text_formula_ocr.recognize(
+            masked_img,
+            return_text=False,
+            resized_shape=_resized_shape,
+            save_analysis_res=save_analysis_res,
+            **text_formula_kwargs,
+        )
+        if len(_out) < 2:
+            return _out
+
+        # guess which column the box belongs to
+        for _box_info in _out:
+            overlap_vals = []
+            for col_number, col_info in column_meta.items():
+                overlap_val = x_overlap(_box_info, col_info, key='position')
+                overlap_vals.append([col_number, overlap_val])
+            overlap_vals.sort(key=lambda x: (x[1], x[0]), reverse=True)
+            match_col_number = overlap_vals[0][0]
+            _box_info['col_number'] = match_col_number
+
+        def _compare(box_info1, box_info2):
+            if box_info1['col_number'] != box_info2['col_number']:
+                return box_info1['col_number'] < box_info2['col_number']
+            else:
+                return box_info1['position'][0, 1] < box_info2['position'][0, 1]
+
+        _out = sorted(_out, key=cmp_to_key(_compare))
+
+        begin_idx = 0
+        end_idx = 1
+
+        new_blocks = []
+        while end_idx <= len(_out):
+            while (
+                end_idx < len(_out)
+                and _out[end_idx]['col_number'] == _out[begin_idx]['col_number']
+            ):
+                end_idx += 1
+            col_outs = _out[begin_idx:end_idx]
+            begin_idx = end_idx
+            end_idx += 1
+            if len(col_outs) < 2:
+                new_blocks.append(col_outs[0])
+            else:
+                new_blocks.extend(
+                    _separate_blocks(
+                        col_outs, self.text_formula_ocr.spellchecker, **kwargs
+                    )
+                )
+
+        return new_blocks
+
     def recognize_text_formula(
-        self,
-        img: Union[str, Path, Image.Image],
-        return_text: bool = True,
-        **kwargs,
+        self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs,
     ) -> Union[str, List[str], List[Any], List[List[Any]]]:
         """
         Analyze the layout of the image, and then recognize the information contained in each section.
@@ -315,6 +414,64 @@ class Pix2Text(object):
         return self.text_formula_ocr.recognize_formula(
             imgs, batch_size, return_text, rec_config, **kwargs
         )
+
+
+def _separate_blocks(col_outs, spellchecker, **kwargs):
+    out_blocks = []
+
+    def _merge_lines(cur_block_lines):
+        if len(cur_block_lines) < 2:
+            return cur_block_lines[0]
+        ymin = cur_block_lines[0]['position'][0, 1]
+        ymax = cur_block_lines[-1]['position'][3, 1]
+        xmin = min([_b['position'][0, 0] for _b in cur_block_lines])
+        xmax = max([_b['position'][3, 0] for _b in cur_block_lines])
+        position = list2box(xmin, ymin, xmax, ymax)
+        score = np.mean([_b['score'] for _b in cur_block_lines])
+        col_number = cur_block_lines[0]['col_number']
+        # text = smart_join([_b['text'] for _b in cur_block_lines], spellchecker)
+        text = merge_line_texts(
+            cur_block_lines,
+            auto_line_break=kwargs['auto_line_break'],
+            line_sep=kwargs['line_sep'],
+            embed_sep=kwargs['embed_sep'],
+            isolated_sep=kwargs['isolated_sep'],
+            spellchecker=spellchecker,
+        )
+
+        return {
+            'type': 'text',
+            'text': text,
+            'position': position,
+            'score': score,
+            'col_number': col_number,
+            'line_number': len(out_blocks),
+        }
+
+    cur_block_lines = [col_outs[0]]
+    for _box_info in col_outs[1:]:
+        cur_height = (
+            cur_block_lines[-1]['position'][3, 1]
+            - cur_block_lines[-1]['position'][0, 1]
+        )
+        if (
+            _box_info['position'][0, 1] - cur_block_lines[-1]['position'][3, 1]
+            < cur_height
+        ):
+            # 当前行与下一行的间距少于一行的行高，则认为它们在相同的block
+            cur_block_lines.append(_box_info)
+        else:
+            # merge lines
+            merged_line = _merge_lines(cur_block_lines)
+            out_blocks.append(merged_line)
+
+            cur_block_lines = [_box_info]
+
+    if len(cur_block_lines) > 0:
+        merged_line = _merge_lines(cur_block_lines)
+        out_blocks.append(merged_line)
+
+    return out_blocks
 
 
 if __name__ == '__main__':
