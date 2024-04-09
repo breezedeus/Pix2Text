@@ -157,6 +157,22 @@ class TableOCR(object):
         out_markdown=True,
         **kwargs,
     ) -> Dict[str, Any]:
+        """
+
+        Args:
+            img ():
+            tokens ():
+            out_objects ():
+            out_cells ():
+            out_html ():
+            out_csv ():
+            out_markdown ():
+            **kwargs ():
+                * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
+
+        Returns:
+
+        """
         out_formats = {}
         if self.str_model is None:
             print("No structure model loaded.")
@@ -196,6 +212,9 @@ class TableOCR(object):
             self._ocr_texts(img, cells)
         if out_cells:
             out_formats['cells'] = tables_cells
+            if kwargs.get('save_analysis_res'):
+                visualize_cells(img, tables_cells[0], kwargs['save_analysis_res'])
+
         if not (out_html or out_csv):
             return out_formats
 
