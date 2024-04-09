@@ -211,7 +211,9 @@ class DocXLayoutParser(LayoutParser):
             )
         if layout_out:
             layout_out = self._preprocess_outputs(img0, layout_out)
-            layout_out, column_meta = self._format_outputs(img0, layout_out, table_as_image)
+            layout_out, column_meta = self._format_outputs(
+                img0, layout_out, table_as_image
+            )
         else:
             layout_out, column_meta = [], {}
 
@@ -250,15 +252,29 @@ class DocXLayoutParser(LayoutParser):
                 next_box_info = layout_out[idx + 1]
                 cur_box_ymax = cur_box_info['pts'][-1]
                 next_box_ymin = next_box_info['pts'][1]
-                if cur_box_info['category'] == 'figure' and  next_box_info['category'] == 'figure caption' and -6 < next_box_ymin - cur_box_ymax < 80:
+                if (
+                    cur_box_info['category'] == 'figure'
+                    and next_box_info['category'] == 'figure caption'
+                    and -6 < next_box_ymin - cur_box_ymax < 80
+                ):
                     new_xmin = min(cur_box_info['pts'][0], next_box_info['pts'][0])
                     # new_xmin = max(new_xmin, 0, col_pts[0])
                     new_xmax = max(cur_box_info['pts'][2], next_box_info['pts'][2])
                     # new_xmax = min(new_xmax, )
                     new_ymin = max(0, cur_box_info['pts'][1])
                     new_ymax = max(cur_box_ymax, next_box_ymin - 16)
-                    new_box = [new_xmin, new_ymin, new_xmax, new_ymin, new_xmax, new_ymax, new_xmin, new_ymax]
+                    new_box = [
+                        new_xmin,
+                        new_ymin,
+                        new_xmax,
+                        new_ymin,
+                        new_xmax,
+                        new_ymax,
+                        new_xmin,
+                        new_ymax,
+                    ]
                     layout_out[idx]['pts'] = new_box
+                # FIXME: first figure caption, then figure
 
         return outs
 
@@ -298,6 +314,34 @@ class DocXLayoutParser(LayoutParser):
                         'col_number': cur_col_number,
                     }
                 )
+
+        if -2 in column_meta and -1 in column_meta:
+            filtered_out = []
+            full_column_box = column_meta[-1]['position']
+            full_column_xmin, full_column_xmax = (
+                full_column_box[0, 0],
+                full_column_box[1, 0],
+            )
+            for box_info in final_out:
+                if box_info['col_number'] != -2:
+                    filtered_out.append(box_info)
+                    continue
+                cur_box = box_info['position']
+                cur_box_xmin, cur_box_xmax = cur_box[0, 0], cur_box[1, 0]
+                cur_box_ymin, cur_box_ymax = cur_box[0, 1], cur_box[2, 1]
+                if (
+                    box_info['type'] == ElementType.TEXT
+                    and (
+                        cur_box_xmax < full_column_xmin
+                        or cur_box_xmin > full_column_xmax
+                    )
+                    and cur_box_ymax - cur_box_ymin
+                    > 5 * (cur_box_xmax - cur_box_xmin)
+                ):  # unnecessary block
+                    box_info['type'] = ElementType.IGNORED
+                filtered_out.append(box_info)
+
+            final_out = filtered_out
 
         # handle abnormal elements (col_number == -2)
         if -2 in column_meta:
