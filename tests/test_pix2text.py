@@ -1,12 +1,26 @@
 # coding: utf-8
 
 import os
-from PIL import Image
 
 from pix2text import Pix2Text
 
 
-def test_example():
+def test_recognize_pdf():
+    img_fp = './docs/examples/1706.03762v5.pdf'
+    total_config = {
+        'layout': {'scores_thresh': 0.45},
+        'text_formula': {
+            'formula': {'model_name': 'mfr-pro', 'model_backend': 'onnx'}
+        }
+    }
+    p2t = Pix2Text.from_config(total_configs=total_config)
+    out_md = p2t.recognize_pdf(img_fp, page_idxs=None, table_as_image=True, save_debug_res='./outputs-1706.03762v5')
+    out_md.to_markdown('page-output')
+    # print(out_page)
+    # out_page.to_markdown('page-output')
+
+
+def test_recognize_page():
     # img_fp = './docs/examples/formula.jpg'
     img_fp = './docs/examples/page3.png'
     # img_fp = './docs/examples/mixed.jpg'
@@ -20,7 +34,6 @@ def test_example():
     out_page = p2t.recognize_page(img_fp, page_id='test_page_1', save_debug_res='./outputs')
     # print(out_page)
     out_page.to_markdown('page-output')
-    # out_page.to_docx('page-output', 'page-output/output.docx')
 
 
 def test_spell_checker():
@@ -43,7 +56,6 @@ def test_blog_example():
     img_fp = './docs/examples/mixed.jpg'
 
     text_formula_config = dict(
-
         mfd=dict(  # 声明 LayoutAnalyzer 的初始化参数
             model_type='yolov7',  # 表示使用的是 YoloV7 模型，而不是 YoloV7_Tiny 模型
             model_fp=os.path.expanduser(
