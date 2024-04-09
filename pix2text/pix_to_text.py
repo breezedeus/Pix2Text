@@ -2,6 +2,8 @@
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 import logging
+import io
+import os
 from copy import deepcopy
 from functools import cmp_to_key
 from pathlib import Path
@@ -9,6 +11,7 @@ from typing import Dict, Any, Optional, Union, List
 
 import numpy as np
 from PIL import Image
+import fitz  # PyMuPDF
 
 from .utils import (
     select_device,
@@ -24,7 +27,7 @@ from .layout_parser import LayoutParser, ElementType
 from .doc_xl_layout import DocXLayoutParser
 from .text_formula_ocr import TextFormulaOCR
 from .table_ocr import TableOCR
-from .page_elements import Element, Page
+from .page_elements import Element, Page, Document
 
 logger = logging.getLogger(__name__)
 
@@ -104,10 +107,49 @@ class Pix2Text(object):
     def __call__(self, img: Union[str, Path, Image.Image], **kwargs) -> Page:
         return self.recognize_page(img, page_id='0', **kwargs)
 
+    def recognize_pdf(
+        self,
+        pdf_fp: Union[str, Path],
+        pdf_index: int = 0,
+        pdf_id: Optional[str] = None,
+        page_idxs: Optional[List[int]] = None,
+        **kwargs,
+    ) -> Document:
+        pdf_id = pdf_id or str(pdf_index)
+
+        doc = fitz.open(pdf_fp, filetype='pdf')
+        if page_idxs is None:
+            page_idxs = list(range(len(doc)))
+        outs = []
+        for page_num in range(len(doc)):
+            if page_num not in page_idxs:
+                continue
+            # 获取页面
+            page = doc.load_page(page_num)
+            # 将页面转换为图像
+            pix = page.get_pixmap(dpi=300)
+            # 将图像数据转换为字节流
+            img_data = pix.tobytes(output='jpg', jpg_quality=200)
+            # Create a PIL Image from the raw image data
+            image = Image.open(io.BytesIO(img_data)).convert('RGB')
+            page_id = str(page_num)
+            page_kwargs = deepcopy(kwargs)
+            if kwargs.get('save_debug_res'):
+                page_kwargs['save_debug_res'] = os.path.join(kwargs['save_debug_res'], f'{pdf_id}-{page_id}')
+            outs.append(self.recognize_page(image, page_index=page_num, page_id=page_id, **page_kwargs))
+        return Document(
+            index=pdf_index,
+            id=pdf_id,
+            pages=outs,
+            spellchecker=self.text_formula_ocr.spellchecker,
+            config=kwargs,
+        )
+
     def recognize_page(
         self,
         img: Union[str, Path, Image.Image],
-        page_id: str,
+        page_index: int = 0,
+        page_id: Optional[str] = None,
         # return_text: bool = True,
         **kwargs,
     ) -> Page:
@@ -116,6 +158,7 @@ class Pix2Text(object):
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            page_index (str): page index
             page_id (str): page id
             kwargs ():
                 * resized_shape (int): Resize the image width to this size for processing; default value is `768`
@@ -148,11 +191,11 @@ class Pix2Text(object):
         kwargs['auto_line_break'] = kwargs.get('auto_line_break', True)
         resized_shape = kwargs.get('resized_shape', 768)
         kwargs['resized_shape'] = resized_shape
-        table_as_image = kwargs.get('table_as_image', False)
         layout_kwargs = deepcopy(kwargs)
         layout_kwargs['resized_shape'] = resized_shape
+        layout_kwargs['table_as_image'] = kwargs.get('table_as_image', False)
         layout_out, column_meta = self.layout_parser.parse(
-            img0.copy(), table_as_image=table_as_image, **layout_kwargs,
+            img0.copy(), **layout_kwargs,
         )
 
         debug_dir = None
@@ -204,12 +247,17 @@ class Pix2Text(object):
                 )
                 box = (xmin, ymin, xmax, ymax)
                 crop_patch = img0.crop(box)
+                save_analysis_res = (
+                    debug_dir / f'{_id}-{image_type.name}.png' if debug_dir else None
+                )
+                table_kwargs = deepcopy(kwargs)
+                table_kwargs['save_analysis_res'] = save_analysis_res
                 _out = self.table_ocr.recognize(
                     crop_patch,
                     out_cells=True,
                     out_markdown=True,
                     out_html=True,
-                    **kwargs,
+                    **table_kwargs,
                 )
                 text, meta = None, _out
             elif image_type == ElementType.FORMULA:
@@ -257,7 +305,13 @@ class Pix2Text(object):
                     configs=kwargs,
                 )
             )
-        return Page(id=page_id, elements=outs, config=kwargs)
+        return Page(
+            index=page_index,
+            id=page_id,
+            elements=outs,
+            spellchecker=self.text_formula_ocr.spellchecker,
+            config=kwargs,
+        )
 
     def _parse_remaining(self, img0, layout_out, column_meta, debug_dir, **kwargs):
         masked_img = np.array(img0.copy())
@@ -279,9 +333,8 @@ class Pix2Text(object):
             save_analysis_res=save_analysis_res,
             **text_formula_kwargs,
         )
-        if len(_out) < 2:
-            return _out
-
+        min_text_length = kwargs.get('min_text_length', 4)
+        _out = [_o for _o in _out if len(_o['text']) >= min_text_length]
         # guess which column the box belongs to
         for _box_info in _out:
             overlap_vals = []
@@ -291,6 +344,9 @@ class Pix2Text(object):
             overlap_vals.sort(key=lambda x: (x[1], x[0]), reverse=True)
             match_col_number = overlap_vals[0][0]
             _box_info['col_number'] = match_col_number
+
+        if len(_out) < 2:
+            return _out
 
         def _compare(box_info1, box_info2):
             if box_info1['col_number'] != box_info2['col_number']:
