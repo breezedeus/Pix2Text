@@ -159,23 +159,33 @@ def box_width(box):
 
 
 class Page(object):
-    index: int
+    number: int
     id: str
     elements: Sequence[Element]
     config: dict
     spellchecker = None
 
-    def __init__(self, *, index: int, elements: Sequence[Element], id: Optional[str] = None, spellchecker=None, config=None):
-        self.index = index
-        self.id = id or str(index)
+    def __init__(
+        self,
+        *,
+        number: int,
+        elements: Sequence[Element],
+        id: Optional[str] = None,
+        spellchecker=None,
+        config=None,
+    ):
+        self.number = number
+        self.id = id or str(number)
         self.elements = elements
         self.spellchecker = spellchecker
         self.config = config or {}
 
     def __repr__(self) -> str:
-        return f"Page(id={self.id}, index={self.index}, elements={self.elements})"
+        return f"Page(id={self.id}, number={self.number}, elements={self.elements})"
 
-    def to_markdown(self, out_dir: Union[str, Path], markdown_fn: Optional[str]='output.md'):
+    def to_markdown(
+        self, out_dir: Union[str, Path], markdown_fn: Optional[str] = 'output.md'
+    ):
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.elements.sort()
@@ -200,7 +210,9 @@ class Page(object):
                 md_out += '\n\n' + cur_txt
 
         line_sep = '\n'
-        md_out = re.sub(rf'{line_sep}{{2,}}', f'{line_sep}{line_sep}', md_out)  # 把2个以上的连续 '\n' 替换为 '\n\n'
+        md_out = re.sub(
+            rf'{line_sep}{{2,}}', f'{line_sep}{line_sep}', md_out
+        )  # 把2个以上的连续 '\n' 替换为 '\n\n'
         if markdown_fn:
             with open(out_dir / markdown_fn, 'w') as f:
                 f.write(md_out)
@@ -237,26 +249,36 @@ class Page(object):
 
 
 class Document(object):
-    index: int
+    number: int
     id: str
     pages: Sequence[Page]
     config: dict
     spellchecker = None
 
-    def __init__(self, *, index: int, pages: Sequence[Page], id: Optional[str]=None, spellchecker=None, config=None):
-        self.index = index
-        self.id = id or str(index)
+    def __init__(
+        self,
+        *,
+        number: int,
+        pages: Sequence[Page],
+        id: Optional[str] = None,
+        spellchecker=None,
+        config=None,
+    ):
+        self.number = number
+        self.id = id or str(number)
         self.pages = pages
         self.spellchecker = spellchecker
         self.config = config or {}
 
     def __repr__(self) -> str:
-        return f"Document(id={self.id}, index={self.index}, pages={self.pages})"
+        return f"Document(id={self.id}, number={self.number}, pages={self.pages})"
 
-    def to_markdown(self, out_dir: Union[str, Path], markdown_fn: Optional[str]='output.md'):
+    def to_markdown(
+        self, out_dir: Union[str, Path], markdown_fn: Optional[str] = 'output.md'
+    ):
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
-        self.pages.sort(key=lambda page: page.index)
+        self.pages.sort(key=lambda page: page.number)
         if not self.pages:
             return ''
         md_out = self.pages[0].to_markdown(out_dir, markdown_fn=None)
@@ -264,12 +286,14 @@ class Document(object):
             prev_page = self.pages[idx]
             cur_txt = page.to_markdown(out_dir, markdown_fn=None)
             if (
-                    md_out
-                    and prev_page.elements and prev_page.elements[-1].type in (ElementType.TEXT, ElementType.TITLE)
-                    and page.elements and page.elements[0].type in (ElementType.TEXT, ElementType.TITLE)
-                    and md_out[-1] != '\n'
-                    and cur_txt
-                    and cur_txt[0] != '\n'
+                md_out
+                and prev_page.elements
+                and prev_page.elements[-1].type in (ElementType.TEXT, ElementType.TITLE)
+                and page.elements
+                and page.elements[0].type in (ElementType.TEXT, ElementType.TITLE)
+                and md_out[-1] != '\n'
+                and cur_txt
+                and cur_txt[0] != '\n'
             ):
                 # column continuation
                 md_out = smart_join([md_out, cur_txt], self.spellchecker)
@@ -277,7 +301,9 @@ class Document(object):
                 md_out += '\n\n' + cur_txt
 
         line_sep = '\n'
-        md_out = re.sub(rf'{line_sep}{{2,}}', f'{line_sep}{line_sep}', md_out)  # 把2个以上的连续 '\n' 替换为 '\n\n'
+        md_out = re.sub(
+            rf'{line_sep}{{2,}}', f'{line_sep}{line_sep}', md_out
+        )  # 把2个以上的连续 '\n' 替换为 '\n\n'
         if markdown_fn:
             with open(out_dir / markdown_fn, 'w') as f:
                 f.write(md_out)
