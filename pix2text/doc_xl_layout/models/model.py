@@ -1,14 +1,15 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+# coding: utf-8
 
 import os
 import time
+import logging
+
 import torch
 import torch.utils.model_zoo as model_zoo
 
-
 from .networks.dlav0_subfield import get_pose_net as get_dlav0_subfield
+
+logger = logging.getLogger(__name__)
 
 _model_factory = {
     'dlav0subfield': get_dlav0_subfield,  # default DLAup
@@ -29,10 +30,10 @@ def load_model(model, model_path, optimizer=None, resume=False,
     if model_path.startswith("http"):
         model_dir = os.path.join(os.path.expanduser("~"), ".cache", 'checkpoints', str(int(time.time() * 1000)))
         checkpoint = model_zoo.load_url(model_path, model_dir=model_dir)
-        print('--> loading model from url: {}'.format(model_path))
+        logger.info('loading model from url: {}'.format(model_path))
     else:
         checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
-        print('--> loading model from local file: {}'.format(model_path))
+        logger.info('loading model from local file: {}'.format(model_path))
     # print('loaded {}, epoch {}'.format(model_path, checkpoint['epoch']))
     state_dict_ = checkpoint['state_dict']
     state_dict = {}

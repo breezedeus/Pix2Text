@@ -173,6 +173,7 @@ class TextFormulaOCR(object):
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             return_text (bool): Whether to return only the recognized text; default value is `True`
             kwargs ():
+                * contain_formula (bool): If `True`, the image will be recognized as a mixed image (text and formula). If `False`, it will be recognized as a text; default value is `True`
                 * resized_shape (int): Resize the image width to this size for processing; default value is `768`
                 * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
@@ -209,26 +210,29 @@ class TextFormulaOCR(object):
         w, h = img0.size
         ratio = resized_shape / w
         resized_shape = (int(h * ratio), resized_shape)  # (H, W)
-        analyzer_outs = self.mfd(img0.copy(), resized_shape=resized_shape)
         # logger.debug('MFD Result: %s', analyzer_outs)
-
+        analyzer_outs = []
         crop_patches = []
-        for mf_box_info in analyzer_outs:
-            box = mf_box_info['box']
-            xmin, ymin, xmax, ymax = (
-                int(box[0][0]),
-                int(box[0][1]),
-                int(box[2][0]),
-                int(box[2][1]),
-            )
-            crop_patch = img0.crop((xmin, ymin, xmax, ymax))
-            crop_patches.append(crop_patch)
+        mf_results = []
+        if kwargs.get('contain_formula', True):
+            analyzer_outs = self.mfd(img0.copy(), resized_shape=resized_shape)
+            for mf_box_info in analyzer_outs:
+                box = mf_box_info['box']
+                xmin, ymin, xmax, ymax = (
+                    int(box[0][0]),
+                    int(box[0][1]),
+                    int(box[2][0]),
+                    int(box[2][1]),
+                )
+                crop_patch = img0.crop((xmin, ymin, xmax, ymax))
+                crop_patches.append(crop_patch)
 
-        mfr_batch_size = kwargs.get('mfr_batch_size', 1)
-        formula_rec_kwargs = kwargs.get('formula_rec_kwargs', {})
-        mf_results = self.latex_ocr.recognize(
-            crop_patches, batch_size=mfr_batch_size, **formula_rec_kwargs
-        )
+            mfr_batch_size = kwargs.get('mfr_batch_size', 1)
+            formula_rec_kwargs = kwargs.get('formula_rec_kwargs', {})
+            mf_results = self.latex_ocr.recognize(
+                crop_patches, batch_size=mfr_batch_size, **formula_rec_kwargs
+            )
+
         assert len(mf_results) == len(analyzer_outs)
 
         mf_outs = []
