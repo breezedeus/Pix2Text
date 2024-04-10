@@ -104,7 +104,7 @@ class DocXLayoutParser(LayoutParser):
         detector = Detector(opt)
         self.detector = detector
         self.opt = opt
-        logger.info("DocXLayoutParser parameters %s", self.opt)
+        logger.debug("DocXLayoutParser parameters %s", self.opt)
 
     @classmethod
     def from_config(cls, configs: Optional[dict] = None, device: str = None, **kwargs):
