@@ -807,6 +807,19 @@ def smart_join(str_list, spellchecker=None):
     return res
 
 
+def cal_block_xmin_xmax(lines, indentation_thrsh):
+    total_min_x, total_max_x = min(lines[:, 0]), max(lines[:, 1])
+    if lines.shape[0] < 2:
+        return total_min_x, total_max_x
+
+    min_x, max_x = min(lines[1:, 0]), max(lines[1:, 1])
+    first_line_is_full = total_max_x > max_x - indentation_thrsh
+    if first_line_is_full:
+        return min_x, total_max_x
+
+    return total_min_x, total_max_x
+
+
 def merge_line_texts(
     outs: List[Dict[str, Any]],
     auto_line_break: bool = True,
@@ -875,11 +888,14 @@ def merge_line_texts(
     _line_heights = list(line_height_dict.values())
     mean_height = np.mean(_line_heights) if _line_heights else None
 
+    default_res = re.sub(rf'{line_sep}+', line_sep, line_sep.join(line_text_list))
     if not auto_line_break:
-        return re.sub(rf'{line_sep}+', line_sep, line_sep.join(line_text_list))
+        return default_res
 
     line_lengths = [rx - lx for lx, rx in line_margin_list]
     line_length_thrsh = max(line_lengths) * 0.3
+    if line_length_thrsh < 1:
+        return default_res
 
     lines = np.array(
         [
@@ -888,11 +904,15 @@ def merge_line_texts(
             if isolated_included[idx] or line_lengths[idx] >= line_length_thrsh
         ]
     )
+    if lines.shape[0] < 1:
+        return default_res
     min_x, max_x = min(lines[:, 0]), max(lines[:, 1])
 
     indentation_thrsh = (max_x - min_x) * 0.1
     if mean_height is not None:
         indentation_thrsh = 1.5 * mean_height
+
+    min_x, max_x = cal_block_xmin_xmax(lines, indentation_thrsh)
 
     line_text_list = [(idx, txt) for idx, txt in enumerate(line_text_list) if txt]
     res_line_texts = [''] * len(line_text_list)
