@@ -64,7 +64,7 @@ class Element(object):
             auto_line_break = self.kwargs.get('auto_line_break', True)
             if self.type == ElementType.TITLE:
                 for box_info in self.meta:
-                    if box_info['type'] == 'isolated':
+                    if box_info.get('type', 'text') == 'isolated':
                         box_info['type'] = 'embedding'
             outs = merge_line_texts(
                 self.meta,

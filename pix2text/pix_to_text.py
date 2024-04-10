@@ -112,31 +112,36 @@ class Pix2Text(object):
         pdf_fp: Union[str, Path],
         pdf_index: int = 0,
         pdf_id: Optional[str] = None,
-        page_idxs: Optional[List[int]] = None,
+        page_numbers: Optional[List[int]] = None,
         **kwargs,
     ) -> Document:
         pdf_id = pdf_id or str(pdf_index)
 
         doc = fitz.open(pdf_fp, filetype='pdf')
-        if page_idxs is None:
-            page_idxs = list(range(len(doc)))
+        if page_numbers is None:
+            page_numbers = list(range(len(doc)))
         outs = []
         for page_num in range(len(doc)):
-            if page_num not in page_idxs:
+            if page_num not in page_numbers:
                 continue
-            # 获取页面
             page = doc.load_page(page_num)
-            # 将页面转换为图像
+            # convert to image
             pix = page.get_pixmap(dpi=300)
-            # 将图像数据转换为字节流
+            # convert the pixmap to bytes
             img_data = pix.tobytes(output='jpg', jpg_quality=200)
             # Create a PIL Image from the raw image data
             image = Image.open(io.BytesIO(img_data)).convert('RGB')
             page_id = str(page_num)
             page_kwargs = deepcopy(kwargs)
             if kwargs.get('save_debug_res'):
-                page_kwargs['save_debug_res'] = os.path.join(kwargs['save_debug_res'], f'{pdf_id}-{page_id}')
-            outs.append(self.recognize_page(image, page_index=page_num, page_id=page_id, **page_kwargs))
+                page_kwargs['save_debug_res'] = os.path.join(
+                    kwargs['save_debug_res'], f'{pdf_id}-{page_id}'
+                )
+            outs.append(
+                self.recognize_page(
+                    image, page_index=page_num, page_id=page_id, **page_kwargs
+                )
+            )
         return Document(
             index=pdf_index,
             id=pdf_id,
@@ -174,7 +179,9 @@ class Pix2Text(object):
                     When the overlap between an embed formula and a text line is greater than or equal to this threshold,
                     the embed formula and the text line are considered to be on the same line;
                     otherwise, they are considered to be on different lines.
-                * table_as_image (bool): If `True`, the table will be recognized as an image; default value is `False`
+                * table_as_image (bool): If `True`, the table will be recognized as an image (don't parse the table content as text) ; default value is `False`
+                * title_contain_formula (bool): If `True`, the title of the page will be recognized as a mixed image (text and formula). If `False`, it will be recognized as a text; default value is `True`
+                * text_contain_formula (bool): If `True`, the text of the page will be recognized as a mixed image (text and formula). If `False`, it will be recognized as a text; default value is `True`
                 * formula_rec_kwargs (dict): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
                 * save_debug_res (str): if `save_debug_res` is set, the directory to save the debug results; default value is `None`, which means not to save
 
@@ -189,6 +196,8 @@ class Pix2Text(object):
         kwargs['isolated_sep'] = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
         kwargs['line_sep'] = kwargs.get('line_sep', '\n')
         kwargs['auto_line_break'] = kwargs.get('auto_line_break', True)
+        kwargs['title_contain_formula'] = kwargs.get('title_contain_formula', True)
+        kwargs['text_contain_formula'] = kwargs.get('text_contain_formula', True)
         resized_shape = kwargs.get('resized_shape', 768)
         kwargs['resized_shape'] = resized_shape
         layout_kwargs = deepcopy(kwargs)
@@ -210,7 +219,7 @@ class Pix2Text(object):
                 continue
             box = box2list(box_info['position'])
             crop_patch = img0.crop(box)
-            crop_width, crop_height = crop_patch.size
+            crop_width, _ = crop_patch.size
             score = 1.0
             if image_type in (ElementType.TEXT, ElementType.TITLE):
                 _resized_shape = resized_shape
@@ -224,7 +233,14 @@ class Pix2Text(object):
                 save_analysis_res = (
                     debug_dir / f'{_id}-{image_type.name}.png' if debug_dir else None
                 )
-                _out = self.text_formula_ocr.recognize(
+                rec_func = self.text_formula_ocr.recognize
+                if (
+                    image_type == ElementType.TITLE and not kwargs['title_contain_formula']
+                ) or (
+                    image_type == ElementType.TEXT and not kwargs['text_contain_formula']
+                ):
+                    rec_func = self.text_formula_ocr.recognize_text
+                _out = rec_func(
                     padding_patch,
                     return_text=False,
                     resized_shape=_resized_shape,

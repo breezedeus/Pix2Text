@@ -257,7 +257,7 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
     else:
         colors = COLOR_LIST
     for one_box in one_out:
-        _type = one_box['type']
+        _type = one_box.get('type', 'text')
         box = one_box[key]
         xyxy = [box[0, 0], box[0, 1], box[2, 0], box[2, 1]]
         label = str(_type)

@@ -480,6 +480,14 @@ class TextFormulaOCR(object):
                 result = '\n'.join(texts)
             outs.append(result)
 
+        if kwargs.get('save_analysis_res'):
+            save_layout_img(
+                input_imgs[0],
+                ['text'],
+                outs[0],
+                kwargs.get('save_analysis_res'),
+            )
+
         if is_single_image:
             return outs[0]
         return outs
