@@ -230,8 +230,14 @@ pyclipper==1.3.0.post5
     # via
     #   cnstd
     #   easyocr
+pymupdf==1.24.1
+    # via -r requirements.in
+pymupdfb==1.24.1
+    # via pymupdf
 pyparsing==3.1.1
     # via matplotlib
+pyspellchecker==0.8.1
+    # via -r requirements.in
 python-bidi==0.4.2
     # via easyocr
 python-dateutil==2.8.2
