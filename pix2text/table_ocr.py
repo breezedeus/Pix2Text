@@ -87,10 +87,6 @@ class TableOCR(object):
         if model_dir is None:
             model_dir = self._prepare_model_files(root, None)
         # Initialize the model for identifying table structures
-        # self.model = TableStructureAnalyzer()
-        # self.model = pipeline("object-detection", model="microsoft/table-transformer-structure-recognition")
-        # self.model = TableTransformerForObjectDetection.from_pretrained(
-        #     "microsoft/table-structure-recognition-v1.1-all")
         self.str_model = AutoModelForObjectDetection.from_pretrained(model_dir).to(
             self.str_device
         )
