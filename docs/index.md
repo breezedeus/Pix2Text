@@ -25,28 +25,27 @@
 [English](https://github.com/breezedeus/pix2text/blob/master/README.md) | 中文
 </figure>
 
-**Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。**Pix2Text (P2T)** 自 **V0.2** 开始，支持识别**既包含文字又包含公式的混合图片**，返回效果类似于 **Mathpix**。P2T 的核心原理见下图（文字识别支持**中文**和**英文**）：
+**Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。
+**Pix2Text (P2T)** 可以识别图片中的版面、表格、图片、文字、数学公式等内容，并整合所有内容后以 Markdown 格式输出。P2T 也可以把一整个 PDF 文件（PDF 的内容可以是扫描图片或者其他任何格式）转换为 Markdown 格式。
 
-<div align="center">
-  <img src="./docs/figs/arch-flow2.jpg" alt="Pix2Text流程" width="600px"/>
-</div>
+**Pix2Text (P2T)** 整合了以下模型：
 
+- **版面分析模型**：[breezedeus/pix2text-layout](https://huggingface.co/breezedeus/pix2text-layout) （[国内地址](https://hf-mirror.com/breezedeus/pix2text-layout)）。
+- **表格识别模型**：[breezedeus/pix2text-table-rec](https://huggingface.co/breezedeus/pix2text-table-rec) （[国内地址](https://hf-mirror.com/breezedeus/pix2text-table-rec)）。
+- **文字识别引擎**：支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 CnOCR](https://github.com/breezedeus/cnocr) ，其他语言的识别使用的是开源 OCR 工具 [EasyOCR](https://github.com/JaidedAI/EasyOCR) 。
+- **数学公式检测模型（MFD）**：来自 CnSTD](https://github.com/breezedeus/cnstd) 的数学公式检测模型（MFD）。
+- **数学公式识别模型（MFR）**：[breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) （[国内地址](https://hf-mirror.com/breezedeus/pix2text-mfr)）。
 
-**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LatexOCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr) 或 [EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
-
+其中多个模型来自其他开源作者， 非常感谢他们的贡献。
 
 
 P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以我们也发布了**可免费使用**的 **[P2T网页版](https://p2t.breezedeus.com)**，直接把图片丢进网页就能输出P2T的解析结果。**网页版会使用最新的模型，效果会比开源模型更好。**
 
-
-
 感兴趣的朋友欢迎扫码加小助手为好友，备注 `p2t`，小助手会定期统一邀请大家入群。群内会发布P2T相关工具的最新进展：
 
 <div align="center">
-  <img src="./docs/figs/wx-qr-code.JPG" alt="微信群二维码" width="300px"/>
+  <img src="figs/wx-qr-code.JPG" alt="微信群二维码" width="300px"/>
 </div>
-
-
 
 作者也维护 **知识星球** [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，这里面的提问会较快得到作者的回复，欢迎加入。**知识星球私享群**也会陆续发布一些P2T/CnOCR/CnSTD相关的私有资料，包括**部分未公开的模型**，**购买付费模型享优惠**，**不同应用场景的调用代码**，使用过程中遇到的难题解答等。星球也会发布P2T/OCR/STD相关的最新研究资料。
 
