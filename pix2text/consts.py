@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # 模型版本只对应到第二层，第三层的改动表示模型兼容。
 # 如: __version__ = '1.0.*'，对应的 MODEL_VERSION 都是 '1.0'
 MODEL_VERSION = '.'.join(__version__.split('.', maxsplit=2)[:2])
-DOWNLOAD_SOURCE = os.environ.get('PIX2TEXT_DOWNLOAD_SOURCE', 'CN')
+DOWNLOAD_SOURCE = os.environ.get('PIX2TEXT_DOWNLOAD_SOURCE', 'HF')
 
 CN_OSS_ENDPOINT = (
         "https://sg-models.oss-cn-beijing.aliyuncs.com/pix2text/%s/" % MODEL_VERSION
