@@ -1,17 +1,17 @@
 <figure markdown>
-![CnOCR](figs/cnocr-logo.jpg){: style="width:180px"}
+![Pix2Text](figs/p2t-logo.png){: style="width:180px"}
 </figure>
 
-# CnOCR
+# Pix2Text (P2T)
 [![Discord](https://img.shields.io/discord/1200765964434821260?label=Discord)](https://discord.gg/GgD87WM8Tf)
-[![Downloads](https://static.pepy.tech/personalized-badge/cnocr?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/cnocr)
-[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fcnocr.readthedocs.io%2Fzh%2Flatest%2F&label=Visitors&countColor=%23f5c791&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fcnocr.readthedocs.io%2Fzh%2Flatest%2F)
-[![license](https://img.shields.io/github/license/breezedeus/cnocr)](./LICENSE)
-[![PyPI version](https://badge.fury.io/py/cnocr.svg)](https://badge.fury.io/py/cnocr)
-[![forks](https://img.shields.io/github/forks/breezedeus/cnocr)](https://github.com/breezedeus/cnocr)
-[![stars](https://img.shields.io/github/stars/breezedeus/cnocr)](https://github.com/breezedeus/cnocr)
-![last-releast](https://img.shields.io/github/release-date/breezedeus/cnocr)
-![last-commit](https://img.shields.io/github/last-commit/breezedeus/cnocr)
+[![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
+[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fbreezedeus%2FPix2Text&label=Visitors&countColor=%23ff8a65&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fbreezedeus%2FPix2Text)
+[![license](https://img.shields.io/github/license/breezedeus/pix2text)](./LICENSE)
+[![PyPI version](https://badge.fury.io/py/pix2text.svg)](https://badge.fury.io/py/pix2text)
+[![forks](https://img.shields.io/github/forks/breezedeus/pix2text)](https://github.com/breezedeus/pix2text)
+[![stars](https://img.shields.io/github/stars/breezedeus/pix2text)](https://github.com/breezedeus/pix2text)
+![last-release](https://img.shields.io/github/release-date/breezedeus/pix2text)
+![last-commit](https://img.shields.io/github/last-commit/breezedeus/pix2text)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
 <figure markdown>
@@ -22,323 +22,199 @@
 [🛀🏻 在线Demo](demo.md) |
 [💬 交流群](contact.md)
 
-[English](https://github.com/breezedeus/cnocr/blob/master/README_en.md) | 中文
+[English](https://github.com/breezedeus/pix2text/blob/master/README.md) | 中文
 </figure>
 
-[**CnOCR**](https://github.com/breezedeus/cnocr) 是 **Python 3** 下的**文字识别**（**Optical Character Recognition**，简称**OCR**）工具包，支持**简体中文**、**繁体中文**（部分模型）、**英文**和**数字**的常见字符识别，支持竖排文字的识别。自带了**20+个**[训练好的识别模型](models.md)，适用于不同应用场景，安装后即可直接使用。同时，CnOCR也提供简单的[训练命令](train.md)供使用者训练自己的模型。欢迎加入 [交流群](contact.md)。
+**Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。**Pix2Text (P2T)** 自 **V0.2** 开始，支持识别**既包含文字又包含公式的混合图片**，返回效果类似于 **Mathpix**。P2T 的核心原理见下图（文字识别支持**中文**和**英文**）：
 
-作者也维护 **知识星球** [**CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，欢迎加入。**知识星球私享群**会陆续发布一些CnOCR/CnSTD相关的私有资料，包括[**更详细的训练教程**](https://articles.zsxq.com/id_u6b4u0wrf46e.html)，**未公开的模型**，使用过程中遇到的难题解答等。本群也会发布OCR/STD相关的最新研究资料。此外，**私享群中作者每月提供两次免费特有数据的训练服务**。
+<div align="center">
+  <img src="./docs/figs/arch-flow2.jpg" alt="Pix2Text流程" width="600px"/>
+</div>
 
-可以使用 [**在线 Demo**](demo.md) 查看效果。
 
-CnOCR的目标是**使用简单**。
+**P2T** 使用开源工具  **[CnSTD](https://github.com/breezedeus/cnstd)** 检测出图片中**数学公式**所在位置，再交由 **P2T** 自己的**公式识别引擎（LatexOCR）** 识别出各对应位置数学公式的Latex表示。图片的剩余部分再交由 **文字识别引擎（[CnOCR](https://github.com/breezedeus/cnocr) 或 [EasyOCR](https://github.com/JaidedAI/EasyOCR)）** 进行文字检测和文字识别。最后 **P2T** 合并所有识别结果，获得最终的图片识别结果。感谢这些开源工具。
 
-## 安装简单
 
-嗯，顺利的话一行命令即可完成安装。
+
+P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以我们也发布了**可免费使用**的 **[P2T网页版](https://p2t.breezedeus.com)**，直接把图片丢进网页就能输出P2T的解析结果。**网页版会使用最新的模型，效果会比开源模型更好。**
+
+
+
+感兴趣的朋友欢迎扫码加小助手为好友，备注 `p2t`，小助手会定期统一邀请大家入群。群内会发布P2T相关工具的最新进展：
+
+<div align="center">
+  <img src="./docs/figs/wx-qr-code.JPG" alt="微信群二维码" width="300px"/>
+</div>
+
+
+
+作者也维护 **知识星球** [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，这里面的提问会较快得到作者的回复，欢迎加入。**知识星球私享群**也会陆续发布一些P2T/CnOCR/CnSTD相关的私有资料，包括**部分未公开的模型**，**购买付费模型享优惠**，**不同应用场景的调用代码**，使用过程中遇到的难题解答等。星球也会发布P2T/OCR/STD相关的最新研究资料。
+
+
+
+## 支持的语言列表
+
+Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 **[CnOCR](https://github.com/breezedeus/cnocr)** ，其他语言的识别使用的是开源 OCR 工具 **[EasyOCR](https://github.com/JaidedAI/EasyOCR)** ，感谢相关的作者们。
+
+支持的**语言列表**和**语言代码**如下：
+<details>
+<summary>↓↓↓ Click to show details ↓↓↓</summary>
+
+
+| Language            | Code Name   |
+| ------------------- | ----------- |
+| Abaza               | abq         |
+| Adyghe              | ady         |
+| Afrikaans           | af          |
+| Angika              | ang         |
+| Arabic              | ar          |
+| Assamese            | as          |
+| Avar                | ava         |
+| Azerbaijani         | az          |
+| Belarusian          | be          |
+| Bulgarian           | bg          |
+| Bihari              | bh          |
+| Bhojpuri            | bho         |
+| Bengali             | bn          |
+| Bosnian             | bs          |
+| Simplified Chinese  | ch_sim      |
+| Traditional Chinese | ch_tra      |
+| Chechen             | che         |
+| Czech               | cs          |
+| Welsh               | cy          |
+| Danish              | da          |
+| Dargwa              | dar         |
+| German              | de          |
+| English             | en          |
+| Spanish             | es          |
+| Estonian            | et          |
+| Persian (Farsi)     | fa          |
+| French              | fr          |
+| Irish               | ga          |
+| Goan Konkani        | gom         |
+| Hindi               | hi          |
+| Croatian            | hr          |
+| Hungarian           | hu          |
+| Indonesian          | id          |
+| Ingush              | inh         |
+| Icelandic           | is          |
+| Italian             | it          |
+| Japanese            | ja          |
+| Kabardian           | kbd         |
+| Kannada             | kn          |
+| Korean              | ko          |
+| Kurdish             | ku          |
+| Latin               | la          |
+| Lak                 | lbe         |
+| Lezghian            | lez         |
+| Lithuanian          | lt          |
+| Latvian             | lv          |
+| Magahi              | mah         |
+| Maithili            | mai         |
+| Maori               | mi          |
+| Mongolian           | mn          |
+| Marathi             | mr          |
+| Malay               | ms          |
+| Maltese             | mt          |
+| Nepali              | ne          |
+| Newari              | new         |
+| Dutch               | nl          |
+| Norwegian           | no          |
+| Occitan             | oc          |
+| Pali                | pi          |
+| Polish              | pl          |
+| Portuguese          | pt          |
+| Romanian            | ro          |
+| Russian             | ru          |
+| Serbian (cyrillic)  | rs_cyrillic |
+| Serbian (latin)     | rs_latin    |
+| Nagpuri             | sck         |
+| Slovak              | sk          |
+| Slovenian           | sl          |
+| Albanian            | sq          |
+| Swedish             | sv          |
+| Swahili             | sw          |
+| Tamil               | ta          |
+| Tabassaran          | tab         |
+| Telugu              | te          |
+| Thai                | th          |
+| Tajik               | tjk         |
+| Tagalog             | tl          |
+| Turkish             | tr          |
+| Uyghur              | ug          |
+| Ukranian            | uk          |
+| Urdu                | ur          |
+| Uzbek               | uz          |
+| Vietnamese          | vi          |
+
+
+> Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
+
+</details>
+
+
+
+## P2T 网页版
+
+所有人都可以免费使用 **[P2T网页版](https://p2t.breezedeus.com)**，每人每天可以免费识别 10000 个字符，正常使用应该够用了。*请不要批量调用接口，机器资源有限，批量调用会导致其他人无法使用服务。*
+
+受限于机器资源，网页版当前只支持**简体中文和英文**，要尝试其他语言上的效果，请使用以下的**在线 Demo**。
+
+
+
+## 在线 Demo 🤗
+
+也可以使用 **[在线 Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo)**（无法科学上网可以使用 [在线 Demo](https://hf-mirror.com/spaces/breezedeus/Pix2Text-Demo)） 尝试 **P2T** 在不同语言上的效果。但在线 Demo 使用的硬件配置较低，速度会较慢。如果是简体中文或者英文图片，建议使用 **[P2T网页版](https://p2t.breezedeus.com)**。
+
+
+## 安装
+
+嗯，顺利的话一行命令即可。
 
 ```bash
-$ pip install cnocr[ort-cpu]
+pip install pix2text
 ```
 
-更多说明可见 [安装文档](install.md)。
-
-> **注**：如果电脑中从未安装过 `PyTorch`，`OpenCV` python包，初次安装可能会遇到问题，但一般都是常见问题，可以自行百度/Google解决。
-
-
-
-### Docker Image
-
-可以从 [Docker Hub](https://hub.docker.com/u/breezedeus) 直接拉取已安装好 CnOCR 的镜像使用。
+如果需要识别**英文**与**简体中文**之外的文字，请使用以下命令安装额外的包：
 
 ```bash
-$ docker pull breezedeus/cnocr:latest
+pip install pix2text[multilingual]
 ```
 
-更多说明可见 [安装文档](install.md)。
-
-
-
-## 各种场景的调用示例
-
-### 常见的图片识别
-
-所有参数都使用默认值即可。如果发现效果不够好，多调整下各个参数看效果，最终往往能获得比较理想的精度。
-
-```python
-from cnocr import CnOcr
-
-img_fp = './docs/examples/huochepiao.jpeg'
-ocr = CnOcr()  # 所有参数都使用默认值
-out = ocr.ocr(img_fp)
-
-print(out)
-```
-
-识别结果：
-
-<figure markdown>
-![火车票识别](predict-outputs/huochepiao.jpeg-result.jpg){: style="width:700px"}
-</figure>
-
-
-
-
-### 排版简单的印刷体截图图片识别
-
-针对 **排版简单的印刷体文字图片**，如截图图片，扫描件图片等，可使用 `det_model_name='naive_det'`，相当于不使用文本检测模型，而使用简单的规则进行分行。
-
-使用 `det_model_name='naive_det'` 的最大优势是**速度快**，劣势是对图片比较挑剔。如何判断是否该使用此检测模型呢？最简单的方式就是拿应用图片试试效果，效果好就用，不好就不用。
-
-```python
-from cnocr import CnOcr
-
-img_fp = './docs/examples/multi-line_cn1.png'
-ocr = CnOcr(det_model_name='naive_det') 
-out = ocr.ocr(img_fp)
-
-print(out)
-```
-
-识别结果：
-
-<figure markdown>
-
-
-| 图片                                                         | OCR结果                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![examples/multi-line_cn1.png](./examples/multi-line_cn1.png) | 网络支付并无本质的区别，因为<br />每一个手机号码和邮件地址背后<br />都会对应着一个账户--这个账<br />户可以是信用卡账户、借记卡账<br />户，也包括邮局汇款、手机代<br />收、电话代收、预付费卡和点卡<br />等多种形式。 |
-
-</figure>
-
-
-### 竖排文字识别
-
-采用来自 [**PaddleOCR**](https://github.com/PaddlePaddle/PaddleOCR)（之后简称 **ppocr**）的中文识别模型 `rec_model_name='ch_PP-OCRv3'` 进行识别。
-
-```python
-from cnocr import CnOcr
-
-img_fp = './docs/examples/shupai.png'
-ocr = CnOcr(rec_model_name='ch_PP-OCRv3')
-out = ocr.ocr(img_fp)
-
-print(out)
-```
-
-识别结果：
-
-<figure markdown>
-![竖排文字识别](./predict-outputs/shupai.png-result.jpg){: style="width:750px"}
-</figure>
-
-
-
-### 英文识别
-
-虽然中文检测和识别模型也能识别英文，但**专为英文文字训练的检测器和识别器往往精度更高**。如果是纯英文的应用场景，建议使用来自 **ppocr** 的英文检测模型 `det_model_name='en_PP-OCRv3_det'`， 和英文识别模型 `rec_model_name='en_PP-OCRv3'` 。
-
-```python
-from cnocr import CnOcr
-
-img_fp = './docs/examples/en_book1.jpeg'
-ocr = CnOcr(det_model_name='en_PP-OCRv3_det', rec_model_name='en_PP-OCRv3')
-out = ocr.ocr(img_fp)
-
-print(out)
-```
-
-识别结果：
-
-<figure markdown>
-![英文识别](./predict-outputs/en_book1.jpeg-result.jpg){: style="width:670px"}
-</figure>
-
-
-
-### 繁体中文识别
-
-采用来自ppocr的繁体识别模型 `rec_model_name='chinese_cht_PP-OCRv3'` 进行识别。
-
-```python
-from cnocr import CnOcr
-
-img_fp = './docs/examples/fanti.jpg'
-ocr = CnOcr(rec_model_name='chinese_cht_PP-OCRv3')  # 识别模型使用繁体识别模型
-out = ocr.ocr(img_fp)
-
-print(out)
-```
-
-使用此模型时请注意以下问题：
-
-* 识别精度一般，不是很好；
-
-* 除了繁体字，对标点、英文、数字的识别都不好；
-
-* 此模型不支持竖排文字的识别。
-
-识别结果：
-
-<figure markdown>
-![繁体中文识别](./predict-outputs/fanti.jpg-result.jpg){: style="width:700px"}
-</figure>
-
-
-
-
-### 单行文字的图片识别
-
-如果明确知道待识别的图片是单行文字图片（如下图），可以使用类函数 `CnOcr.ocr_for_single_line()` 进行识别。这样就省掉了文字检测的时间，速度会快一倍以上。
-
-<figure markdown>
-![单行文本识别](./examples/helloworld.jpg){: style="width:270px"}
-</figure>
-
-
-调用代码如下：
-
-```python
-from cnocr import CnOcr
-
-img_fp = './docs/examples/helloworld.jpg'
-ocr = CnOcr()
-out = ocr.ocr_for_single_line(img_fp)
-print(out)
-```
-
-### 更多应用示例
-- **核酸疫苗截图识别**
-	<figure markdown>
-
- 	![核酸疫苗截图识别](./predict-outputs/jiankangbao.jpeg-result.jpg){: style="width:600px"}
- 	</figure>
-
-- **身份证识别**
-	<figure markdown>
-
- 	![身份证识别](./predict-outputs/aobama.webp-result.jpg){: style="width:700px"}
- 	</figure>
-
-- **饭店小票识别**
-	<figure markdown>
-	![饭店小票识别](./predict-outputs/fapiao.jpeg-result.jpg){: style="width:550px"}
-	</figure>
-
-
-
-## HTTP服务
-
-CnOCR 自 **V2.2.1** 开始加入了基于 **FastAPI** 的HTTP服务。开启服务需要安装几个额外的包，可以使用以下命令安装：
+安装速度慢的话，可以指定国内的安装源，如使用阿里云的安装源：
 
 ```bash
-pip install cnocr[serve]
+pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 
 
-安装完成后，可以通过以下命令启动HTTP服务（**`-p`** 后面的数字是**端口**，可以根据需要自行调整）：
+如果是初次使用**OpenCV**，那估计安装都不会很顺利，bless。
 
-```bash
-cnocr serve -p 8501
-```
+**Pix2Text** 主要依赖 [**CnSTD>=1.2.1**](https://github.com/breezedeus/cnstd)、[**CnOCR>=2.2.2.1**](https://github.com/breezedeus/cnocr) ，以及 [**transformers>=4.37.0**](https://github.com/huggingface/transformers) 。如果安装过程遇到问题，也可参考它们的安装说明文档。
 
 
 
-服务开启后，可以使用以下方式调用服务。
+> **Warning**
+>
+> 如果电脑中从未安装过 `PyTorch`，`OpenCV` python包，初次安装可能会遇到不少问题，但一般都是常见问题，可以自行百度/Google解决。
 
 
+## Mac 桌面客户端
 
-### 命令行
+请参考 [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) 安装 Pix2Text 的 MacOS 桌面客户端。
 
-比如待识别文件为 `docs/examples/huochepiao.jpeg`，如下使用 curl 调用服务：
-
-```bash
-> curl -F image=@docs/examples/huochepiao.jpeg http://0.0.0.0:8501/ocr
-```
-
+<div align="center">
+  <img src="https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg" alt="Pix2Text Mac 客户端" width="400px"/>
+</div>
 
 
-### Python
+## 给作者来杯咖啡
 
-使用如下方式调用服务：
-
-```python
-import requests
-
-image_fp = 'docs/examples/huochepiao.jpeg'
-r = requests.post(
-    'http://0.0.0.0:8501/ocr', files={'image': (image_fp, open(image_fp, 'rb'), 'image/png')},
-)
-ocr_out = r.json()['results']
-print(ocr_out)
-```
-
-
-
-具体也可参考文件 [scripts/screenshot_daemon_with_server.py](https://github.com/breezedeus/CnOCR/tree/master/scripts/screenshot_daemon_with_server.py) 。 
-
-
-
-### 其他语言
-
-请参照 curl 的调用方式自行实现。
-
-
-
-### Flask 服务
-
-我们也提供了 **Flask** Server 的实现，见 [scripts/flask-serve.py](https://github.com/breezedeus/CnOCR/blob/master/scripts/flask-serve.py) 。下载此文件，然后安装 flask 后即可启动。
-
-
-
-安装 Flask：
-
-```bash
-> pip install flask
-```
-
-
-
-启动服务：
-
-```bash
-> FLASK_APP=scripts/flask-serve.py flask run
-```
-
-
-
-
-
-## 其他文档
-
-* [自己训练模型](train.md)
-* [OCR技术介绍（PPT+视频）](std_ocr.md)
-* [给作者加油](buymeacoffee.md)
-* [FAQ](faq.md)
-* [RELEASE文档](RELEASE.md)
-
-
-## 未来工作
-
-* [x] 支持图片包含多行文字 (`Done`)
-* [x] crnn模型支持可变长预测，提升灵活性 (since `V1.0.0`)
-* [x] 完善测试用例 (`Doing`)
-* [x] 修bugs（目前代码还比较凌乱。。） (`Doing`)
-* [x] 支持`空格`识别（since `V1.1.0`）
-* [x] 尝试新模型，如 DenseNet，进一步提升识别准确率（since `V1.1.0`）
-* [x] 优化训练集，去掉不合理的样本；在此基础上，重新训练各个模型
-* [x] 由 MXNet 改为 PyTorch 架构（since `V2.0.0`）
-* [x] 基于 PyTorch 训练更高效的模型
-* [x] 支持列格式的文字识别
-* [x] 打通与 [CnSTD](https://github.com/breezedeus/cnstd) 的无缝衔接（since `V2.2`）
-* [ ] 模型精度进一步优化
-* [ ] 支持更多的应用场景，如公式识别、表格识别、版面分析等
-
-## 给作者加油鼓气
-
-开源不易，如果此项目对您有帮助，可以考虑[给作者加点油🥤，鼓鼓气💪🏻](buymeacoffee.md) 。
+开源不易，如果此项目对您有帮助，可以考虑 [给作者加点油🥤，鼓鼓气💪🏻](https://www.breezedeus.com/buy-me-coffee) 。
 
 ---
 
-官方代码库：[https://github.com/breezedeus/cnocr](https://github.com/breezedeus/cnocr)。
+官方代码库：[https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text) 。
+
+Pix2Text (P2T) 更多信息：[https://www.breezedeus.com/pix2text](https://www.breezedeus.com/pix2text) 。
