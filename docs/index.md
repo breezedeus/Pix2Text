@@ -32,8 +32,8 @@
 
 - **版面分析模型**：[breezedeus/pix2text-layout](https://huggingface.co/breezedeus/pix2text-layout) （[国内地址](https://hf-mirror.com/breezedeus/pix2text-layout)）。
 - **表格识别模型**：[breezedeus/pix2text-table-rec](https://huggingface.co/breezedeus/pix2text-table-rec) （[国内地址](https://hf-mirror.com/breezedeus/pix2text-table-rec)）。
-- **文字识别引擎**：支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 CnOCR](https://github.com/breezedeus/cnocr) ，其他语言的识别使用的是开源 OCR 工具 [EasyOCR](https://github.com/JaidedAI/EasyOCR) 。
-- **数学公式检测模型（MFD）**：来自 CnSTD](https://github.com/breezedeus/cnstd) 的数学公式检测模型（MFD）。
+- **文字识别引擎**：支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 [CnOCR](https://github.com/breezedeus/cnocr) ，其他语言的识别使用的是开源 OCR 工具 [EasyOCR](https://github.com/JaidedAI/EasyOCR) 。
+- **数学公式检测模型（MFD）**：来自 [CnSTD](https://github.com/breezedeus/cnstd) 的数学公式检测模型（MFD）。
 - **数学公式识别模型（MFR）**：[breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) （[国内地址](https://hf-mirror.com/breezedeus/pix2text-mfr)）。
 
 其中多个模型来自其他开源作者， 非常感谢他们的贡献。
@@ -58,7 +58,6 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 支持的**语言列表**和**语言代码**如下：
 <details>
 <summary>↓↓↓ Click to show details ↓↓↓</summary>
-
 
 | Language            | Code Name   |
 | ------------------- | ----------- |
@@ -145,7 +144,6 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 | Urdu                | ur          |
 | Uzbek               | uz          |
 | Vietnamese          | vi          |
-
 
 > Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
 
