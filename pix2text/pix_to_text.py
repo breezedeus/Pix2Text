@@ -165,7 +165,7 @@ class Pix2Text(object):
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             page_number (str): page number
             page_id (str): page id
-            kwargs ():
+            kwargs (dict): Optional keyword arguments.
                 * resized_shape (int): Resize the image width to this size for processing; default value is `768`
                 * save_layout_res (str): Save the layout result image in this file; default is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
