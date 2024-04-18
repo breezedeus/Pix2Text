@@ -115,6 +115,18 @@ class Pix2Text(object):
         page_numbers: Optional[List[int]] = None,
         **kwargs,
     ) -> Document:
+        """
+        recognize a pdf file
+        Args:
+            pdf_fp (Union[str, Path]): pdf file path
+            pdf_number (int): pdf number
+            pdf_id (str): pdf id
+            page_numbers (List[int]): page numbers to recognize; default is `None`, which means to recognize all pages
+            kwargs (dict): Optional keyword arguments. The same as `recognize_page`
+
+        Returns: a Document object. Use `doc.to_markdown('output-dir')` to get the markdown output of the recognized document.
+
+        """
         pdf_id = pdf_id or str(pdf_number)
 
         doc = fitz.open(pdf_fp, filetype='pdf')
@@ -155,7 +167,6 @@ class Pix2Text(object):
         img: Union[str, Path, Image.Image],
         page_number: int = 0,
         page_id: Optional[str] = None,
-        # return_text: bool = True,
         **kwargs,
     ) -> Page:
         """
@@ -171,7 +182,7 @@ class Pix2Text(object):
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
                 * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is two-dollar signs
-                * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is `'\n'`
+                * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is a line break
                 * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_text` is `True`; default value is `True`
                 * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
                 * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
@@ -185,7 +196,7 @@ class Pix2Text(object):
                 * formula_rec_kwargs (dict): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
                 * save_debug_res (str): if `save_debug_res` is set, the directory to save the debug results; default value is `None`, which means not to save
 
-        Returns: a Page object.
+        Returns: a Page object. Use `page.to_markdown('output-dir')` to get the markdown output of the recognized page.
         """
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
@@ -234,13 +245,15 @@ class Pix2Text(object):
                     debug_dir / f'{_id}-{image_type.name}.png' if debug_dir else None
                 )
                 if image_type == ElementType.TITLE:
-                    text_formula_kwargs['contain_formula'] = kwargs['title_contain_formula']
+                    text_formula_kwargs['contain_formula'] = kwargs[
+                        'title_contain_formula'
+                    ]
                 if image_type == ElementType.TEXT:
-                    text_formula_kwargs['contain_formula'] = kwargs['text_contain_formula']
+                    text_formula_kwargs['contain_formula'] = kwargs[
+                        'text_contain_formula'
+                    ]
                 _out = self.text_formula_ocr.recognize(
-                    padding_patch,
-                    return_text=False,
-                    **text_formula_kwargs,
+                    padding_patch, return_text=False, **text_formula_kwargs,
                 )
                 text, meta = None, _out
                 score = float(np.mean([x['score'] for x in _out]))
@@ -405,8 +418,8 @@ class Pix2Text(object):
                 * save_analysis_res (str): Save the mfd result image in this file; default is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
-                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is `('$$\n', '\n$$')`
-                * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is `'\n'`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is two-dollar signs
+                * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is a line break
                 * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_text` is `True`; default value is `True`
                 * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
                 * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
