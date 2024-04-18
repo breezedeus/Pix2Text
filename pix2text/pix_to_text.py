@@ -7,7 +7,7 @@ import os
 from copy import deepcopy
 from functools import cmp_to_key
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List
+from typing import Dict, Any, Optional, Union, List, Literal
 
 import numpy as np
 from PIL import Image
@@ -69,12 +69,12 @@ class Pix2Text(object):
 
         Args:
             total_configs (dict):
-            enable_formula ():
-            enable_table ():
-            device ():
-            **kwargs ():
+            enable_formula (bool): Whether to enable formula recognition; default value is `True`
+            enable_table (bool): Whether to enable table recognition; default value is `True`
+            device (str): The device to run the model; optional values are 'cpu', 'gpu' or 'cuda'; default value is `None`
+            **kwargs (): Other arguments
 
-        Returns:
+        Returns: a Pix2Text object
 
         """
         total_configs = total_configs or {}
@@ -106,6 +106,29 @@ class Pix2Text(object):
 
     def __call__(self, img: Union[str, Path, Image.Image], **kwargs) -> Page:
         return self.recognize_page(img, page_id='0', **kwargs)
+
+    def recognize(
+        self,
+        img: Union[str, Path, Image.Image],
+        img_type: Literal[
+            'pdf', 'page', 'text_formula', 'formula', 'text'
+        ] = 'text_formula',
+        **kwargs,
+    ) -> Union[Document, Page, str, List[str], List[Any], List[List[Any]]]:
+        """
+        Recognize the content of the image according to the specified type.
+        Args:
+            img ():
+            img_type (str):  Supported image types: 'pdf', 'page', 'text_formula', 'formula', 'text'
+            **kwargs (dict): Arguments for the corresponding recognition function
+
+        Returns: recognized results
+
+        """
+        rec_func = getattr(self, f'recognize_{img_type}', None)
+        if rec_func is None:
+            raise ValueError(f'Unsupported image type: {img_type}')
+        return rec_func(img, **kwargs)
 
     def recognize_pdf(
         self,
@@ -176,7 +199,7 @@ class Pix2Text(object):
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             page_number (str): page number
             page_id (str): page id
-            kwargs (dict): Optional keyword arguments.
+            kwargs ():
                 * resized_shape (int): Resize the image width to this size for processing; default value is `768`
                 * save_layout_res (str): Save the layout result image in this file; default is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
@@ -432,6 +455,7 @@ class Pix2Text(object):
 
         Returns: a str when `return_text` is `True`; or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
             with each dict representing one detected box, containing keys:
+
                * `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
                * `text`: The recognized text or Latex formula
                * `score`: The confidence score [0, 1]; the higher, the more confident
@@ -458,6 +482,7 @@ class Pix2Text(object):
 
         Returns: Text str or list of text strs when `return_text` is True;
                  `List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
+
                     * `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
                     * `text`: The recognized text
                     * `score`: The confidence score [0, 1]; the higher, the more confident
@@ -487,6 +512,7 @@ class Pix2Text(object):
         Returns: The LaTeX Expression or list of LaTeX Expressions;
                  str or List[str] when `return_text` is True;
                  Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
+
                     * `text`: The recognized LaTeX text
                     * `score`: The confidence score [0, 1]; the higher, the more confident
 
