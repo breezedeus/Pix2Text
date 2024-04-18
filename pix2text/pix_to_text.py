@@ -170,7 +170,7 @@ class Pix2Text(object):
                 * save_layout_res (str): Save the layout result image in this file; default is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
-                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is `('$$\n', '\n$$')`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is $('$$\n', '\n$$')$
                 * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is `'\n'`
                 * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_text` is `True`; default value is `True`
                 * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`

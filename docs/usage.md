@@ -2,10 +2,12 @@
 
 ## 模型文件自动下载
 
-首次使用 **CnOCR** 时，系统会**自动下载** zip 格式的识别模型压缩文件，并存于 `~/.cnocr`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\cnocr`）。
-下载后的zip文件代码会自动对其解压，然后把解压后的模型相关目录放于`~/.cnocr/2.3`目录中。
+首次使用 **Pix2Text** 时，系统会**自动下载** 所需的开源模型，并存于 `~/.pix2text`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
+CnOCR 和 CnSTD 中的模型分别存于 `~/.cnocr` 和 `~/.cnstd` 中（Windows 下默认路径为 `C:\Users\<username>\AppData\Roaming\cnocr` 和 `C:\Users\<username>\AppData\Roaming\cnstd`）。
+下载过程请耐心等待，无法科学上网时系统会自动尝试其他可用站点进行下载，所以可能需要等待较长时间。
+对于没有网络连接的机器，可以先把模型下载到其他机器上，然后拷贝到对应目录。
 
-如果系统无法自动成功下载zip文件，则需要手动从 **[cnstd-cnocr-models](https://huggingface.co/breezedeus/cnstd-cnocr-models/tree/main)** 下载此zip文件并把它放于 `~/.cnocr/2.3`目录。如果下载太慢，也可以从 [百度云盘](https://pan.baidu.com/s/1RhLBf8DcLnLuGLPrp89hUg?pwd=nocr) 下载， 提取码为 `nocr`。
+如果系统无法自动成功下载zip文件，则需要手动下载模型，可以参考 [huggingface.co/breezedeus](https://huggingface.co/breezedeus) （[国内链接](https://hf-mirror.com/breezedeus)）自己手动下载。
 
 检测模型的下载请参考 **[CnSTD 文档](https://github.com/breezedeus/CnSTD/tree/master#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95)**。
 
