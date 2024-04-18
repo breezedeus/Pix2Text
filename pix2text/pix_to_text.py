@@ -481,11 +481,11 @@ class Pix2Text(object):
             kwargs (): Other parameters for `text_ocr.ocr()`
 
         Returns: Text str or list of text strs when `return_text` is True;
-                 `List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
+            `List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
 
-                    * `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
-                    * `text`: The recognized text
-                    * `score`: The confidence score [0, 1]; the higher, the more confident
+                * `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
+                * `text`: The recognized text
+                * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
         return self.text_formula_ocr.recognize_text(
@@ -510,11 +510,11 @@ class Pix2Text(object):
             **kwargs (): Special model parameters. Not used for now
 
         Returns: The LaTeX Expression or list of LaTeX Expressions;
-                 str or List[str] when `return_text` is True;
-                 Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
+            str or List[str] when `return_text` is True;
+            Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
 
-                    * `text`: The recognized LaTeX text
-                    * `score`: The confidence score [0, 1]; the higher, the more confident
+                * `text`: The recognized LaTeX text
+                * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
         return self.text_formula_ocr.recognize_formula(
