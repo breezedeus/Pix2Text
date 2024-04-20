@@ -2,412 +2,519 @@
 
 ## 模型文件自动下载
 
-首次使用 **Pix2Text** 时，系统会**自动下载** 所需的开源模型，并存于 `~/.pix2text`目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
+首次使用 **Pix2Text** 时，系统会**自动下载**所需的开源模型，并存于 `~/.pix2text` 目录（Windows下默认路径为 `C:\Users\<username>\AppData\Roaming\pix2text`）。
 CnOCR 和 CnSTD 中的模型分别存于 `~/.cnocr` 和 `~/.cnstd` 中（Windows 下默认路径为 `C:\Users\<username>\AppData\Roaming\cnocr` 和 `C:\Users\<username>\AppData\Roaming\cnstd`）。
 下载过程请耐心等待，无法科学上网时系统会自动尝试其他可用站点进行下载，所以可能需要等待较长时间。
 对于没有网络连接的机器，可以先把模型下载到其他机器上，然后拷贝到对应目录。
 
 如果系统无法自动成功下载zip文件，则需要手动下载模型，可以参考 [huggingface.co/breezedeus](https://huggingface.co/breezedeus) （[国内链接](https://hf-mirror.com/breezedeus)）自己手动下载。
 
-检测模型的下载请参考 **[CnSTD 文档](https://github.com/breezedeus/CnSTD/tree/master#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95)**。
 
-放置好 zip 文件后，后面的事代码就会自动执行了。
+## 初始化
+### 方法一
 
-## 详细使用说明
-
-### 初始化
-
-[类CnOcr](cnocr/cn_ocr.md) 是识别主类，包含了三个函数针对不同场景进行文字识别。类`CnOcr`的初始化函数如下：
+类 [Pix2Text](pix2text/pix_to_text.md) 是识别主类，包含了多个识别函数识别不同类型的 **图片** 或 **PDF文件** 中的内容。类 `Pix2Text` 的初始化函数如下：
 
 ```python
-class CnOcr(object):
+class Pix2Text(object):
     def __init__(
         self,
-        rec_model_name: str = 'densenet_lite_136-gru',
         *,
-        det_model_name: str = 'ch_PP-OCRv3_det',
-        cand_alphabet: Optional[Union[Collection, str]] = None,
-        context: str = 'cpu',  # ['cpu', 'gpu', 'cuda']
-        rec_model_fp: Optional[str] = None,
-        rec_model_backend: str = 'onnx',  # ['pytorch', 'onnx']
-        rec_vocab_fp: Union[str, Path] = VOCAB_FP,
-        rec_more_configs: Optional[Dict[str, Any]] = None,
-        rec_root: Union[str, Path] = data_dir(),
-        det_model_fp: Optional[str] = None,
-        det_model_backend: str = 'onnx',  # ['pytorch', 'onnx']
-        det_more_configs: Optional[Dict[str, Any]] = None,
-        det_root: Union[str, Path] = det_data_dir(),
+        layout_parser: Optional[LayoutParser] = None,
+        text_formula_ocr: Optional[TextFormulaOCR] = None,
+        table_ocr: Optional[TableOCR] = None,
         **kwargs,
-    )
+    ):
+		"""
+        Initialize the Pix2Text object.
+        Args:
+            layout_parser (LayoutParser): The layout parser object; default value is `None`, which means to create a default one
+            text_formula_ocr (TextFormulaOCR): The text and formula OCR object; default value is `None`, which means to create a default one
+            table_ocr (TableOCR): The table OCR object; default value is `None`, which means not to recognize tables
+            **kwargs (dict): Other arguments, currently not used
+        """
 ```
 
 其中的几个参数含义如下：
 
-* `rec_model_name`: 识别模型名称。默认为 `densenet_lite_136-gru`。更多可选模型见 [可直接使用的模型](models.md) 。
-
-* `det_model_name`: 检测模型名称。默认为 `ch_PP-OCRv3_det`。更多可选模型见 [可直接使用的模型](models.md) 。
-
-* `cand_alphabet`: 待识别字符所在的候选集合。默认为 `None`，表示不限定识别字符范围。取值可以是字符串，如 `"0123456789"`，或者字符列表，如 `["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]`。
-	* `cand_alphabet`也可以初始化后通过类函数 `CnOcr.set_cand_alphabet(cand_alphabet)` 进行设置。这样同一个实例也可以指定不同的`cand_alphabet`进行识别。
-* `context`：预测使用的机器资源，可取值为字符串`cpu`、`gpu`、`cuda:0`等。默认为 `cpu`。此参数仅在 `model_backend=='pytorch'` 时有效。
-
-* `rec_model_fp`:  如果不使用系统自带的识别模型，可以通过此参数直接指定所使用的模型文件（`.ckpt` 或 `.onnx` 文件）。
-
-* `rec_model_backend`：'pytorch', or 'onnx'。表明识别时是使用 `PyTorch` 版本模型，还是使用 `ONNX` 版本模型。 **同样的模型，ONNX 版本的预测速度一般是 PyTorch 版本的 2倍左右。** 默认为 'onnx'。
-
-* `rec_vocab_fp`：识别字符集合的文件路径，即 `label_cn.txt` 文件路径。若训练的自有模型更改了字符集，看通过此参数传入新的字符集文件路径。
-
-* `rec_more_configs`：`dict`，识别模型初始化时传入的其他参数。具体可参考 [Recognizer](cnocr/recognizer.md) 和 [PPRecognizer](cnocr/pp_recognizer.md) 中的 `__init__` 接口。
-	
-* `rec_root`:  识别模型文件所在的根目录。
-	* Linux/Mac下默认值为 `~/.cnocr`，表示模型文件所处文件夹类似 `~/.cnocr/2.3/densenet_lite_136-gru`。
-	* Windows下默认值为 `C:\Users\<username>\AppData\Roaming\cnocr`。
-  
-* `det_model_fp`:  如果不使用系统自带的检测模型，可以通过此参数直接指定所使用的模型文件（`.ckpt` 或 `.onnx` 文件）。
-
-* `det_model_backend`：'pytorch', or 'onnx'。表明检测时是使用 `PyTorch` 版本模型，还是使用 `ONNX` 版本模型。 **同样的模型，ONNX 版本的预测速度一般是 PyTorch 版本的 2倍左右。** 默认为 'onnx'。
-
-* `det_more_configs`： `dict`，识别模型初始化时传入的其他参数。具体可参考 [CnSTD 文档](https://github.com/breezedeus/cnstd)，或者相关的源代码 [CnSTD/CnStd](https://github.com/breezedeus/cnstd/blob/master/cnstd/cn_std.py) 。
-
-* `det_root`:  检测模型文件所在的根目录。
-	* Linux/Mac下默认值为 `~/.cnstd`，表示模型文件所处文件夹类似 `~/.cnstd/1.2/db_resnet18`。
-	* Windows下默认值为 `C:/Users/<username>/AppData/Roaming/cnstd`。
+* `layout_parser`：版面分析模型对象，默认值为 `None`，表示使用默认的版面分析模型；
+* `text_formula_ocr`：文字与公式识别模型对象，默认值为 `None`，表示使用默认的文字与公式识别模型；
+* `table_ocr`：表格识别模型对象，默认值为 `None`，表示不识别表格；
+* `**kwargs`：其他参数，目前未使用。
 
 
+每个参数都有默认取值，所以可以不传入任何参数值进行初始化：`p2t = Pix2Text()`。但请注意，如果不传入任何参数值，那么只会导入默认的版面分析模型和文字与公式识别模型，而**不会导入表格识别模型**。
 
-每个参数都有默认取值，所以可以不传入任何参数值进行初始化：`ocr = CnOcr()`。
+初始化 Pix2Text 实例的更好的方法是使用以下的函数。
 
----
-
-类`CnOcr`主要包含**三个主要函数**，下面分别说明。
-
-
-
-### 1. 函数`CnOcr.ocr(img_fp)`
-
-函数`CnOcr.ocr()`可以对任意包含文字的图片进行文字检测和识别，其中文字检测功能通过调用场景文字检测工具 **[CnSTD](https://github.com/breezedeus/cnstd)** 完成。
+### 方法二
+可以通过指定配置信息来初始化 `Pix2Text` 类的实例：
 
 ```python
-    def ocr(
-        self,
-        img_fp: Union[str, Path, Image.Image, torch.Tensor, np.ndarray],
-        rec_batch_size=1,
-        return_cropped_image=False,
-        **det_kwargs,
-    ) -> List[Dict[str, Any]]:
+@classmethod
+def from_config(
+		cls,
+		total_configs: Optional[dict] = None,
+		enable_formula: bool = True,
+		enable_table: bool = True,
+		device: str = None,
+		**kwargs,
+):
+	"""
+    Create a Pix2Text object from the configuration.
+    Args:
+        total_configs (dict): The total configuration; default value is `None`, which means to use the default configuration.
+            If not None, it should contain the following keys:
+
+                * `layout`: The layout parser configuration
+                * `text_formula`: The TextFormulaOCR configuration
+                * `table`: The table OCR configuration
+        enable_formula (bool): Whether to enable formula recognition; default value is `True`
+        enable_table (bool): Whether to enable table recognition; default value is `True`
+        device (str): The device to run the model; optional values are 'cpu', 'gpu' or 'cuda';
+            default value is `None`, which means to select the device automatically
+        **kwargs (dict): Other arguments
+
+    Returns: a Pix2Text object
+
+    """
 ```
 
+其中的几个参数含义如下：
 
+* `total_configs`：总配置，包含以下几个键值：
+	- `layout`：版面分析模型的配置；
+	- `text_formula`：文字与公式识别模型的配置；
+	- `table`：表格识别模型的配置；
+  默认值为 `None`，表示使用默认配置。
+* `enable_formula`：是否启用公式识别，默认值为 `True`；
+* `enable_table`：是否启用表格识别，默认值为 `True`；
+* `device`：运行模型的设备，可选值为 `'cpu'`, `'gpu'` 或 `'cuda'`，默认值为 `None`，表示自动选择设备；
+* `**kwargs`：其他参数，目前未使用。
+
+这个函数的返回值是一个 `Pix2Text` 类的实例，可以直接使用这个实例进行识别。
+
+推荐使用此函数初始化 Pix2Text 的实例，如：`p2t = Pix2Text.from_config()`。
+
+一个包含配置信息的示例如下：
+
+```python
+import os
+from pix2text import Pix2Text
+
+text_formula_config = dict(
+	languages=('en', 'ch_sim'),  # 设置识别的语言
+	mfd=dict(  # 声明 LayoutAnalyzer 的初始化参数
+		model_type='yolov7',  # 表示使用的是 YoloV7 模型，而不是 YoloV7_Tiny 模型
+		model_fp=os.path.expanduser(
+			'~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt'
+		),  # 注：修改成你的模型文件所存储的路径
+	),
+	formula=dict(
+		model_name='mfr-pro',
+		model_backend='onnx',
+		model_dir=os.path.expanduser(
+			'~/.pix2text/1.0/mfr-pro-onnx'
+		),  # 注：修改成你的模型文件所存储的路径
+	),
+	text=dict(
+		rec_model_name='doc-densenet_lite_666-gru_large',
+		rec_model_backend='onnx',
+		rec_model_fp=os.path.expanduser(
+			'~/.cnocr/2.3/doc-densenet_lite_666-gru_large/cnocr-v2.3-doc-densenet_lite_666-gru_large-epoch=005-ft-model.onnx'
+			# noqa
+		),  # 注：修改成你的模型文件所存储的路径
+	),
+)
+total_config = {
+	'layout': {'scores_thresh': 0.45},
+	'text_formula': text_formula_config,
+}
+p2t = Pix2Text.from_config(total_configs=total_config)
+```
+
+更多初始化的示例请参见 [tests/test_pix2text.py](https://github.com/breezedeus/Pix2Text/blob/main/tests/test_pix2text.py)。
+
+## 各种识别接口
+
+类 `Pix2Text` 提供了不同的识别函数来识别不同类似的图片或者 PDF 文件内容，下面分别说明。
+
+
+### 1. 函数 `.recognize_pdf()`
+
+此函数用于识别一整个 PDF 文件中的内容。**PDF 文件的内容可以只包含图片而无文字内容**，
+如示例文件 [examples/test-doc.pdf](examples/test-doc.pdf)。
+识别时，可以指定识别的页数，也可以指定识别的 PDF 文件编号。
+函数定义如下：
+
+```python
+def recognize_pdf(
+		self,
+		pdf_fp: Union[str, Path],
+		pdf_number: int = 0,
+		pdf_id: Optional[str] = None,
+		page_numbers: Optional[List[int]] = None,
+		**kwargs,
+) -> Document:
+	"""
+    recognize a pdf file
+    Args:
+        pdf_fp (Union[str, Path]): pdf file path
+        pdf_number (int): pdf number
+        pdf_id (str): pdf id
+        page_numbers (List[int]): page numbers to recognize; default is `None`, which means to recognize all pages
+        kwargs (dict): Optional keyword arguments. The same as `recognize_page`
+
+    Returns: a Document object. Use `doc.to_markdown('output-dir')` to get the markdown output of the recognized document.
+
+    """
+```
 
 **函数说明**：
 
-- 输入参数 `img_fp`: 对应一张图片，
-	- 可以是需要识别的图片文件路径；
-	- 或者由 `Image.open()` 导入的 `Image.Image` 类型；
-	- 或者是已经从图片文件中读入的数组，类型可以为 `torch.Tensor` 或  `np.ndarray`，取值应该是`[0，255]`的整数，维数应该是 `[height, width]` （灰度图片）或者 `[height, width, channel]`，`channel` 可以等于`1`（灰度图片）或者`3`（`RGB`格式的彩色图片）。
+* 输入参数 `pdf_fp`：PDF 文件的路径；
+* 输入参数 `pdf_number`：PDF 文件的编号，默认值为 `0`；
+* 输入参数 `pdf_id`：PDF 文件的 ID，默认值为 `None`；
+* 输入参数 `page_numbers`：需要识别的页码列表（页码从 0 开始计数，如 `[0, 1]` 表示只识别文件的第 1、2 页内容），默认值为 `None`，表示识别所有页；
+* 输入参数 `**kwargs`：其他参数，具体说明参考下面的函数 `recognize_page()`。
 
-- 输入参数 `rec_batch_size`：文字识别时可以批量进行，此值表示每次批量识别多少个文本框中的文字，默认值为 `1`；
-- 输入参数 `return_cropped_image`：返回结果中是否返回检测出的文本框图片数据；
-- `**det_kwargs`：可以为文本检测模型传入参数值，主要包含以下值：
-	- `resized_shape`: `int` or `tuple`, `tuple` 含义为 `(height, width)`, `int` 则表示高宽都为此值；
-			检测前，先把原始图片resize到接近此大小（只是接近，未必相等）。默认为 `(768, 768)`。
-			注：这个取值对检测结果的影响较大，可以针对自己的应用多尝试几组值，再选出最优值。
-				例如 `(512, 768)`, `(768, 768)`, `(768, 1024)` 等。
-	- `preserve_aspect_ratio`: 对原始图片resize时是否保持高宽比不变。默认为 `True`。
-	- `min_box_size`: 如果检测出的文本框高度或者宽度低于此值，此文本框会被过滤掉。默认为 `8`，也即高或者宽低于 `8` 的文本框会被过滤去掉。
-	- `box_score_thresh`: 过滤掉得分低于此值的文本框。默认为 `0.3`。
-	- `batch_size`: 待处理图片很多时，需要分批处理，每批图片的数量由此参数指定。默认为 `20`。
-- **返回值**：`List[Dict]`，其中的每个元素存储了对一行文字的识别结果，包含以下 `key` ：
-	- `text` (`str`): 识别出的文本
-	- `score` (`float`): 识别结果的得分（置信度），取值范围为 `[0, 1]`；得分越高表示越可信
-	- `position` (`np.ndarray` or `None`): 检测出的文字对应的矩形框；`np.ndarray`, shape: `(4, 2)`，对应 box 4个点的坐标值` (x, y)` ;
-			注：此值只有使用检测模型时才会存在，未使用检测模型（`det_model_name=='naive_det'`）时无此值
-	- `cropped_img` (`np.ndarray`): 当 `return_cropped_image==True` 时才会有此值。
-			对应 `position` 中被检测出的图片（RGB格式），会把倾斜的图片旋转为水平。
-			`np.ndarray` 类型，shape: ` (height, width, 3)`, 取值范围：`[0, 255]`；
-	- 示例：
-	  ```python
-	   [{'position': array([[ 31.,  28.],
-	         [511.,  28.],
-	         [511.,  55.],
-	         [ 31.,  55.]], dtype=float32),
-	     'score': 0.8812797665596008,
-	     'text': '第一行'},
-	    {'position': array([[ 30.,  71.],
-	          [541.,  71.],
-	          [541.,  97.],
-	          [ 30.,  97.]], dtype=float32),
-	     'score': 0.859879732131958,
-	     'text': '第二行'},
-	    {'position': array([[ 28., 110.],
-	          [541., 111.],
-	          [541., 141.],
-	          [ 28., 140.]], dtype=float32),
-	     'score': 0.7850906848907471,
-	     'text': '第三行'}
-	   ]
-	  ```
-
-
-### 2. 函数`CnOcr.ocr_for_single_line(img_fp)`
-
-如果明确知道要预测的图片中只包含了单行文字，可以使用函数`CnOcr.ocr_for_single_line(img_fp)`进行识别。和 `CnOcr.ocr()`相比，`CnOcr.ocr_for_single_line()`结果可靠性更强，因为它不需要做额外的分行处理。
-
-```python
-    def ocr_for_single_line(
-        self, img_fp: Union[str, Path, torch.Tensor, np.ndarray]
-    ) -> Dict[str, Any]:
-```
-
-**函数说明**：
-
-- 输入参数 `img_fp`: 对应一张图片，
-	- 可以是需要识别的图片文件路径（如下例）；
-	- 或者是已经从图片文件中读入的数组，类型可以为 `torch.Tensor` 或  `np.ndarray`，取值应该是`[0，255]`的整数，维数应该是 `[height, width]` （灰度图片）或者 `[height, width, channel]`，`channel` 可以等于`1`（灰度图片）或者`3`（`RGB`格式的彩色图片）。
-- **返回值**：为一个`dict`，对应一行文字的识别结果，包含以下 `key` ：
-	- `text` (`str`): 识别出的文本
-	- `score` (`float`): 识别结果的得分（置信度），取值范围为 `[0, 1]`；得分越高表示越可信
-	- 示例：
-	```python
-		{'score': 0.8812797665596008,
-		 'text': '当前行'}
-	```
+**返回值**：返回一个 `Document` 对象，可以使用 `doc.to_markdown('output-dir')` 来获取识别结果的 markdown 输出。
 
 **调用示例**：
 
 ```python
-from cnocr import CnOcr
+from pix2text import Pix2Text
 
-ocr = CnOcr()
-res = ocr.ocr_for_single_line('examples/rand_cn1.png')
-print("Predicted Chars:", res)
+img_fp = 'examples/test-doc.pdf'
+p2t = Pix2Text.from_config()
+out_md = p2t.recognize_pdf(
+	img_fp,
+	page_numbers=[0, 1],
+	table_as_image=True,
+	save_debug_res=f'./output-debug',
+)
+out_md.to_markdown('output-pdf-md')
 ```
 
-或：
+### 2. 函数 `.recognize_page()`
+
+此函数用于识别一张包含复杂排版的页面图片中的内容。图片可以包含多列、图片、表格等内容，如示例图片 [examples/page2.png](examples/page2.png)。
+函数定义如下：
 
 ```python
-from cnocr import CnOcr, read_img
+def recognize_page(
+		self,
+		img: Union[str, Path, Image.Image],
+		page_number: int = 0,
+		page_id: Optional[str] = None,
+		**kwargs,
+) -> Page:
+	"""
+    Analyze the layout of the image, and then recognize the information contained in each section.
 
-ocr = CnOcr()
-img_fp = 'examples/rand_cn1.png'
-img = read_img(img_fp)
-res = ocr.ocr_for_single_line(img)
-print("Predicted Chars:", res)
-```
+    Args:
+        img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+        page_number (str): page number; default value is `0`
+        page_id (str): page id; default value is `None`, which means to use the `str(page_number)`
+        kwargs ():
+            * resized_shape (int): Resize the image width to this size for processing; default value is `768`
+            * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
+            * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
+            * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is two-dollar signs
+            * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is a line break
+            * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_text` is `True`; default value is `True`
+            * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
+            * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
+            * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.6`.
+                When the overlap between an embed formula and a text line is greater than or equal to this threshold,
+                the embed formula and the text line are considered to be on the same line;
+                otherwise, they are considered to be on different lines.
+            * table_as_image (bool): If `True`, the table will be recognized as an image (don't parse the table content as text) ; default value is `False`
+            * title_contain_formula (bool): If `True`, the title of the page will be recognized as a mixed image (text and formula). If `False`, it will be recognized as a text; default value is `False`
+            * text_contain_formula (bool): If `True`, the text of the page will be recognized as a mixed image (text and formula). If `False`, it will be recognized as a text; default value is `True`
+            * formula_rec_kwargs (dict): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
+            * save_debug_res (str): if `save_debug_res` is set, the directory to save the debug results; default value is `None`, which means not to save
 
-
-
-### 3. 函数`CnOcr.ocr_for_single_lines(img_list, batch_size=1)`
-
-函数`CnOcr.ocr_for_single_lines(img_list)`可以**对多个单行文字图片进行批量预测**。函数`CnOcr.ocr(img_fp)`和`CnOcr.ocr_for_single_line(img_fp)`内部其实都是调用的函数`CnOcr.ocr_for_single_lines(img_list)`。
-
-```python
-    def ocr_for_single_lines(
-        self,
-        img_list: List[Union[str, Path, torch.Tensor, np.ndarray]],
-        batch_size: int = 1,
-    ) -> List[Dict[str, Any]]:
+    Returns: a Page object. Use `page.to_markdown('output-dir')` to get the markdown output of the recognized page.
+    """
 ```
 
 **函数说明**：
 
-- 输入参数` img_list`: 为一个图片 `list`；其中每个元素
-	- 可以是需要识别的图片文件路径（如下例）；
-	- 或者是已经从图片文件中读入的数组，类型可以为 `torch.Tensor` 或  `np.ndarray`，取值应该是`[0，255]`的整数，维数应该是 `[height, width]` （灰度图片）或者 `[height, width, channel]`，`channel` 可以等于`1`（灰度图片）或者`3`（`RGB`格式的彩色图片）。
-- 输入参数 `batch_size`: 待处理图片很多时，需要分批处理，每批图片的数量由此参数指定。默认为 `1`。
-- **返回值**：`List[Dict]`，其中的每个元素存储了对一行文字的识别结果，包含以下 `key` ：
-	- `text` (`str`): 识别出的文本
-	- `score` (`float`): 识别结果的得分（置信度），取值范围为 `[0, 1]`；得分越高表示越可信
-	- 示例：
-	  ```python
-      [{'score': 0.8812797665596008,
-        'text': '第一行'},
-       {'score': 0.859879732131958,
-        'text': '第二行'},
-       {'score': 0.7850906848907471,
-        'text': '第三行'}
-      ]
-	  ```
+* 输入参数 `img`：图片路径或者 `Image.Image` 对象；
+* 输入参数 `page_number`：页码，默认值为 `0`；
+* 输入参数 `page_id`：页码 ID，默认值为 `None`，此时会使用 `str(page_number)` 作为其取值；
+* kwargs：其他参数，具体说明如下：
+	- `resized_shape`：调整图片的宽度为此大小以进行处理，默认值为 `768`；
+	- `mfr_batch_size`：MFR 预测时使用的批大小；在 GPU 上运行时，建议将此值设置为大于 `1`；默认值为 `1`；
+	- `embed_sep`：嵌入 LaTeX 的前缀和后缀；仅在 `return_text` 为 `True` 时有效；默认值为 `(' $', '$ ')`；
+	- `isolated_sep`：孤立 LaTeX 的前缀和后缀；仅在 `return_text` 为 `True` 时有效；默认值为两个美元符号；
+	- `line_sep`：文本行之间的分隔符；仅在 `return_text` 为 `True` 时有效；默认值为换行符；
+	- `auto_line_break`：自动换行识别的文本；仅在 `return_text` 为 `True` 时有效；默认值为 `True`；
+	- `det_text_bbox_max_width_expand_ratio`：扩展检测文本框的宽度。此值表示相对于原始框高度的最大扩展比率；默认值为 `0.3`；
+	- `det_text_bbox_max_height_expand_ratio`：扩展检测文本框的高度。此值表示相对于原始框高度的最大扩展比率；默认值为 `0.2`；
+	- `embed_ratio_threshold`：嵌入公式和文本行之间的重叠阈值；默认值为 `0.6`。当嵌入公式和文本行之间的重叠大于或等于此阈值时，认为嵌入公式和文本行在同一行；否则，认为它们在不同行
+    - `table_as_image`：如果为 `True`，则将表格识别为图像（不将表格内容解析为文本）；默认值为 `False`
+    - `title_contain_formula`：如果为 `True`，则将页面标题作为为混合图像（文本和公式）进行识别。如果为 `False`，则将其作为文本图片进行识别（不识别公式）；默认值为 `False`
+    - `text_contain_formula`：如果为 `True`，则将页面文本作为混合图像（文本和公式）进行识别。如果为 `False`，则将其作为文本进行识别（不识别公式）；默认值为 `True`
+    - `formula_rec_kwargs`：传递给公式识别器 `latex_ocr` 的生成参数；默认值为 `{}`
+    - `save_debug_res`：如果设置了 `save_debug_res`，则把各种中间的解析结果存入此目录以便于调试；默认值为 `None`，表示不保存
+
+**返回值**：返回一个 `Page` 对象，可以使用 `page.to_markdown('output-dir')` 来获取识别结果的 markdown 输出。
 
 **调用示例**：
 
 ```python
-import numpy as np
+from pix2text import Pix2Text
 
-from cnocr import CnOcr, read_img, line_split
-
-ocr = CnOcr()
-img_fp = 'examples/multi-line_cn1.png'
-img = read_img(img_fp)
-line_imgs = line_split(np.squeeze(img, -1), blank=True)
-line_img_list = [line_img for line_img, _ in line_imgs]
-res = ocr.ocr_for_single_lines(line_img_list)
-print("Predicted Chars:", res)
+img_fp = 'examples/page2.png'
+p2t = Pix2Text.from_config()
+out_page = p2t.recognize_page(
+	img_fp,
+	title_contain_formula=False,
+	text_contain_formula=False,
+	save_debug_res=f'./output-debug',
+)
+out_page.to_markdown('output-page-md')
 ```
 
-更详细的使用方法，可参考 [tests/test_cnocr.py](https://github.com/breezedeus/cnocr/blob/master/tests/test_cnocr.py) 中提供的测试用例。
 
+### 3. 函数 `.recognize_text_formula()`
 
-
-## 各种场景的调用示例
-
-### 常见的图片识别
-
-所有参数都使用默认值即可。如果发现效果不够好，多调整下各个参数看效果，最终往往能获得比较理想的精度。
+此函数用于识别一张包含文字和公式的图片（如段落截图）中的内容，如示例图片 [examples/mixed.jpg](examples/mixed.jpg)。
+函数定义如下：
 
 ```python
-from cnocr import CnOcr
+def recognize_text_formula(
+		self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs,
+) -> Union[str, List[str], List[Any], List[List[Any]]]:
+	"""
+    Analyze the layout of the image, and then recognize the information contained in each section.
 
-img_fp = './docs/examples/huochepiao.jpeg'
-ocr = CnOcr()  # 所有参数都使用默认值
-out = ocr.ocr(img_fp)
+    Args:
+        img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+        return_text (bool): Whether to return the recognized text; default value is `True`
+        kwargs ():
+            * resized_shape (int): Resize the image width to this size for processing; default value is `768`
+            * save_analysis_res (str): Save the mfd result image in this file; default is `None`, which means not to save
+            * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
+            * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
+            * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is two-dollar signs
+            * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is a line break
+            * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_text` is `True`; default value is `True`
+            * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
+            * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
+            * embed_ratio_threshold (float): The overlap threshold for embed formulas and text lines; default value is `0.6`.
+                When the overlap between an embed formula and a text line is greater than or equal to this threshold,
+                the embed formula and the text line are considered to be on the same line;
+                otherwise, they are considered to be on different lines.
+            * table_as_image (bool): If `True`, the table will be recognized as an image; default value is `False`
+            * formula_rec_kwargs (dict): generation arguments passed to formula recognizer `latex_ocr`; default value is `{}`
 
-print(out)
+    Returns: a str when `return_text` is `True`; or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
+        with each dict representing one detected box, containing keys:
+
+           * `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
+           * `text`: The recognized text or Latex formula
+           * `score`: The confidence score [0, 1]; the higher, the more confident
+           * `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
+           * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
+
+    """
 ```
 
-识别结果：
+**函数说明**：
 
-<figure markdown>
-![火车票识别](predict-outputs/huochepiao.jpeg-result.jpg){: style="width:700px"}
-</figure>
+* 输入参数 `img`：图片路径或者 `Image.Image` 对象；
+* 输入参数 `return_text`：是否返回纯文本；取值为 `False` 时返回带有结构化信息的 list；默认值为 `True`；
+* 输入参数 `kwargs`：其他参数，具体说明如下：
+	- `resized_shape`：调整图片的宽度为此大小以进行处理，默认值为 `768`；
+	- `save_analysis_res`：保存 MFD 解析结果图像的文件名；默认值为 `None`，表示不保存；
+	- `mfr_batch_size`：MFR 预测时使用的批大小；在 GPU 上运行时，建议将此值设置为大于 `1`；默认值为 `1`；
+	- `embed_sep`：嵌入 LaTeX 的前缀和后缀；仅在 `return_text` 为 `True` 时有效；默认值为 `(' $', '$ ')`；
+	- `isolated_sep`：孤立 LaTeX 的前缀和后缀；仅在 `return_text` 为 `True` 时有效；默认值为两个美元符号；
+	- `line_sep`：文本行之间的分隔符；仅在 `return_text` 为 `True` 时有效；默认值为换行符；
+	- `auto_line_break`：自动换行识别的文本；仅在 `return_text` 为 `True` 时有效；默认值为 `True`；
+	- `det_text_bbox_max_width_expand_ratio`：扩展检测文本框的宽度。此值表示相对于原始框高度的最大扩展比率；默认值为 `0.3`；
+	- `det_text_bbox_max_height_expand_ratio`：扩展检测文本框的高度。此值表示相对于原始框高度的最大扩展比率；默认值为 `0.2`；
+	- `embed_ratio_threshold`：嵌入公式和文本行之间的重叠阈值；默认值为 `0.6`。当嵌入公式和文本行之间的重叠大于或等于此阈值时，认为嵌入公式和文本行在同一行；否则，认
+    - `table_as_image`：如果为 `True`，则将表格识别为图像；默认值为 `False`
+    - `formula_rec_kwargs`：传递给公式识别器 `latex_ocr` 的生成参数；默认值为 `{}`
 
+**返回值**：当 `return_text` 为 `True` 时，返回一个字符串；当 `return_text` 为 `False` 时，返回一个有序的（从上到下，从左到右）字典列表，每个字典表示一个检测框，包含以下键值：
+	- `type`：图像的类别；可选值：'text'、'isolated'、'embedding'
+	- `text`：识别的文本或 LaTeX 公式
+	- `score`：置信度分数 [0, 1]；分数越高，置信度越高
+	- `position`：块的位置信息，`np.ndarray`，形状为 `[4, 2]`
+	- `line_number`：框的行号（第一行 `line_number==0`），具有相同值的框表示它们在同一行
 
-
-### 排版简单的印刷体截图图片识别
-
-针对 **排版简单的印刷体文字图片**，如截图图片，扫描件图片等，可使用 `det_model_name='naive_det'`，相当于不使用文本检测模型，而使用简单的规则进行分行。
-
-使用 `det_model_name='naive_det'` 的最大优势是**速度快**，劣势是对图片比较挑剔。如何判断是否该使用此检测模型呢？最简单的方式就是拿应用图片试试效果，效果好就用，不好就不用。
+**调用示例**：
 
 ```python
-from cnocr import CnOcr
+from pix2text import Pix2Text
 
-img_fp = './docs/examples/multi-line_cn1.png'
-ocr = CnOcr(det_model_name='naive_det') 
-out = ocr.ocr(img_fp)
-
-print(out)
+img_fp = 'examples/mixed.jpg'
+p2t = Pix2Text.from_config()
+out = p2t.recognize_text_formula(
+	img_fp,
+	save_analysis_res=f'./output-debug',
+)
 ```
 
-识别结果：
+### 4. 函数 `.recognize_formula()`
 
-<figure markdown>
-
-| 图片                                                         | OCR结果                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![examples/multi-line_cn1.png](./examples/multi-line_cn1.png) | 网络支付并无本质的区别，因为<br />每一个手机号码和邮件地址背后<br />都会对应着一个账户--这个账<br />户可以是信用卡账户、借记卡账<br />户，也包括邮局汇款、手机代<br />收、电话代收、预付费卡和点卡<br />等多种形式。 |
-
-</figure>
-
-
-### 竖排文字识别
-
-采用来自 [**PaddleOCR**](https://github.com/PaddlePaddle/PaddleOCR)（之后简称 **ppocr**）的中文识别模型 `rec_model_name='ch_PP-OCRv3'` 进行识别。
+此函数用于识别一张纯公式的图片中的内容，如示例图片 [examples/formula2.png](examples/formula2.png)。
+函数定义如下：
 
 ```python
-from cnocr import CnOcr
+def recognize_formula(
+		self,
+		imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+		batch_size: int = 1,
+		return_text: bool = True,
+		rec_config: Optional[dict] = None,
+		**kwargs,
+) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
+	"""
+    Recognize pure Math Formula images to LaTeX Expressions
+    Args:
+        imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
+        batch_size (int): The batch size
+        return_text (bool): Whether to return only the recognized text; default value is `True`
+        rec_config (Optional[dict]): The config for recognition
+        **kwargs (): Special model parameters. Not used for now
 
-img_fp = './docs/examples/shupai.png'
-ocr = CnOcr(rec_model_name='ch_PP-OCRv3')
-out = ocr.ocr(img_fp)
+    Returns: The LaTeX Expression or list of LaTeX Expressions;
+        str or List[str] when `return_text` is True;
+        Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
 
-print(out)
+            * `text`: The recognized LaTeX text
+            * `score`: The confidence score [0, 1]; the higher, the more confident
+
+    """
 ```
 
-识别结果：
-<figure markdown>
-![竖排文字识别](./predict-outputs/shupai.png-result.jpg){: style="width:750px"}
-</figure>
+**函数说明**：
 
+* 输入参数 `imgs`：图片路径或者 `Image.Image` 对象，或者图片路径或者 `Image.Image` 对象的列表；
+* 输入参数 `batch_size`：批大小，默认值为 `1`；
+* 输入参数 `return_text`：是否返回纯文本；取值为 `False` 时返回带有结构化信息的 list；默认值为 `True`；
+* 输入参数 `rec_config`：识别配置，可选值；
+* 输入参数 `kwargs`：其他参数，目前未使用。
 
-### 英文识别
+**返回值**：当 `return_text` 为 `True` 时，返回一个字符串；当 `return_text` 为 `False` 时，返回一个有序的（从上到下，从左到右）字典列表，每个字典表示一个检测框，包含以下键值：
+	- `text`：识别的 LaTeX 文本
+	- `score`：置信度分数 [0, 1]；分数越高，置信度越高
 
-虽然中文检测和识别模型也能识别英文，但**专为英文文字训练的检测器和识别器往往精度更高**。如果是纯英文的应用场景，建议使用来自 **ppocr** 的英文检测模型 `det_model_name='en_PP-OCRv3_det'`， 和英文识别模型 `rec_model_name='en_PP-OCRv3'` 。
+**调用示例**：
 
 ```python
-from cnocr import CnOcr
+from pix2text import Pix2Text
 
-img_fp = './docs/examples/en_book1.jpeg'
-ocr = CnOcr(det_model_name='en_PP-OCRv3_det', rec_model_name='en_PP-OCRv3')
-out = ocr.ocr(img_fp)
-
-print(out)
+img_fp = 'examples/formula2.png'
+p2t = Pix2Text.from_config()
+out = p2t.recognize_formula(
+	img_fp,
+	save_analysis_res=f'./output-debug',
+)
 ```
 
-识别结果：
+### 5. 函数 `.recognize_text()`
 
-<figure markdown>
-![英文识别](./predict-outputs/en_book1.jpeg-result.jpg){: style="width:670px"}
-</figure>
-
-
-### 繁体中文识别
-
-采用来自ppocr的繁体识别模型 `rec_model_name='chinese_cht_PP-OCRv3'` 进行识别。
+此函数用于识别一张纯文字的图片中的内容，如示例图片 [examples/general.jpg](examples/general.jpg)。
+函数定义如下：
 
 ```python
-from cnocr import CnOcr
+def recognize_text(
+		self,
+		imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+		return_text: bool = True,
+		rec_config: Optional[dict] = None,
+		**kwargs,
+) -> Union[str, List[str], List[Any], List[List[Any]]]:
+	"""
+    Recognize a pure Text Image.
+    Args:
+        imgs (Union[str, Path, Image.Image], List[str], List[Path], List[Image.Image]): The image or list of images
+        return_text (bool): Whether to return only the recognized text; default value is `True`
+        rec_config (Optional[dict]): The config for recognition
+        kwargs (): Other parameters for `text_ocr.ocr()`
 
-img_fp = './docs/examples/fanti.jpg'
-ocr = CnOcr(rec_model_name='chinese_cht_PP-OCRv3')  # 识别模型使用繁体识别模型
-out = ocr.ocr(img_fp)
+    Returns: Text str or list of text strs when `return_text` is True;
+        `List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
 
-print(out)
+            * `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
+            * `text`: The recognized text
+            * `score`: The confidence score [0, 1]; the higher, the more confident
+
+    """
 ```
 
-使用此模型时请注意以下问题：
+**函数说明**：
 
-* 识别精度一般，不是很好；
+* 输入参数 `imgs`：图片路径或者 `Image.Image` 对象，或者图片路径或者 `Image.Image` 对象的列表；
+* 输入参数 `return_text`：是否返回纯文本；取值为 `False` 时返回带有结构化信息的 list；默认值为 `True`；
+* 输入参数 `rec_config`：识别配置，可选值；
+* 输入参数 `kwargs`：其他参数，具体说明参考函数 `text_ocr.ocr()`。
 
-* 除了繁体字，对标点、英文、数字的识别都不好；
+**返回值**：当 `return_text` 为 `True` 时，返回一个字符串；当 `return_text` 为 `False` 时，返回一个有序的（从上到下，从左到右）字典列表，每个字典表示一个检测框，包含以下键值：
+	- `position`：块的位置信息，`np.ndarray`，形状为 `[4, 2]`
+	- `text`：识别的文本
+	- `score`：置信度分数 [0, 1]；分数越高，置信度越高
 
-* 此模型不支持竖排文字的识别。
-
-识别结果：
-
-<figure markdown>
-![繁体中文识别](./predict-outputs/fanti.jpg-result.jpg){: style="width:700px"}
-</figure>
-
-
-
-### 单行文字的图片识别
-
-如果明确知道待识别的图片是单行文字图片（如下图），可以使用类函数 `CnOcr.ocr_for_single_line()` 进行识别。这样就省掉了文字检测的时间，速度会快一倍以上。
-
-<figure markdown>
-![单行文本识别](./examples/helloworld.jpg){: style="width:270px"}
-</figure>
-
-调用代码如下：
+**调用示例**：
 
 ```python
-from cnocr import CnOcr
+from pix2text import Pix2Text
 
-img_fp = './docs/examples/helloworld.jpg'
-ocr = CnOcr()
-out = ocr.ocr_for_single_line(img_fp)
-print(out)
+img_fp = 'examples/general.jpg'
+p2t = Pix2Text.from_config()
+out = p2t.recognize_text(img_fp)
+```
+
+### 6. 函数 `.recognize()`
+
+是不是觉得上面的接口太丰富了，使用起来有点麻烦？没关系，这个函数可以根据指定的图片类型调用上面的不同函数进行识别。
+
+```python
+def recognize(
+		self,
+		img: Union[str, Path, Image.Image],
+		img_type: Literal[
+			'pdf', 'page', 'text_formula', 'formula', 'text'
+		] = 'text_formula',
+		**kwargs,
+) -> Union[Document, Page, str, List[str], List[Any], List[List[Any]]]:
+	"""
+    Recognize the content of the image or pdf file according to the specified type.
+    It will call the corresponding recognition function `.recognize_{img_type}()` according to the `img_type`.
+    Args:
+        img (Union[str, Path, Image.Image]): The image/pdf file path or `Image.Image` object
+        img_type (str):  Supported image types: 'pdf', 'page', 'text_formula', 'formula', 'text'
+        **kwargs (dict): Arguments for the corresponding recognition function
+
+    Returns: recognized results
+
+    """
+```
+
+**函数说明**：
+
+* 输入参数 `img`：图片/PDF文件路径或者 `Image.Image` 对象；
+* 输入参数 `img_type`：图片类型，可选值为 `'pdf'`, `'page'`, `'text_formula'`, `'formula'`, `'text'`；
+* 输入参数 `kwargs`：其他参数，具体说明参考上面的函数。
+
+**返回值**：根据 `img_type` 的不同，返回不同的结果。具体说明参考上面的函数。
+
+**调用示例**：
+
+```python
+from pix2text import Pix2Text
+
+img_fp = 'examples/general.jpg'
+p2t = Pix2Text.from_config()
+out = p2t.recognize(img_fp, img_type='text')  # 等价于 p2t.recognize_text(img_fp)
 ```
 
 
-
-### 更多应用示例
-
-* **核酸疫苗截图识别**
-	<figure markdown>
-	![核酸疫苗截图识别](./predict-outputs/jiankangbao.jpeg-result.jpg){: style="width:600px"}
-	</figure>
-
-* **身份证识别**
-	<figure markdown>
-	![身份证识别](./predict-outputs/aobama.webp-result.jpg){: style="width:700px"}
-	</figure>
-
-* **饭店小票识别**
-	<figure markdown>
-	![饭店小票识别](./predict-outputs/fapiao.jpeg-result.jpg){: style="width:550px"}
-	</figure>
-
-
-
+更多使用示例请参见 [tests/test_pix2text.py](https://github.com/breezedeus/Pix2Text/blob/main/tests/test_pix2text.py)。

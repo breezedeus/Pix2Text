@@ -43,6 +43,14 @@ class Pix2Text(object):
         table_ocr: Optional[TableOCR] = None,
         **kwargs,
     ):
+        """
+        Initialize the Pix2Text object.
+        Args:
+            layout_parser (LayoutParser): The layout parser object; default value is `None`, which means to create a default one
+            text_formula_ocr (TextFormulaOCR): The text and formula OCR object; default value is `None`, which means to create a default one
+            table_ocr (TableOCR): The table OCR object; default value is `None`, which means not to recognize tables
+            **kwargs (dict): Other arguments, currently not used
+        """
         if layout_parser is None:
             device = select_device(None)
             # layout_parser = LayoutParser.from_config(None, device=device)
@@ -66,13 +74,19 @@ class Pix2Text(object):
         **kwargs,
     ):
         """
-
+        Create a Pix2Text object from the configuration.
         Args:
-            total_configs (dict):
+            total_configs (dict): The total configuration; default value is `None`, which means to use the default configuration.
+                If not None, it should contain the following keys:
+
+                    * `layout`: The layout parser configuration
+                    * `text_formula`: The TextFormulaOCR configuration
+                    * `table`: The table OCR configuration
             enable_formula (bool): Whether to enable formula recognition; default value is `True`
             enable_table (bool): Whether to enable table recognition; default value is `True`
-            device (str): The device to run the model; optional values are 'cpu', 'gpu' or 'cuda'; default value is `None`
-            **kwargs (): Other arguments
+            device (str): The device to run the model; optional values are 'cpu', 'gpu' or 'cuda';
+                default value is `None`, which means to select the device automatically
+            **kwargs (dict): Other arguments
 
         Returns: a Pix2Text object
 
@@ -116,9 +130,10 @@ class Pix2Text(object):
         **kwargs,
     ) -> Union[Document, Page, str, List[str], List[Any], List[List[Any]]]:
         """
-        Recognize the content of the image according to the specified type.
+        Recognize the content of the image or pdf file according to the specified type.
+        It will call the corresponding recognition function `.recognize_{img_type}()` according to the `img_type`.
         Args:
-            img ():
+            img (Union[str, Path, Image.Image]): The image/pdf file path or `Image.Image` object
             img_type (str):  Supported image types: 'pdf', 'page', 'text_formula', 'formula', 'text'
             **kwargs (dict): Arguments for the corresponding recognition function
 
@@ -197,11 +212,10 @@ class Pix2Text(object):
 
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
-            page_number (str): page number
-            page_id (str): page id
+            page_number (str): page number; default value is `0`
+            page_id (str): page id; default value is `None`, which means to use the `str(page_number)`
             kwargs ():
                 * resized_shape (int): Resize the image width to this size for processing; default value is `768`
-                * save_layout_res (str): Save the layout result image in this file; default is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
                 * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is two-dollar signs
