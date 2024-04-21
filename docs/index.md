@@ -25,7 +25,7 @@
 [English](https://github.com/breezedeus/pix2text/blob/master/README.md) | 中文
 </figure>
 
-**Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python **替代工具，目前已经可以完成 **Mathpix** 的核心功能。
+**Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python** 替代工具，目前已经可以完成 **Mathpix** 的核心功能。
 **Pix2Text (P2T)** 可以识别图片中的版面、表格、图片、文字、数学公式等内容，并整合所有内容后以 Markdown 格式输出。P2T 也可以把一整个 PDF 文件（PDF 的内容可以是扫描图片或者其他任何格式）转换为 Markdown 格式。
 
 **Pix2Text (P2T)** 整合了以下模型：
@@ -37,6 +37,7 @@
 - **数学公式识别模型（MFR）**：[breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) （[国内地址](https://hf-mirror.com/breezedeus/pix2text-mfr)）。
 
 其中多个模型来自其他开源作者， 非常感谢他们的贡献。
+具体说明请参考 [可用模型](models.md)。
 
 
 P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以我们也发布了**可免费使用**的 **[P2T网页版](https://p2t.breezedeus.com)**，直接把图片丢进网页就能输出P2T的解析结果。**网页版会使用最新的模型，效果会比开源模型更好。**
@@ -49,6 +50,7 @@ P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以
 
 作者也维护 **知识星球** [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，这里面的提问会较快得到作者的回复，欢迎加入。**知识星球私享群**也会陆续发布一些P2T/CnOCR/CnSTD相关的私有资料，包括**部分未公开的模型**，**购买付费模型享优惠**，**不同应用场景的调用代码**，使用过程中遇到的难题解答等。星球也会发布P2T/OCR/STD相关的最新研究资料。
 
+更多说明可见 [交流群](contact.md)。
 
 
 ## 支持的语言列表
@@ -184,18 +186,15 @@ pip install pix2text[multilingual]
 pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 ```
 
-
-
 如果是初次使用**OpenCV**，那估计安装都不会很顺利，bless。
 
 **Pix2Text** 主要依赖 [**CnSTD>=1.2.1**](https://github.com/breezedeus/cnstd)、[**CnOCR>=2.2.2.1**](https://github.com/breezedeus/cnocr) ，以及 [**transformers>=4.37.0**](https://github.com/huggingface/transformers) 。如果安装过程遇到问题，也可参考它们的安装说明文档。
-
-
 
 > **Warning**
 >
 > 如果电脑中从未安装过 `PyTorch`，`OpenCV` python包，初次安装可能会遇到不少问题，但一般都是常见问题，可以自行百度/Google解决。
 
+更多说明参考 [安装说明](install.md) 。
 
 ## Mac 桌面客户端
 
@@ -212,6 +211,8 @@ pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 
 ---
 
-官方代码库：[https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text) 。
+官方代码库：
+* **Github**: [https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text) 。
+* **Gitee**: [https://gitee.com/breezedeus/pix2text](https://gitee.com/breezedeus/pix2text) 。
 
-Pix2Text (P2T) 更多信息：[https://www.breezedeus.com/pix2text](https://www.breezedeus.com/pix2text) 。
+Pix2Text (P2T) 更多信息：[https://www.breezedeus.com/article/pix2text_cn](https://www.breezedeus.com/article/pix2text_cn) 。
