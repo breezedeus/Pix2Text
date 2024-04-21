@@ -9,7 +9,8 @@ By supporting my projects through a donation, you can be a part of this journey 
 
 ## 1. 知识星球
 
-欢迎加入**知识星球** **[CnOCR/CnSTD私享群](https://t.zsxq.com/FEYZRJQ)**。**知识星球私享群**会陆续发布一些 CnOCR/CnSTD/P2T 相关的私有资料，包括**更详细的训练教程**，**未公开的模型**，使用过程中遇到的难题解答等。本群也会发布 OCR/STD/AI 相关的最新研究和各种资源。此外，**私享群中作者每月提供两次免费特有数据的训练服务**。
+欢迎加入**知识星球** **[CnOCR/CnSTD私享群](https://t.zsxq.com/FEYZRJQ)**。**知识星球私享群**会陆续发布一些 CnOCR/CnSTD/P2T 相关的私有资料。
+关于星球的更详细说明请参考：[知识星球 | Breezedeus.com](https://www.breezedeus.com/article/zsxq)。
 
 <figure markdown>
 ![知识星球二维码](./cnocr-zsxq.jpeg){: style="width:280px"}

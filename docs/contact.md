@@ -1,12 +1,14 @@
 
 # 交流群 
-可通过以下方式与 CnOCR 作者 [breezedeus](https://github.com/breezedeus) 进行沟通，也欢迎反馈使用过程中遇到的问题。
+可通过以下方式与作者 [breezedeus](https://github.com/breezedeus) 进行沟通，也欢迎反馈使用过程中遇到的问题。
 
-## 一、知识星球 [**CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) 
+## 一、知识星球 [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) 
 
-作者维护 **知识星球** [**CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，欢迎加入。**知识星球私享群**会陆续发布一些CnOCR/CnSTD相关的私有资料，包括[**更详细的训练教程**](https://articles.zsxq.com/id_u6b4u0wrf46e.html)，**未公开的模型**，使用过程中遇到的难题解答等。本群也会发布OCR/STD相关的最新研究资料。此外，**私享群中作者每月提供两次免费特有数据的训练服务**。
+作者维护 **知识星球** [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) ，欢迎加入。**知识星球私享群**会陆续发布一些 P2T/CnOCR/CnSTD 相关的私有资料。
+关于星球的更详细说明请参考：[知识星球 | Breezedeus.com](https://www.breezedeus.com/article/zsxq)。
+
 <figure markdown>
-![知识星球二维码](./cnocr-zsxq.jpeg){: style="width:280px"}
+![知识星球二维码](https://cnocr.readthedocs.io/zh/latest/cnocr-zsxq.jpeg){: style="width:280px"}
 </figure>
 
 
@@ -26,7 +28,7 @@
 作者在QQ上的活跃度不太好，所以QQ群的问题未必能得到很好的回复。QQ群主要作为备胎存在，当其他的交流方式失效时可使用。欢迎扫码加入：
 
 <figure markdown>
-![QQ群二维码](./cnocr-qq.jpg){: style="width:230px"}
+![QQ群二维码](https://cnocr.readthedocs.io/zh/latest/cnocr-qq.jpg){: style="width:230px"}
 </figure>
 
 
