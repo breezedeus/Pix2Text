@@ -112,4 +112,5 @@ nav:
       - 🙋🏽 FAQ: faq.md
       - 🗒 RELEASE Notes: RELEASE.md
   - APIs:
-    - Pix2Text Class: pix2text/pix_to_text.md
+    - Pix2Text: pix2text/pix_to_text.md
+    - TextFormulaOCR: pix2text/text_formula_ocr.md
