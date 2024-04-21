@@ -1,12 +1,13 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
-
+import time
 from copy import deepcopy
-from typing import Dict, List, Any, Union
+from pathlib import Path
+from typing import Dict, List, Any, Union, Optional
 
 from pydantic import BaseModel
-from fastapi import FastAPI, UploadFile, Form
+from fastapi import FastAPI, UploadFile, Form, HTTPException
 
 from pix2text import set_logger, read_img, Pix2Text
 
@@ -23,6 +24,7 @@ async def root():
 class Pix2TextResponse(BaseModel):
     status_code: int = 200
     results: Union[str, List[Dict[str, Any]]]
+    output_dir: Optional[str] = None
 
     def dict(self, **kwargs):
         the_dict = deepcopy(super().dict())
@@ -32,17 +34,21 @@ class Pix2TextResponse(BaseModel):
 @app.post("/pix2text")
 async def ocr(
     image: UploadFile,
-    image_type: str = Form(default='mixed'),
-    resized_shape: str = Form(default=608),
+    file_type: str = Form(default='text_formula'),
+    resized_shape: str = Form(default=768),
     embed_sep: str = Form(default=' $,$ '),
     isolated_sep: str = Form(default='$$\n, \n$$'),
 ) -> Dict[str, Any]:
     # curl 调用方式：
     # $ curl -F image=@docs/examples/english.jpg --form 'image_type=mixed' --form 'resized_shape=768' \
     #       http://0.0.0.0:8503/pix2text
-    global P2T
-    image = image.file
-    image = read_img(image, return_type='Image')
+    global P2T, OUTPUT_MD_ROOT_DIR
+    if file_type not in ('text', 'formula', 'text_formula', 'page'):
+        raise HTTPException(status_code=400, detail='file_type must be one of "text", "formula", "text_formula", "page"')
+
+    img_file = image.file
+    fn = Path(image.filename)
+    img0 = read_img(img_file, return_type='Image')
     embed_sep = embed_sep.split(',')
     isolated_sep = isolated_sep.split(',')
     # use_analyzer = use_analyzer.lower() != 'false' if isinstance(use_analyzer, str) else use_analyzer
@@ -55,20 +61,23 @@ async def ocr(
 
     logger.info(f'input {params=}')
 
-    func = P2T.recognize
-    if image_type == 'formula':
-        func = P2T.recognize_formula
-    elif image_type == 'text':
-        func = P2T.recognize_text
-    res = func(image, **params)
+    res = P2T.recognize(img0, file_type=file_type, **params)
+    output_dir = None
+    if file_type in ('pdf', 'page'):
+        output_dir = str(OUTPUT_MD_ROOT_DIR / f'{fn.stem}-{time.time()}')
+        res = res.to_markdown(output_dir)
     logger.info(f'output {res=}')
 
-    return Pix2TextResponse(results=res).dict()
+    return Pix2TextResponse(results=res, output_dir=output_dir).dict()
 
 
-def start_server(p2t_config, host='0.0.0.0', port=8503, reload=False, **kwargs):
-    global P2T
-    P2T = Pix2Text(**p2t_config)
+def start_server(
+    p2t_config, output_md_root_dir, host='0.0.0.0', port=8503, reload=False, **kwargs
+):
+    global P2T, OUTPUT_MD_ROOT_DIR
+    OUTPUT_MD_ROOT_DIR = Path(output_md_root_dir)
+    OUTPUT_MD_ROOT_DIR.mkdir(exist_ok=True, parents=True)
+    P2T = Pix2Text.from_config(**p2t_config)
     import uvicorn
 
     uvicorn.run(app, host=host, port=port, reload=reload, **kwargs)

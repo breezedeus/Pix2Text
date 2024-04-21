@@ -32,26 +32,17 @@ def cli():
     show_default=True,
 )
 @click.option(
-    "-a",
-    "--analyzer-name",
-    type=click.Choice(['mfd', 'layout']),
-    default='mfd',
-    help="Which Analyzer to use, either MFD or Layout Analysis",
-    show_default=True,
-)
-@click.option(
-    "-t",
-    "--analyzer-type",
-    type=str,
-    default='yolov7_tiny',
-    help="Which model to use for the Analyzer, 'yolov7_tiny' or 'yolov7'",
-    show_default=True,
-)
-@click.option(
-    "--analyzer-model-fp",
+    "--layout-config",
     type=str,
     default=None,
-    help="File path for the Analyzer detection model. Default: `None`, meaning using the default model",
+    help="Configuration information for the layout parser model, in JSON string format. Default: `None`, meaning using the default configuration",
+    show_default=True,
+)
+@click.option(
+    "--mfd-config",
+    type=str,
+    default=None,
+    help="Configuration information for the MFD model, in JSON string format. Default: `None`, meaning using the default configuration",
     show_default=True,
 )
 @click.option(
@@ -69,6 +60,18 @@ def cli():
     show_default=True,
 )
 @click.option(
+    "--enable-formula/--disable-formula",
+    default=True,
+    help="Whether to enable formula recognition",
+    show_default=True,
+)
+@click.option(
+    "--enable-table/--disable-table",
+    default=True,
+    help="Whether to enable table recognition",
+    show_default=True,
+)
+@click.option(
     "-d",
     "--device",
     help="Choose to run the code using `cpu`, `gpu`, or a specific GPU like `cuda:0`",
@@ -77,31 +80,29 @@ def cli():
     show_default=True,
 )
 @click.option(
-    "--image-type",
-    type=click.Choice(['mixed', 'formula', 'text']),
-    default='mixed',
-    help="Which image type to process, either 'mixed', 'formula' or 'text'",
+    "--file-type",
+    type=click.Choice(['pdf', 'page', 'text_formula', 'formula', 'text']),
+    default='text_formula',
+    help="Which file type to process, 'pdf', 'page', 'text_formula', 'formula', or 'text'",
     show_default=True,
 )
 @click.option(
     "--resized-shape",
     help="Resize the image width to this size before processing",
     type=int,
-    default=608,
+    default=768,
     show_default=True,
 )
 @click.option(
     "-i",
     "--img-file-or-dir",
     required=True,
-    help="File path of the input image or the specified directory",
+    help="File path of the input image/pdf or the specified directory",
 )
 @click.option(
-    "--save-analysis-res",
+    "--save-debug-res",
     default=None,
-    help="Save the analysis results to this file or directory"
-    " (If '--img-file-or-dir' is a file/directory, then '--save-analysis-res' should also be a file/directory)."
-    " Set to `None` for not saving",
+    help="If `save_debug_res` is set, the directory to save the debug results; default value is `None`, which means not to save",
     show_default=True,
 )
 @click.option(
@@ -124,76 +125,96 @@ def cli():
     show_default=True,
 )
 @click.option(
+    "-o",
+    "--output-dir",
+    default='output-md',
+    help="Output directory for the recognized text results. Only effective when `file-type` is `pdf` or `page`",
+    show_default=True,
+)
+@click.option(
     "--log-level",
     default='INFO',
     help="Log Level, such as `INFO`, `DEBUG`",
     show_default=True,
 )
 def predict(
-    analyzer_name,
-    analyzer_type,
-    analyzer_model_fp,
-    formula_ocr_config,
     languages,
+    layout_config,
+    mfd_config,
+    formula_ocr_config,
     text_ocr_config,
+    enable_formula,
+    enable_table,
     device,
-    image_type,
+    file_type,
     resized_shape,
     img_file_or_dir,
-    save_analysis_res,
+    save_debug_res,
     rec_kwargs,
     return_text,
     auto_line_break,
+    output_dir,
     log_level,
 ):
     """Use Pix2Text (P2T) to predict the text information in an image"""
     logger = set_logger(log_level=log_level)
 
-    analyzer_config = dict(model_name=analyzer_name, model_type=analyzer_type)
-    if analyzer_model_fp is not None:
-        analyzer_config['model_fp'] = analyzer_model_fp
-
+    analyzer_config = json.loads(mfd_config) if mfd_config else {}
     formula_ocr_config = json.loads(formula_ocr_config) if formula_ocr_config else {}
     languages = [lang.strip() for lang in languages.split(',') if lang.strip()]
     text_ocr_config = json.loads(text_ocr_config) if text_ocr_config else {}
-    p2t = Pix2Text(
-        languages=languages,
-        analyzer_config=analyzer_config,
-        text_config=text_ocr_config,
-        formula_config=formula_ocr_config,
+
+    layout_config = json.loads(layout_config) if layout_config else {}
+    text_formula_config = {
+        'languages': languages,  # 'en,ch_sim
+        'mfd': analyzer_config,
+        'formula': formula_ocr_config,
+        'text': text_ocr_config,
+    }
+    total_config = {
+        'layout': layout_config,
+        'text_formula': text_formula_config,
+    }
+    p2t = Pix2Text.from_config(
+        total_configs=total_config,
+        enable_formula=enable_formula,
+        enable_table=enable_table,
         device=device,
     )
 
     fp_list = []
     if os.path.isfile(img_file_or_dir):
         fp_list.append(img_file_or_dir)
-        if save_analysis_res:
-            save_analysis_res = [save_analysis_res]
+        if save_debug_res:
+            save_debug_res = [save_debug_res]
     elif os.path.isdir(img_file_or_dir):
         fn_list = glob.glob1(img_file_or_dir, '*g')
         fp_list = [os.path.join(img_file_or_dir, fn) for fn in fn_list]
-        if save_analysis_res:
-            os.makedirs(save_analysis_res, exist_ok=True)
-            save_analysis_res = [
-                os.path.join(save_analysis_res, 'analysis-' + fn) for fn in fn_list
+        if save_debug_res:
+            os.makedirs(save_debug_res, exist_ok=True)
+            save_debug_res = [
+                os.path.join(save_debug_res, 'output-debugs-' + fn) for fn in fn_list
             ]
+    else:
+        raise ValueError(f'{img_file_or_dir} is not a valid file or directory')
 
-    proc_func = {
-        'mixed': p2t.recognize,
-        'formula': p2t.recognize_formula,
-        'text': p2t.recognize_text,
-    }
     rec_kwargs = json.loads(rec_kwargs) if rec_kwargs else {}
+    rec_kwargs['resized_shape'] = resized_shape
+    rec_kwargs['return_text'] = return_text
+    rec_kwargs['auto_line_break'] = auto_line_break
+
     for idx, fp in enumerate(fp_list):
-        analysis_res = save_analysis_res[idx] if save_analysis_res is not None else None
-        out = proc_func[image_type](
-            fp,
-            resized_shape=resized_shape,
-            save_analysis_res=analysis_res,
-            return_text=return_text,
-            auto_line_break=auto_line_break,
-            **rec_kwargs,
-        )
+        if file_type in ('pdf', 'page'):
+            rec_kwargs['save_debug_res'] = (
+                save_debug_res[idx] if save_debug_res is not None else None
+            )
+        else:
+            rec_kwargs['save_analysis_res'] = (
+                save_debug_res[idx] if save_debug_res is not None else None
+            )
+        out = p2t.recognize(fp, file_type=file_type, **rec_kwargs)
+        if file_type in ('pdf', 'page'):
+            out = out.to_markdown(output_dir)
         logger.info(
             f'In image: {fp}\nOuts: \n{out if isinstance(out, str) else pformat(out)}\n'
         )
@@ -209,26 +230,17 @@ def predict(
     show_default=True,
 )
 @click.option(
-    "-a",
-    "--analyzer-name",
-    type=click.Choice(['mfd', 'layout']),
-    default='mfd',
-    help="Which Analyzer to use, either MFD or Layout Analysis",
-    show_default=True,
-)
-@click.option(
-    "-t",
-    "--analyzer-type",
-    type=str,
-    default='yolov7_tiny',
-    help="Which model to use for the Analyzer, 'yolov7_tiny' or 'yolov7'",
-    show_default=True,
-)
-@click.option(
-    "--analyzer-model-fp",
+    "--layout-config",
     type=str,
     default=None,
-    help="File path for the Analyzer detection model. Default: `None`, meaning using the default model",
+    help="Configuration information for the layout parser model, in JSON string format. Default: `None`, meaning using the default configuration",
+    show_default=True,
+)
+@click.option(
+    "--mfd-config",
+    type=str,
+    default=None,
+    help="Configuration information for the MFD model, in JSON string format. Default: `None`, meaning using the default configuration",
     show_default=True,
 )
 @click.option(
@@ -246,11 +258,30 @@ def predict(
     show_default=True,
 )
 @click.option(
+    "--enable-formula/--disable-formula",
+    default=True,
+    help="Whether to enable formula recognition",
+    show_default=True,
+)
+@click.option(
+    "--enable-table/--disable-table",
+    default=True,
+    help="Whether to enable table recognition",
+    show_default=True,
+)
+@click.option(
     "-d",
     "--device",
     help="Choose to run the code using `cpu`, `gpu`, or a specific GPU like `cuda:0`",
     type=str,
     default='cpu',
+    show_default=True,
+)
+@click.option(
+    "-o",
+    "--output-md-root-dir",
+    default='output-md-root',
+    help="Markdown output root directory for the recognized text results. Only effective when `file-type` is `pdf` or `page`",
     show_default=True,
 )
 @click.option(
@@ -272,13 +303,15 @@ def predict(
     show_default=True,
 )
 def serve(
-    analyzer_name,
-    analyzer_type,
-    analyzer_model_fp,
-    formula_ocr_config,
     languages,
+    layout_config,
+    mfd_config,
+    formula_ocr_config,
     text_ocr_config,
+    enable_formula,
+    enable_table,
     device,
+    output_md_root_dir,
     host,
     port,
     reload,
@@ -289,23 +322,37 @@ def serve(
 
     logger = set_logger(log_level=log_level)
 
-    analyzer_config = dict(model_name=analyzer_name, model_type=analyzer_type)
-    if analyzer_model_fp is not None:
-        analyzer_config['model_fp'] = analyzer_model_fp
-
+    analyzer_config = json.loads(mfd_config) if mfd_config else {}
     formula_ocr_config = json.loads(formula_ocr_config) if formula_ocr_config else {}
     languages = [lang.strip() for lang in languages.split(',') if lang.strip()]
     text_ocr_config = json.loads(text_ocr_config) if text_ocr_config else {}
+
+    layout_config = json.loads(layout_config) if layout_config else {}
+    text_formula_config = {
+        'languages': languages,  # 'en,ch_sim
+        'mfd': analyzer_config,
+        'formula': formula_ocr_config,
+        'text': text_ocr_config,
+    }
+    total_config = {
+        'layout': layout_config,
+        'text_formula': text_formula_config,
+    }
     p2t_config = dict(
-        languages=languages,
-        analyzer_config=analyzer_config,
-        text_config=text_ocr_config,
-        formula_config=formula_ocr_config,
+        total_configs=total_config,
+        enable_formula=enable_formula,
+        enable_table=enable_table,
         device=device,
     )
     api = Process(
         target=start_server,
-        kwargs={'p2t_config': p2t_config, 'host': host, 'port': port, 'reload': reload},
+        kwargs={
+            'p2t_config': p2t_config,
+            'output_md_root_dir': output_md_root_dir,
+            'host': host,
+            'port': port,
+            'reload': reload,
+        },
     )
     api.start()
     api.join()
