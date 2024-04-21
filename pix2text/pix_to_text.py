@@ -124,7 +124,7 @@ class Pix2Text(object):
     def recognize(
         self,
         img: Union[str, Path, Image.Image],
-        img_type: Literal[
+        file_type: Literal[
             'pdf', 'page', 'text_formula', 'formula', 'text'
         ] = 'text_formula',
         **kwargs,
@@ -134,15 +134,15 @@ class Pix2Text(object):
         It will call the corresponding recognition function `.recognize_{img_type}()` according to the `img_type`.
         Args:
             img (Union[str, Path, Image.Image]): The image/pdf file path or `Image.Image` object
-            img_type (str):  Supported image types: 'pdf', 'page', 'text_formula', 'formula', 'text'
+            file_type (str):  Supported file types: 'pdf', 'page', 'text_formula', 'formula', 'text'
             **kwargs (dict): Arguments for the corresponding recognition function
 
         Returns: recognized results
 
         """
-        rec_func = getattr(self, f'recognize_{img_type}', None)
+        rec_func = getattr(self, f'recognize_{file_type}', None)
         if rec_func is None:
-            raise ValueError(f'Unsupported image type: {img_type}')
+            raise ValueError(f'Unsupported file type: {file_type}')
         return rec_func(img, **kwargs)
 
     def recognize_pdf(
