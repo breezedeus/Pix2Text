@@ -480,17 +480,17 @@ out = p2t.recognize_text(img_fp)
 def recognize(
 		self,
 		img: Union[str, Path, Image.Image],
-		img_type: Literal[
+		file_type: Literal[
 			'pdf', 'page', 'text_formula', 'formula', 'text'
 		] = 'text_formula',
 		**kwargs,
 ) -> Union[Document, Page, str, List[str], List[Any], List[List[Any]]]:
 	"""
     Recognize the content of the image or pdf file according to the specified type.
-    It will call the corresponding recognition function `.recognize_{img_type}()` according to the `img_type`.
+    It will call the corresponding recognition function `.recognize_{file_type}()` according to the `file_type`.
     Args:
         img (Union[str, Path, Image.Image]): The image/pdf file path or `Image.Image` object
-        img_type (str):  Supported image types: 'pdf', 'page', 'text_formula', 'formula', 'text'
+        file_type (str):  Supported image types: 'pdf', 'page', 'text_formula', 'formula', 'text'
         **kwargs (dict): Arguments for the corresponding recognition function
 
     Returns: recognized results
@@ -501,10 +501,10 @@ def recognize(
 **函数说明**：
 
 * 输入参数 `img`：图片/PDF文件路径或者 `Image.Image` 对象；
-* 输入参数 `img_type`：图片类型，可选值为 `'pdf'`, `'page'`, `'text_formula'`, `'formula'`, `'text'`；
+* 输入参数 `file_type`：图片类型，可选值为 `'pdf'`, `'page'`, `'text_formula'`, `'formula'`, `'text'`；
 * 输入参数 `kwargs`：其他参数，具体说明参考上面的函数。
 
-**返回值**：根据 `img_type` 的不同，返回不同的结果。具体说明参考上面的函数。
+**返回值**：根据 `file_type` 的不同，返回不同的结果。具体说明参考上面的函数。
 
 **调用示例**：
 
@@ -513,7 +513,7 @@ from pix2text import Pix2Text
 
 img_fp = 'examples/general.jpg'
 p2t = Pix2Text.from_config()
-out = p2t.recognize(img_fp, img_type='text')  # 等价于 p2t.recognize_text(img_fp)
+out = p2t.recognize(img_fp, file_type='text')  # 等价于 p2t.recognize_text(img_fp)
 ```
 
 
