@@ -46,7 +46,19 @@ DEFAULT_CONFIGS = {
     'formula': {},
 }
 # see: https://pypi.org/project/pyspellchecker
-CHECKER_SUPPORTED_LANGUAGES = {'en', 'es', 'fr', 'pt', 'de', 'it', 'ru', 'ar', 'eu', 'lv', 'nl'}
+CHECKER_SUPPORTED_LANGUAGES = {
+    'en',
+    'es',
+    'fr',
+    'pt',
+    'de',
+    'it',
+    'ru',
+    'ar',
+    'eu',
+    'lv',
+    'nl',
+}
 
 
 class TextFormulaOCR(object):
@@ -130,7 +142,13 @@ class TextFormulaOCR(object):
             if checker_languages:
                 spellchecker = SpellChecker(language=checker_languages)
 
-        return cls(text_ocr=text_ocr, mfd=mfd, latex_ocr=latex_ocr, spellchecker=spellchecker, **kwargs)
+        return cls(
+            text_ocr=text_ocr,
+            mfd=mfd,
+            latex_ocr=latex_ocr,
+            spellchecker=spellchecker,
+            **kwargs,
+        )
 
     @classmethod
     def prepare_configs(
@@ -200,8 +218,6 @@ class TextFormulaOCR(object):
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
         # 具体参考：cnstd.yolov7.layout_analyzer.LayoutAnalyzer._preprocess_images 中的 `letterbox` 行
-        if self.mfd is None or self.latex_ocr is None:
-            raise RuntimeError('`mfd` and `latex_ocr` models MUST NOT be None')
         resized_shape = kwargs.get('resized_shape', 768)
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')
@@ -214,7 +230,11 @@ class TextFormulaOCR(object):
         analyzer_outs = []
         crop_patches = []
         mf_results = []
-        if kwargs.get('contain_formula', True):
+        if (
+            kwargs.get('contain_formula', True)
+            and self.mfd is not None
+            and self.latex_ocr is not None
+        ):
             analyzer_outs = self.mfd(img0.copy(), resized_shape=resized_shape)
             for mf_box_info in analyzer_outs:
                 box = mf_box_info['box']
@@ -260,7 +280,9 @@ class TextFormulaOCR(object):
                 masked_img[ymin:ymax, xmin:xmax, :] = 255
         masked_img = Image.fromarray(masked_img)
 
-        text_box_infos = self.text_ocr.detect_only(np.array(img0), resized_shape=resized_shape)
+        text_box_infos = self.text_ocr.detect_only(
+            np.array(img0), resized_shape=resized_shape
+        )
         box_infos = []
         for line_box_info in text_box_infos['detected_texts']:
             # crop_img_info['box'] 可能是一个带角度的矩形框，需要转换成水平的矩形框
@@ -358,7 +380,12 @@ class TextFormulaOCR(object):
             line_sep = kwargs.get('line_sep', '\n')
             auto_line_break = kwargs.get('auto_line_break', True)
             outs = merge_line_texts(
-                outs, auto_line_break, line_sep, embed_sep, isolated_sep, self.spellchecker
+                outs,
+                auto_line_break,
+                line_sep,
+                embed_sep,
+                isolated_sep,
+                self.spellchecker,
             )
 
         return outs
@@ -486,10 +513,7 @@ class TextFormulaOCR(object):
 
         if kwargs.get('save_analysis_res'):
             save_layout_img(
-                input_imgs[0],
-                ['text'],
-                outs[0],
-                kwargs.get('save_analysis_res'),
+                input_imgs[0], ['text'], outs[0], kwargs.get('save_analysis_res'),
             )
 
         if is_single_image:

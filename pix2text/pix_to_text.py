@@ -240,6 +240,7 @@ class Pix2Text(object):
         else:
             img0 = read_img(img, return_type='Image')
 
+        page_id = page_id or str(page_number)
         kwargs['embed_sep'] = kwargs.get('embed_sep', (' $', '$ '))
         kwargs['isolated_sep'] = kwargs.get('isolated_sep', ('$$\n', '\n$$'))
         kwargs['line_sep'] = kwargs.get('line_sep', '\n')
@@ -289,8 +290,9 @@ class Pix2Text(object):
                     text_formula_kwargs['contain_formula'] = kwargs[
                         'text_contain_formula'
                     ]
+                text_formula_kwargs['return_text'] = False
                 _out = self.text_formula_ocr.recognize(
-                    padding_patch, return_text=False, **text_formula_kwargs,
+                    padding_patch, **text_formula_kwargs,
                 )
                 text, meta = None, _out
                 score = float(np.mean([x['score'] for x in _out]))
@@ -322,8 +324,10 @@ class Pix2Text(object):
                 )
                 text, meta = None, _out
             elif image_type == ElementType.FORMULA:
+                formula_kwargs = deepcopy(kwargs)
+                formula_kwargs['return_text'] = False
                 _out = self.text_formula_ocr.recognize_formula(
-                    crop_patch, return_text=False, **kwargs
+                    crop_patch, **formula_kwargs
                 )
                 score = _out['score']
                 text, meta = None, _out
@@ -384,14 +388,11 @@ class Pix2Text(object):
         masked_img = Image.fromarray(masked_img)
 
         text_formula_kwargs = deepcopy(kwargs)
-        text_formula_kwargs.pop('resized_shape')
+        text_formula_kwargs['return_text'] = False
         save_analysis_res = debug_dir / f'layout-remaining.png' if debug_dir else None
-        _resized_shape = kwargs.get('resized_shape')
+        text_formula_kwargs['save_analysis_res'] = save_analysis_res
         _out = self.text_formula_ocr.recognize(
             masked_img,
-            return_text=False,
-            resized_shape=_resized_shape,
-            save_analysis_res=save_analysis_res,
             **text_formula_kwargs,
         )
         min_text_length = kwargs.get('min_text_length', 4)

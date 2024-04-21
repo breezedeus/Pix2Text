@@ -185,7 +185,7 @@ class Page(object):
 
     def to_markdown(
         self, out_dir: Union[str, Path], markdown_fn: Optional[str] = 'output.md'
-    ):
+    ) -> str:
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.elements.sort()
@@ -275,7 +275,7 @@ class Document(object):
 
     def to_markdown(
         self, out_dir: Union[str, Path], markdown_fn: Optional[str] = 'output.md'
-    ):
+    ) -> str:
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.pages.sort(key=lambda page: page.number)
