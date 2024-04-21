@@ -13,6 +13,7 @@
 这些模型正常情况下都会自动下载（可能会比较慢，只要不报错请勿手动打断下载过程），但如果下载失败，可以参考以下的说明手动下载。
 
 除基础模型外，Pix2Text 还提供了以下模型的高级付费版：
+
 - MFD 和 MFR 付费模型：具体参考 [P2T详细资料 | Breezedeus.com](https://www.breezedeus.com/article/pix2text_cn)。
 - CnOCR 付费模型：具体参考 [CnOCR详细资料 | Breezedeus.com](https://www.breezedeus.com/article/cnocr)。
 

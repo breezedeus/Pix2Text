@@ -212,6 +212,7 @@ pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 ---
 
 官方代码库：
+
 * **Github**: [https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text) 。
 * **Gitee**: [https://gitee.com/breezedeus/pix2text](https://gitee.com/breezedeus/pix2text) 。
 
