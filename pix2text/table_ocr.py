@@ -164,6 +164,7 @@ class TableOCR(object):
             out_csv ():
             out_markdown ():
             **kwargs ():
+
                 * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
 
         Returns:
