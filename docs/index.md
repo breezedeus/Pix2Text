@@ -206,7 +206,7 @@ pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 
 ## 给作者来杯咖啡
 
-开源不易，如果此项目对您有帮助，可以考虑 [给作者加点油🥤，鼓鼓气💪🏻](https://www.breezedeus.com/buy-me-coffee) 。
+开源不易，如果此项目对您有帮助，可以考虑 [给作者加点油🥤，鼓鼓气💪🏻](buymeacoffee.md) 。
 
 ---
 

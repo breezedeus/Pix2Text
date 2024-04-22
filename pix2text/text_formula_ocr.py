@@ -105,10 +105,11 @@ class TextFormulaOCR(object):
         """
         Args:
             total_configs (dict): Configuration information for Pix2Text; defaults to `None`, which means using the default configuration. Usually the following keys are used:
-              * languages (str or Sequence[str]): The language code(s) of the text to be recognized; defaults to `('en', 'ch_sim')`.
-              * mfd (dict): Configuration information for the Analyzer model; defaults to `None`, which means using the default configuration.
-              * text (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
-              * formula (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
+
+                * languages (str or Sequence[str]): The language code(s) of the text to be recognized; defaults to `('en', 'ch_sim')`.
+                * mfd (dict): Configuration information for the Analyzer model; defaults to `None`, which means using the default configuration.
+                * text (dict): Configuration information for the Text OCR model; defaults to `None`, which means using the default configuration.
+                * formula (dict): Configuration information for Math Formula OCR model; defaults to `None`, which means using the default configuration.
             enable_formula (bool): Whether to enable the capability of Math Formula Detection (MFD) and Recognition (MFR); defaults to True.
             enable_spell_checker (bool): Whether to enable the capability of Spell Checker; defaults to True.
             device (str, optional): What device to use for computation, supports `['cpu', 'cuda', 'gpu', 'mps']`; defaults to None, which selects the device automatically.
@@ -196,8 +197,8 @@ class TextFormulaOCR(object):
                 * save_analysis_res (str): Save the parsed result image in this file; default value is `None`, which means not to save
                 * mfr_batch_size (int): batch size for MFR; When running on GPU, this value is suggested to be set to greater than 1; default value is `1`
                 * embed_sep (tuple): Prefix and suffix for embedding latex; only effective when `return_text` is `True`; default value is `(' $', '$ ')`
-                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is `('$$\n', '\n$$')`
-                * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is `'\n'`
+                * isolated_sep (tuple): Prefix and suffix for isolated latex; only effective when `return_text` is `True`; default value is two-dollar signs
+                * line_sep (str): The separator between lines of text; only effective when `return_text` is `True`; default value is a line break
                 * auto_line_break (bool): Automatically line break the recognized text; only effective when `return_text` is `True`; default value is `True`
                 * det_text_bbox_max_width_expand_ratio (float): Expand the width of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.3`
                 * det_text_bbox_max_height_expand_ratio (float): Expand the height of the detected text bbox. This value represents the maximum expansion ratio above and below relative to the original bbox height; default value is `0.2`
@@ -209,11 +210,12 @@ class TextFormulaOCR(object):
 
         Returns: a str when `return_text` is `True`, or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
             with each dict representing one detected box, containing keys:
-               * `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
-               * `text`: The recognized text or Latex formula
-               * `score`: The confidence score [0, 1]; the higher, the more confident
-               * `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
-               * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
+
+                * `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
+                * `text`: The recognized text or Latex formula
+                * `score`: The confidence score [0, 1]; the higher, the more confident
+                * `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
+                * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
 
         """
         # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
@@ -490,7 +492,8 @@ class TextFormulaOCR(object):
             kwargs (): Other parameters for `text_ocr.ocr()`
 
         Returns: Text str or list of text strs when `return_text` is True;
-                 `List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
+                `List[Any]` or `List[List[Any]]` when `return_text` is False, with the same length as `imgs` and the following keys:
+
                     * `position`: Position information of the block, `np.ndarray`, with a shape of [4, 2]
                     * `text`: The recognized text
                     * `score`: The confidence score [0, 1]; the higher, the more confident
@@ -538,8 +541,9 @@ class TextFormulaOCR(object):
             **kwargs (): Special model parameters. Not used for now
 
         Returns: The LaTeX Expression or list of LaTeX Expressions;
-                 str or List[str] when `return_text` is True;
-                 Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
+                str or List[str] when `return_text` is True;
+                Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
+
                     * `text`: The recognized LaTeX text
                     * `score`: The confidence score [0, 1]; the higher, the more confident
 
