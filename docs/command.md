@@ -101,3 +101,50 @@ $ p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
 ```bash
 $ p2t serve -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' -H 0.0.0.0 -p 8503
 ```
+
+### 服务调用
+
+#### Python
+开启后可以使用以下方式调用命令（Python）：
+
+```python
+import requests
+
+url = 'http://0.0.0.0:8503/pix2text'
+
+image_fp = 'docs/examples/page2.png'
+data = {
+    "file_type": "page",
+    "resized_shape": 768,
+    "embed_sep": " $,$ ",
+    "isolated_sep": "$$\n, \n$$"
+}
+files = {
+    "image": (image_fp, open(image_fp, 'rb'), 'image/jpeg')
+}
+
+r = requests.post(url, data=data, files=files)
+
+outs = r.json()['results']
+out_md_dir = r.json()['output_dir']
+if isinstance(outs, str):
+    only_text = outs
+else:
+    only_text = '\n'.join([out['text'] for out in outs])
+print(f'{only_text=}')
+print(f'{out_md_dir=}')
+```
+
+#### Curl
+
+也可以使用 curl 调用服务：
+
+```bash
+curl -X POST \
+  -F "file_type=page" \
+  -F "resized_shape=768" \
+  -F "embed_sep= $,$ " \
+  -F "isolated_sep=$$\n, \n$$" \
+  -F "image=@docs/examples/page2.png;type=image/jpeg" \
+  http://0.0.0.0:8503/pix2text
+```
