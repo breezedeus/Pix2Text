@@ -42,7 +42,7 @@ Usage: p2t predict [OPTIONS]
 使用基础模型进行预测：
 
 ```bash
-$ p2t predict -l en,ch_sim --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
+p2t predict -l en,ch_sim --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
 它会把识别结果（Markdown格式）存放在 `output-md` 目录下，并把中间的解析结果存放在 `output-debug` 目录下，以便分析识别结果主要受哪个模型的影响。
@@ -53,7 +53,7 @@ $ p2t predict -l en,ch_sim --resized-shape 768 --file-type pdf -i docs/examples/
 预测时也支持使用自定义的参数或模型。例如，使用自定义的模型进行预测：
 
 ```bash
-$ p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
+p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
 
@@ -91,7 +91,7 @@ Usage: p2t serve [OPTIONS]
 使用基础模型进行预测：
 
 ```bash
-$ p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
+p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
 ```
 
 ### 示例 2
@@ -99,7 +99,7 @@ $ p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
 服务开启时也支持使用自定义的参数或模型。例如，使用自定义的模型进行预测：
 
 ```bash
-$ p2t serve -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' -H 0.0.0.0 -p 8503
+p2t serve -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' -H 0.0.0.0 -p 8503
 ```
 
 ### 服务调用
