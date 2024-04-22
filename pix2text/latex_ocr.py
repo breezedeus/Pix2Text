@@ -54,15 +54,15 @@ class LatexOCR(object):
             root (Union[str, Path], optional): The model root directory. Defaults to data_dir().
             more_processor_configs (Optional[Dict[str, Any]], optional): Additional processor configurations. Defaults to None.
             more_model_configs (Optional[Dict[str, Any]], optional): Additional model configurations. Defaults to None.
-             - provider (`str`, defaults to `None`, which means to select one provider automatically):
-                 ONNX Runtime provider to use for loading the model. See https://onnxruntime.ai/docs/execution-providers/ for
-                 possible providers.
-             - session_options (`Optional[onnxruntime.SessionOptions]`, defaults to `None`),:
-                 ONNX Runtime session options to use for loading the model.
-             - provider_options (`Optional[Dict[str, Any]]`, defaults to `None`):
-                 Provider option dictionaries corresponding to the provider used. See available options
-                 for each provider: https://onnxruntime.ai/docs/api/c/group___global.html .
-             - ...: see more information here: optimum.onnxruntime.modeling_ort.ORTModel.from_pretrained()
+                - provider (`str`, defaults to `None`, which means to select one provider automatically):
+                    ONNX Runtime provider to use for loading the model. See https://onnxruntime.ai/docs/execution-providers/ for
+                    possible providers.
+                - session_options (`Optional[onnxruntime.SessionOptions]`, defaults to `None`),:
+                    ONNX Runtime session options to use for loading the model.
+                - provider_options (`Optional[Dict[str, Any]]`, defaults to `None`):
+                    Provider option dictionaries corresponding to the provider used. See available options
+                    for each provider: https://onnxruntime.ai/docs/api/c/group___global.html .
+                - ...: see more information here: optimum.onnxruntime.modeling_ort.ORTModel.from_pretrained()
             **kwargs: Additional arguments, currently not used.
         """
 

@@ -114,3 +114,5 @@ nav:
   - APIs:
     - Pix2Text: pix2text/pix_to_text.md
     - TextFormulaOCR: pix2text/text_formula_ocr.md
+    - LatexOCR: pix2text/latex_ocr.md
+    - TableOCR: pix2text/table_ocr.md
