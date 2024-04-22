@@ -156,7 +156,7 @@ def predict(
     output_dir,
     log_level,
 ):
-    """Use Pix2Text (P2T) to predict the text information in an image"""
+    """Use Pix2Text (P2T) to predict the text information in an image or PDF."""
     logger = set_logger(log_level=log_level)
 
     analyzer_config = json.loads(mfd_config) if mfd_config else {}

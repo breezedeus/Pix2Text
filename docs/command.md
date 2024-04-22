@@ -1,197 +1,102 @@
 # 脚本工具
 
-**cnocr** 包含了几个命令行工具，安装 **cnocr** 后即可使用。
+Python 包 **pix2text** 自带了命令行工具 `p2t`，[安装](install.md) 后即可使用。`p2t` 包含了以下几个子命令。
 
-## 图片预测
+## 预测
 
-使用命令 **`cnocr predict`** 预测单个文件或文件夹中所有图片，以下是使用说明：
+使用命令 **`p2t predict`** 预测单个（图片或 PDF）文件或文件夹中所有图片（不支持同时预测多个 PDF 文件），以下是使用说明：
 
 ```bash
-$ cnocr predict -h
-Usage: cnocr predict [OPTIONS]
+$ p2t predict -h
+Usage: p2t predict [OPTIONS]
 
-Options:
-  -m, --rec-model-name TEXT       识别模型名称。默认值为 densenet_lite_136-gru
-  -b, --rec-model-backend [pytorch|onnx]
-                                  识别模型类型。默认值为 `onnx`
-  -v, --rec-vocab-fp TEXT         识别模型使用的词表。默认取值为 `None` 表示使用系统设定的词表
-  -d, --det-model-name TEXT       检测模型名称。默认值为 ch_PP-OCRv3_det
-  --det-model-backend [pytorch|onnx]
-                                  检测模型类型。默认值为 `onnx`
-  -p, --pretrained-model-fp TEXT  识别模型使用训练好的模型。默认为 `None`，表示使用系统自带的预训练模型
-  -c, --context TEXT              使用cpu还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`。默认为
-                                  `cpu`
-  -i, --img-file-or-dir TEXT      输入图片的文件路径或者指定的文件夹  [required]
-  -s, --single-line               是否输入图片只包含单行文字。对包含单行文字的图片，不做按行切分；否则会先对图片按行分割后
-                                  再进行识别
-  --draw-results-dir TEXT         画出的检测与识别效果图所存放的目录；取值为 `None` 表示不画图
-  --draw-font-path TEXT           画出检测与识别效果图时使用的字体文件
-  --verbose                       是否打印详细日志信息。默认值为 `False`
-  -h, --help                      Show this message and exit.
+  使用Pix2Text（P2T）来预测图像或 PDF 文件中的文本信息
+
+选项：
+  -l，--languages TEXT            Text-OCR识别的语言代码，用逗号分隔，默认为en,ch_sim
+  --layout-config TEXT            布局解析器模型的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --mfd-config TEXT               MFD模型的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --formula-ocr-config TEXT       Latex-OCR数学公式识别模型的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --text-ocr-config TEXT          Text-OCR识别的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --enable-formula / --disable-formula
+                                  是否启用公式识别，默认值：启用公式
+  --enable-table / --disable-table
+                                  是否启用表格识别，默认值：启用表格
+  -d, --device TEXT               选择使用`cpu`、`gpu`或指定的GPU，如`cuda:0`。默认值：cpu
+  --file-type [pdf|page|text_formula|formula|text]
+                                  要处理的文件类型，'pdf'、'page'、'text_formula'、'formula'或'text'。默认值：text_formula
+  --resized-shape INTEGER         在处理之前将图像宽度调整为此大小。默认值：768
+  -i, --img-file-or-dir TEXT      输入图像/pdf的文件路径或指定的目录。[必需]
+  --save-debug-res TEXT           如果设置了`save_debug_res`，则保存调试结果的目录；默认值为`None`，表示不保存
+  --rec-kwargs TEXT               用于调用`.recognize()`的kwargs，以JSON字符串格式提供
+  --return-text / --no-return-text
+                                  是否仅返回文本结果，默认值：返回文本
+  --auto-line-break / --no-auto-line-break
+                                  是否自动确定是否将相邻的行结果合并为单个行结果，默认值：自动换行
+  -o, --output-dir TEXT           识别文本结果的输出目录。仅在`file-type`为`pdf`或`page`时有效。默认值：output-md
+  --log-level TEXT                日志级别，例如`INFO`、`DEBUG`。默认值：INFO
+  -h, --help                      显示此消息并退出。
 ```
 
-例如可以使用以下命令对图片 `docs/examples/rand_cn1.png` 进行文字识别：
+### 示例 1
+使用基础模型进行预测：
 
 ```bash
-$ cnocr predict -i docs/examples/rand_cn1.png -s
+$ p2t predict -l en,ch_sim --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
-具体使用也可参考文件 [Makefile](https://github.com/breezedeus/cnocr/blob/master/Makefile) 。
+它会把识别结果（Markdown格式）存放在 `output-md` 目录下，并把中间的解析结果存放在 `output-debug` 目录下，以便分析识别结果主要受哪个模型的影响。
+如果不需要保存中间解析结果，可以去掉 `--save-debug-res output-debug` 参数。
 
-## 模型评估
+### 示例 2
 
-使用命令 **`cnocr evaluate`** 在指定的数据集上评估模型效果，以下是使用说明：
-
-```bash
-$ cnocr evaluate -h
-Usage: cnocr evaluate [OPTIONS]
-
-  评估模型效果。检测模型使用 `det_model_name='naive_det'` 。
-
-Options:
-  -m, --rec-model-name TEXT       识别模型名称。默认值为 densenet_lite_136-gru
-  -b, --rec-model-backend [pytorch|onnx]
-                                  识别模型类型。默认值为 `onnx`
-  -v, --rec-vocab-fp TEXT         识别模型使用的词表。默认取值为 `None` 表示使用系统设定的词表
-  -p, --pretrained-model-fp TEXT  识别模型使用训练好的模型。默认为 `None`，表示使用系统自带的预训练模型
-  -c, --context TEXT              使用cpu还是 `gpu` 运行代码，也可指定为特定gpu，如`cuda:0`。默认为
-                                  `cpu`
-  -i, --eval-index-fp TEXT        待评估文件所在的索引文件，格式与训练时训练集索引文件相同，每行格式为 `<图片路径>
-                                  <以空格分割的labels>`
-  --image-folder TEXT             图片所在文件夹，相对于索引文件中记录的图片位置  [required]
-  --batch-size INTEGER            batch size. 默认值：128
-  -o, --output-dir TEXT           存放评估结果的文件夹。默认值：`eval_results`
-  --verbose                       whether to print details to screen
-  -h, --help                      Show this message and exit.
-```
-
-例如可以使用以下命令评估 `data/test/dev.tsv` 中指定的所有样本：
+预测时也支持使用自定义的参数或模型。例如，使用自定义的模型进行预测：
 
 ```bash
-$ cnocr evaluate -i data/test/dev.tsv --img-folder data/images 
-```
-
-具体使用也可参考文件 [Makefile](https://github.com/breezedeus/cnocr/blob/master/Makefile) 。
-
-## 模型训练
-
-使用命令 **`cnocr train`**  训练文本检测模型，以下是使用说明：
-
-```bash
-$ cnocr train -h
-Usage: cnocr train [OPTIONS]
-
-  训练识别模型
-
-Options:
-  -m, --rec-model-name TEXT       识别模型名称。默认值为 `densenet_lite_136-gru`
-  -i, --index-dir TEXT            索引文件所在的文件夹，会读取文件夹中的 train.tsv 和 dev.tsv 文件
-                                  [required]
-  --train-config-fp TEXT          识别模型训练使用的json配置文件，参考
-                                  `docs/examples/train_config.json`
-                                  [required]
-  --finetuning                    是否为精调模式（精调模式使用更温柔的transform）。默认为 `False`
-  -r, --resume-from-checkpoint TEXT
-                                  恢复此前中断的训练状态，继续训练识别模型。所以文件中应该包含训练状态。默认为
-                                  `None`
-  -p, --pretrained-model-fp TEXT  导入的训练好的识别模型，作为模型初始值。优先级低于"--resume-from-
-                                  checkpoint"，当传入"--resume-from-
-                                  checkpoint"时，此传入失效。默认为 `None`
-  -h, --help                      Show this message and exit.
-```
-
-例如可以使用以下命令进行训练：
-
-```bash
-$ cnocr train -m densenet_lite_136-gru --index-dir data/test --train-config-fp docs/examples/train_config.json
-```
-
-训练数据的格式见文件夹 [data/test](https://github.com/breezedeus/cnocr/blob/master/data/test) 中的 [train.tsv](https://github.com/breezedeus/cnocr/blob/master/data/test/train.tsv) 和 [dev.tsv](https://github.com/breezedeus/cnocr/blob/master/data/test/dev.tsv) 文件。
-
-具体使用也可参考文件 [Makefile](https://github.com/breezedeus/cnocr/blob/master/Makefile) 。
-
-## 模型API服务
-
-CnOCR 自 **V2.2.1** 开始加入了基于 FastAPI 的HTTP服务。开启服务需要安装几个额外的包，可以使用以下命令安装：
-
-```bash
-> pip install cnocr[serve]
+$ p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
 
+## 开启服务
 
-使用命令 **`cnocr serve`**  启动API服务，以下是使用说明：
+使用命令 **`p2t serve`** 开启一个 HTTP 服务，用于接收图片（当前不支持 PDF）并返回识别结果。
+这个 HTTP 服务是基于 FastAPI 实现的，以下是使用说明：
 
 ```bash
-$ cnocr serve -h
-Usage: cnocr serve [OPTIONS]
+$ p2t serve -h
+Usage: p2t serve [OPTIONS]
 
-  开启HTTP服务。
+  启动HTTP服务。
 
-Options:
-  -H, --host TEXT     server host. Default: "0.0.0.0"
-  -p, --port INTEGER  server port. Default: 8501
-  --reload            whether to reload the server when the codes have been
-                      changed
-  -h, --help          Show this message and exit.
+选项：
+  -l, --languages TEXT            Text-OCR识别的语言代码，用逗号分隔，默认为en,ch_sim
+  --layout-config TEXT            布局解析器模型的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --mfd-config TEXT               MFD模型的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --formula-ocr-config TEXT       Latex-OCR数学公式识别模型的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --text-ocr-config TEXT          Text-OCR识别的配置信息，以JSON字符串格式提供。默认值：`None`，表示使用默认配置
+  --enable-formula / --disable-formula
+                                  是否启用公式识别，默认值：启用公式
+  --enable-table / --disable-table
+                                  是否启用表格识别，默认值：启用表格
+  -d, --device TEXT               选择使用`cpu`、`gpu`或指定的GPU，如`cuda:0`。默认值：cpu
+  -o, --output-md-root-dir TEXT   Markdown输出的根目录，用于存放识别文本结果。仅在`file-type`为`pdf`或`page`时有效。默认值：output-md-root
+  -H, --host TEXT                 服务器主机  [默认值：0.0.0.0]
+  -p, --port INTEGER              服务器端口  [默认值：8503]
+  --reload                        当代码发生更改时是否重新加载服务器
+  --log-level TEXT                日志级别，例如`INFO`、`DEBUG`。默认值：INFO
+  -h, --help                      显示此消息并退出。
 ```
 
-
-
-例如使用以下命令启动服务：
+### 示例 1
+使用基础模型进行预测：
 
 ```bash
-$ cnocr serve -p 8501
+$ p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
 ```
+### 示例 2
 
-
-
-服务调用方式参考 [HTTP服务](index.md) 。
-
-
-
-## 模型转存
-
-训练好的模型会存储训练状态，使用命令 **`cnocr resave`**  去掉与预测无关的数据，降低模型大小。
+服务开启时也支持使用自定义的参数或模型。例如，使用自定义的模型进行预测：
 
 ```bash
-$ cnocr resave -h
-Usage: cnocr resave [OPTIONS]
-
-  训练好的识别模型会存储训练状态，使用此命令去掉预测时无关的数据，降低模型大小
-
-Options:
-  -i, --input-model-fp TEXT   输入的识别模型文件路径  [required]
-  -o, --output-model-fp TEXT  输出的识别模型文件路径  [required]
-  -h, --help                  Show this message and exit.
-```
-
-示例：
-
-```bash
-$ cnocr resave -i cnocr-v2.3-densenet_lite_136-gru-epoch=005.ckpt -o cnocr-v2.3-densenet_lite_136-gru-epoch=005-model.ckpt
-```
-
-## PyTorch 模型导出为 ONNX 模型
-
-把训练好的模型导出为 ONNX 格式。
-
-```bash
-$ cnocr export-onnx -h
-Usage: cnocr export-onnx [OPTIONS]
-
-  把训练好的识别模型导出为 ONNX 格式。
-
-Options:
-  -m, --rec-model-name TEXT   识别模型名称。默认值为 `densenet_lite_136-gru`
-  -v, --rec-vocab-fp TEXT     识别模型使用的词表。默认取值为 `None` 表示使用系统设定的词表
-  -i, --input-model-fp TEXT   输入的识别模型文件路径。 默认为 `None`，表示使用系统自带的预训练模型
-  -o, --output-model-fp TEXT  输出的识别模型文件路径（.onnx）  [required]
-  -h, --help                  Show this message and exit.
-```
-
-示例：
-
-```bash
-$ cnocr export-onnx -m densenet_lite_136-gru -i cnocr-v2.3-densenet_lite_136-gru-epoch=005-model.ckpt -o cnocr-v2.3-densenet_lite_136-gru-epoch=005-model.onnx
+$ p2t serve -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' -H 0.0.0.0 -p 8503
 ```
