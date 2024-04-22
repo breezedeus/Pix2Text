@@ -93,6 +93,7 @@ Usage: p2t serve [OPTIONS]
 ```bash
 $ p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
 ```
+
 ### 示例 2
 
 服务开启时也支持使用自定义的参数或模型。例如，使用自定义的模型进行预测：
