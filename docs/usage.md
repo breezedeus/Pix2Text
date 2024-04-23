@@ -7,7 +7,8 @@ CnOCR 和 CnSTD 中的模型分别存于 `~/.cnocr` 和 `~/.cnstd` 中（Windows
 下载过程请耐心等待，无法科学上网时系统会自动尝试其他可用站点进行下载，所以可能需要等待较长时间。
 对于没有网络连接的机器，可以先把模型下载到其他机器上，然后拷贝到对应目录。
 
-如果系统无法自动成功下载zip文件，则需要手动下载模型，可以参考 [huggingface.co/breezedeus](https://huggingface.co/breezedeus) （[国内链接](https://hf-mirror.com/breezedeus)）自己手动下载。
+如果系统无法自动成功下载模型文件，则需要手动下载模型文件，可以参考 [huggingface.co/breezedeus](https://huggingface.co/breezedeus) （[国内链接](https://hf-mirror.com/breezedeus)）自己手动下载。
+具体说明见 [模型下载](models.md)。
 
 
 ## 初始化
