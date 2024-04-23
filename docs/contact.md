@@ -14,7 +14,7 @@
 
 ## 二、微信交流群
 
-扫码加小助手为好友，备注 `ocr`，小助手会定期统一邀请大家入群：
+扫码加小助手为好友，备注 `p2t`，小助手会定期统一邀请大家入群：
 
 <figure markdown>
 ![微信交流群](https://huggingface.co/datasets/breezedeus/cnocr-wx-qr-code/resolve/main/wx-qr-code.JPG){: style="width:270px"}

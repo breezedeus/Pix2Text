@@ -17,7 +17,7 @@
 - MFD 和 MFR 付费模型：具体参考 [P2T详细资料 | Breezedeus.com](https://www.breezedeus.com/article/pix2text_cn)。
 - CnOCR 付费模型：具体参考 [CnOCR详细资料 | Breezedeus.com](https://www.breezedeus.com/article/cnocr)。
 
-> 注意，Pix2Text 的付费模型包含不同的 license 版本，购买时请参考具体的产品说明。
+具体说明请见本页面末尾。
 
 下面的说明主要针对免费的基础模型。
 
@@ -48,3 +48,33 @@ EasyOCR 模型下载请参考 [EasyOCR](https://github.com/JaidedAI/EasyOCR)。
 把这里面的所有文件都下载到 `~/.pix2text/1.1/mfr-onnx` （Windows 系统放在 `C:\Users\<username>\AppData\Roaming\pix2text\1.1\mfr-onnx`）目录下即可，目录不存在的话请自己创建。
 
 > 注：上面路径的 `1.1` 是 pix2text 的版本号，`1.1.*` 都对应 `1.1`。如果是其他版本请自行替换。
+
+## 高级版付费模型
+
+除基础模型外，Pix2Text 还提供了以下模型的高级付费版：
+
+- MFD 和 MFR 付费模型：具体参考 [P2T详细资料 | Breezedeus.com](https://www.breezedeus.com/article/pix2text_cn)。
+- CnOCR 付费模型：具体参考 [CnOCR详细资料 | Breezedeus.com](https://www.breezedeus.com/article/cnocr)。
+
+> 注意，付费模型包含不同的 license 版本，购买时请参考具体的产品说明。
+
+建议购买前首先使用 **[在线 Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo)**（无法科学上网可以使用 [国内 Demo](https://hf-mirror.com/spaces/breezedeus/Pix2Text-Demo)）**验证模型效果后再购买**。
+
+**模型购买地址**：
+
+| 模型名称         | 购买地址                                          | 说明 ｜                                                                              
+|--------------|-----------------------------------------------|-----------------------------------------------------------------------------------|
+| MFD pro 模型   | [Lemon Squeezy](https://ocr.lemonsqueezy.com) | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn)    | 
+| MFD pro 模型   | [B站工房](https://gf.bilibili.com/item/detail/1102870055)          | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) | 
+| MFR pro 模型   | [Lemon Squeezy](https://ocr.lemonsqueezy.com) | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn)    | 
+| MFR pro 模型   | [B站工房](https://gf.bilibili.com/item/detail/1103052055)          | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) | 
+| CnOCR pro 模型 | [Lemon Squeezy](https://ocr.lemonsqueezy.com) | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) 和 [CnOCR详细资料](https://www.breezedeus.com/article/cnocr) | 
+| CnOCR pro 模型 | [B站工房](https://gf.bilibili.com/item/detail/1104820055) | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) 和 [CnOCR详细资料](https://www.breezedeus.com/article/cnocr) | 
+
+购买过程遇到问题可以扫码加小助手为好友进行沟通，备注 `p2t`，小助手会尽快答复：
+
+<figure markdown>
+![微信交流群](https://huggingface.co/datasets/breezedeus/cnocr-wx-qr-code/resolve/main/wx-qr-code.JPG){: style="width:270px"}
+</figure>
+
+更多联系方式见 [交流群](contact.md)。
