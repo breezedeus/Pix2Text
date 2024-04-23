@@ -195,6 +195,28 @@ pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 
 更多说明参考 [安装说明](install.md) 。
 
+## HTTP 服务
+
+使用命令 **`p2t serve`** 开启一个 HTTP 服务，用于接收图片（当前不支持 PDF）并返回识别结果。
+
+```bash
+p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
+```
+
+之后可以使用 curl 调用服务：
+
+```bash
+curl -X POST \
+  -F "file_type=page" \
+  -F "resized_shape=768" \
+  -F "embed_sep= $,$ " \
+  -F "isolated_sep=$$\n, \n$$" \
+  -F "image=@docs/examples/page2.png;type=image/jpeg" \
+  http://0.0.0.0:8503/pix2text
+```
+
+更多说明参考 [命令说明/开启服务](command.md) 。
+
 ## Mac 桌面客户端
 
 请参考 [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) 安装 Pix2Text 的 MacOS 桌面客户端。

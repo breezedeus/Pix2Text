@@ -99,20 +99,20 @@ extra_javascript:
 
 # Page tree
 nav:
-  - Home: index.md
+  - 🏠 Home: index.md
+  - 🛠️ Install: install.md
+  - 🧳 Models: models.md
+  - 📖 Usage: usage.md
+  - 🛀🏻 Demo: demo.md
   - Documentations:
-      - 🛠️ Install: install.md
-      - 📖 Usage: usage.md
-      - 🛀🏻 Online Demo: demo.md
       - 🏄🏻 ‍️Command Tools: command.md
-      - 🧳 Models: models.md
       - 🕹 Model Training: train.md
-      - 💬 Contact: contact.md
       - 🥤 buymeacoffee: buymeacoffee.md
       - 🙋🏽 FAQ: faq.md
       - 🗒 RELEASE Notes: RELEASE.md
-  - APIs:
+  - 🎮 APIs:
     - Pix2Text: pix2text/pix_to_text.md
     - TextFormulaOCR: pix2text/text_formula_ocr.md
     - LatexOCR: pix2text/latex_ocr.md
     - TableOCR: pix2text/table_ocr.md
+  - 💬 Contact: contact.md
