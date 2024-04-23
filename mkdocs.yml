@@ -104,15 +104,15 @@ nav:
   - 🧳 Models: models.md
   - 📖 Usage: usage.md
   - 🛀🏻 Demo: demo.md
-  - More:
-      - 🏄🏻 ‍️Command Tools: command.md
-      - 🕹 Model Training: train.md
-      - 🗒 RELEASE Notes: RELEASE.md
-      - 🙋🏽 FAQ: faq.md
-      - 🥤 buymeacoffee: buymeacoffee.md
   - 🎮 APIs:
     - Pix2Text: pix2text/pix_to_text.md
     - TextFormulaOCR: pix2text/text_formula_ocr.md
     - LatexOCR: pix2text/latex_ocr.md
     - TableOCR: pix2text/table_ocr.md
   - 💬 Contact: contact.md
+  - 🎛️ More:
+      - 🏄🏻 ‍️Command Tools: command.md
+      - 🕹 Model Training: train.md
+      - 🗒 RELEASE Notes: RELEASE.md
+      - 🙋🏽 FAQ: faq.md
+      - 🥤 buymeacoffee: buymeacoffee.md
