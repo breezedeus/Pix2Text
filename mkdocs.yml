@@ -100,10 +100,10 @@ extra_javascript:
 # Page tree
 nav:
   - 🏠 Home: index.md
+  - 🛀🏻 Demo: demo.md
   - 🛠️ Install: install.md
   - 🧳 Models: models.md
   - 📖 Usage: usage.md
-  - 🛀🏻 Demo: demo.md
   - 🎮 APIs:
     - Pix2Text: pix2text/pix_to_text.md
     - TextFormulaOCR: pix2text/text_formula_ocr.md

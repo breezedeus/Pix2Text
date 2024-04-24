@@ -3,6 +3,8 @@
 </figure>
 
 # Pix2Text (P2T)
+<figure markdown>
+
 [![Discord](https://img.shields.io/discord/1200765964434821260?label=Discord)](https://discord.gg/GgD87WM8Tf)
 [![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
 [![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F&label=Visitors&countColor=%23f5c791&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F)
@@ -14,14 +16,13 @@
 ![last-commit](https://img.shields.io/github/last-commit/breezedeus/pix2text)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
-<figure markdown>
 [📖 Usage](usage.md) |
 [🛠️ Installation](install.md) |
 [🧳 Models](models.md) |
 [🛀🏻 Demo](demo.md) |
 [💬 Contact](contact.md)
 
-[English](https://github.com/breezedeus/pix2text/blob/master/README.md) | 中文
+[中文](index.md) | English
 </figure>
 
 **Pix2Text (P2T)** aims to be a **free and open-source Python** alternative to **[Mathpix](https://mathpix.com/)**, and it can already accomplish **Mathpix**'s core functionality. **Pix2Text (P2T) can recognize layouts, tables, images, text, mathematical formulas, and integrate all of these contents into Markdown format. P2T can also convert an entire PDF file (which can contain scanned images or any other format) into Markdown format.**
@@ -43,7 +44,7 @@ As a Python3 toolkit, P2T may not be very user-friendly for those who are not fa
 If you're interested, feel free to add the assistant as a friend by scanning the QR code and mentioning `p2t`. The assistant will regularly invite everyone to join the group where the latest developments related to P2T tools will be announced:
 
 <div align="center">
-  <img src="figs/wx-qr-code.JPG" alt="微信群二维码" width="300px"/>
+  <img src="figs/wx-qr-code.JPG" alt="Wechat QRCode" width="300px"/>
 </div>
 
 The author also maintains a **Knowledge Planet** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), where questions are answered promptly. You're welcome to join. The **knowledge planet private group** will also gradually release some private materials related to P2T/CnOCR/CnSTD, including **some unreleased models**, **discounts on purchasing premium models**, **code snippets for different application scenarios**, and answers to difficult problems encountered during use. The planet will also publish the latest research materials related to P2T/OCR/STD.
