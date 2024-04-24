@@ -76,6 +76,8 @@ class DocXLayoutParser(LayoutParser):
         'figure caption': ElementType.TEXT,
         'equation': ElementType.FORMULA,
     }
+    # types that are isolated and usually don't cross different columns. They should not be merged with other elements
+    is_isolated = {'header', 'table caption', 'figure caption', 'equation'}
 
     def __init__(
         self,
@@ -299,6 +301,7 @@ class DocXLayoutParser(LayoutParser):
             layout_out = column_info['layouts']
             for box_info in layout_out:
                 image_type = box_info['category']
+                isolated = image_type in self.is_isolated
                 if image_type in self.ignored_types:
                     image_type = ElementType.IGNORED
                 else:
@@ -312,6 +315,7 @@ class DocXLayoutParser(LayoutParser):
                         'position': box,
                         'score': box_info['confidence'],
                         'col_number': cur_col_number,
+                        'isolated': isolated,
                     }
                 )
 

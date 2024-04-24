@@ -19,6 +19,7 @@ class Element(object):
     meta: Any
     type: ElementType
     total_img: Image.Image
+    isolated: bool = False
     col_number: int = -1
     score: float = 1.0
     spellchecker = None
@@ -29,6 +30,7 @@ class Element(object):
         *,
         id: str,
         box: Sequence,
+        isolated: bool,
         col_number: int,
         meta: Any,
         type: ElementType,
@@ -41,6 +43,7 @@ class Element(object):
         self.total_img = total_img
         self.id = id
         self.box = box
+        self.isolated = isolated
         self.col_number = col_number
         self.meta = meta
         self.type = type
@@ -52,6 +55,9 @@ class Element(object):
             self.text = self._meta_to_text()
         else:
             self.text = text
+
+        if self.isolated:
+            self.text = self.text + '\n'
 
     def to_dict(self):
         return dataclasses.asdict(self)
@@ -184,17 +190,17 @@ class Page(object):
         return f"Page(id={self.id}, number={self.number}, elements={self.elements})"
 
     def to_markdown(
-        self, out_dir: Union[str, Path], markdown_fn: Optional[str] = 'output.md'
+        self, out_dir: Union[str, Path], root_url: Optional[str]=None, markdown_fn: Optional[str] = 'output.md'
     ) -> str:
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.elements.sort()
         if not self.elements:
             return ''
-        md_out = self._ele_to_markdown(self.elements[0], out_dir)
+        md_out = self._ele_to_markdown(self.elements[0], root_url, out_dir)
         for idx, element in enumerate(self.elements[1:]):
             prev_element = self.elements[idx]
-            cur_txt = self._ele_to_markdown(element, out_dir)
+            cur_txt = self._ele_to_markdown(element, root_url, out_dir)
             if (
                 prev_element.col_number + 1 == element.col_number
                 and prev_element.type == element.type
@@ -218,7 +224,7 @@ class Page(object):
                 f.write(md_out)
         return md_out
 
-    def _ele_to_markdown(self, element: Element, out_dir: Union[str, Path]):
+    def _ele_to_markdown(self, element: Element, root_url: Optional[str], out_dir: Union[str, Path]):
         type = element.type
         text = element.text
         if type in (ElementType.TEXT, ElementType.TABLE):
@@ -240,12 +246,15 @@ class Page(object):
             out_path = out_figure_dir / f'{element.id}-{type.name}.jpg'
             element.total_img.crop(element.box).save(str(out_path))
 
-            _url = self._map_path_to_url(out_path, out_dir)
+            _url = self._map_path_to_url(root_url, out_path, out_dir)
             return f'![]({_url})'
         return ''
 
-    def _map_path_to_url(self, path: Path, out_dir: Path):
-        return path.relative_to(out_dir)
+    def _map_path_to_url(self, root_url: Optional[str], path: Path, out_dir: Path):
+        rel_url = path.relative_to(out_dir)
+        if root_url is not None:
+            return f'{root_url}/{rel_url}'
+        return str(rel_url)
 
 
 class Document(object):

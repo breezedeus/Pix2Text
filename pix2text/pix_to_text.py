@@ -343,6 +343,7 @@ class Pix2Text(object):
                     box=box,
                     meta=meta,
                     text=text,
+                    isolated=box_info['isolated'],
                     col_number=box_info['col_number'],
                     type=image_type,
                     score=score,
@@ -362,8 +363,11 @@ class Pix2Text(object):
                     box=box2list(box_info['position']),
                     meta=None,
                     text=box_info['text'],
+                    isolated=False,
                     col_number=box_info['col_number'],
-                    type=ElementType.TEXT,
+                    type=ElementType.TEXT
+                    if box_info['type'] != 'isolated'
+                    else ElementType.FORMULA,
                     score=box_info['score'],
                     total_img=img0,
                     spellchecker=self.text_formula_ocr.spellchecker,
@@ -391,10 +395,7 @@ class Pix2Text(object):
         text_formula_kwargs['return_text'] = False
         save_analysis_res = debug_dir / f'layout-remaining.png' if debug_dir else None
         text_formula_kwargs['save_analysis_res'] = save_analysis_res
-        _out = self.text_formula_ocr.recognize(
-            masked_img,
-            **text_formula_kwargs,
-        )
+        _out = self.text_formula_ocr.recognize(masked_img, **text_formula_kwargs,)
         min_text_length = kwargs.get('min_text_length', 4)
         _out = [_o for _o in _out if len(_o['text']) >= min_text_length]
         # guess which column the box belongs to
