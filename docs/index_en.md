@@ -43,7 +43,7 @@ As a Python3 toolkit, P2T may not be very user-friendly for those who are not fa
 If you're interested, feel free to add the assistant as a friend by scanning the QR code and mentioning `p2t`. The assistant will regularly invite everyone to join the group where the latest developments related to P2T tools will be announced:
 
 <div align="center">
-  <img src="figs/wx-qr-code.JPG" alt="Wechat QRCode" width="300px"/>
+  <img src="figs/wx-qr-code.JPG" alt="Wechat-QRCode" width="300px"/>
 </div>
 
 The author also maintains a **Knowledge Planet** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), where questions are answered promptly. You're welcome to join. The **knowledge planet private group** will also gradually release some private materials related to P2T/CnOCR/CnSTD, including **some unreleased models**, **discounts on purchasing premium models**, **code snippets for different application scenarios**, and answers to difficult problems encountered during use. The planet will also publish the latest research materials related to P2T/OCR/STD.
