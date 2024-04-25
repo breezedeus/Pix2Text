@@ -3,8 +3,6 @@
 </figure>
 
 # Pix2Text (P2T)
-<figure markdown>
-
 [![Discord](https://img.shields.io/discord/1200765964434821260?label=Discord)](https://discord.gg/GgD87WM8Tf)
 [![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
 [![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F&label=Visitors&countColor=%23f5c791&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F)
@@ -16,6 +14,7 @@
 ![last-commit](https://img.shields.io/github/last-commit/breezedeus/pix2text)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fbreezedeus)](https://twitter.com/breezedeus)
 
+<figure markdown>
 [📖 Usage](usage.md) |
 [🛠️ Installation](install.md) |
 [🧳 Models](models.md) |
@@ -49,14 +48,15 @@ If you're interested, feel free to add the assistant as a friend by scanning the
 
 The author also maintains a **Knowledge Planet** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), where questions are answered promptly. You're welcome to join. The **knowledge planet private group** will also gradually release some private materials related to P2T/CnOCR/CnSTD, including **some unreleased models**, **discounts on purchasing premium models**, **code snippets for different application scenarios**, and answers to difficult problems encountered during use. The planet will also publish the latest research materials related to P2T/OCR/STD.
 
-For more information, please refer to [Contact](contact.md).
+For more contact method, please refer to [Contact](contact.md).
 
 
-## 支持的语言列表
+## List of Supported Languages
 
-Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 **[CnOCR](https://github.com/breezedeus/cnocr)** ，其他语言的识别使用的是开源 OCR 工具 **[EasyOCR](https://github.com/JaidedAI/EasyOCR)** ，感谢相关的作者们。
+The text recognition engine of Pix2Text supports **`80+` languages**, including **English, Simplified Chinese, Traditional Chinese, Vietnamese**, etc. Among these, **English** and **Simplified Chinese** recognition utilize the open-source OCR tool **[CnOCR](https://github.com/breezedeus/cnocr)**, while recognition for other languages employs the open-source OCR tool **[EasyOCR](https://github.com/JaidedAI/EasyOCR)**. Special thanks to the respective authors.
 
-支持的**语言列表**和**语言代码**如下：
+List of **Supported Languages** and **Language Codes** are shown below:
+
 <details>
 <summary>↓↓↓ Click to show details ↓↓↓</summary>
 
@@ -146,64 +146,68 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 | Uzbek               | uz          |
 | Vietnamese          | vi          |
 
+
 > Ref: [Supported Languages](https://www.jaided.ai/easyocr/) .
 
 </details>
 
 
+## Online Service
 
-## P2T 网页版
+Everyone can use the **[P2T Online Service](https://p2t.breezedeus.com)** for free, with a daily limit of 10,000 characters per account, which should be sufficient for normal use. *Please refrain from bulk API calls, as machine resources are limited, and this could prevent others from accessing the service.*
 
-所有人都可以免费使用 **[P2T网页版](https://p2t.breezedeus.com)**，每人每天可以免费识别 10000 个字符，正常使用应该够用了。*请不要批量调用接口，机器资源有限，批量调用会导致其他人无法使用服务。*
-
-受限于机器资源，网页版当前只支持**简体中文和英文**，要尝试其他语言上的效果，请使用以下的**在线 Demo**。
-
+Due to hardware constraints, the Online Service currently only supports **Simplified Chinese** and **English** languages. To try the models in other languages, please use the following **Online Demo**.
 
 
-## 在线 Demo 🤗
 
-也可以使用 **[在线 Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo)**（无法科学上网可以使用 [在线 Demo](https://hf-mirror.com/spaces/breezedeus/Pix2Text-Demo)） 尝试 **P2T** 在不同语言上的效果。但在线 Demo 使用的硬件配置较低，速度会较慢。如果是简体中文或者英文图片，建议使用 **[P2T网页版](https://p2t.breezedeus.com)**。
+## Online Demo 🤗
+
+You can also try the **[Online Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo)** ([Mirror](https://hf-mirror.com/spaces/breezedeus/Pix2Text-Demo)) to see the performance of **P2T** in various languages. However, the online demo operates on lower hardware specifications and may be slower. For Simplified Chinese or English images, it is recommended to use the **[P2T Online Service](https://p2t.breezedeus.com)**.
 
 
-## 安装
+## Install
 
-嗯，顺利的话一行命令即可。
+Well, one line of command is enough if it goes well.
 
 ```bash
 pip install pix2text
 ```
 
-如果需要识别**英文**与**简体中文**之外的文字，请使用以下命令安装额外的包：
+If you need to recognize languages other than **English** and **Simplified Chinese**, please use the following command to install additional packages:
 
 ```bash
 pip install pix2text[multilingual]
 ```
 
-安装速度慢的话，可以指定国内的安装源，如使用阿里云的安装源：
+
+
+If the installation is slow, you can specify a domestic installation source, such as using the Aliyun source:
 
 ```bash
 pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 ```
 
-如果是初次使用**OpenCV**，那估计安装都不会很顺利，bless。
 
-**Pix2Text** 主要依赖 [**CnSTD>=1.2.1**](https://github.com/breezedeus/cnstd)、[**CnOCR>=2.2.2.1**](https://github.com/breezedeus/cnocr) ，以及 [**transformers>=4.37.0**](https://github.com/huggingface/transformers) 。如果安装过程遇到问题，也可参考它们的安装说明文档。
+If it is your first time to use **OpenCV**, then probably  the installation will not be very easy.  Bless.
+
+**Pix2Text** mainly depends on [**CnSTD>=1.2.1**](https://github.com/breezedeus/cnstd), [**CnOCR>=2.2.2.1**](https://github.com/breezedeus/cnocr), and [**transformers>=4.37.0**](https://github.com/huggingface/transformers). If you encounter problems with the installation, you can also refer to their installation instruction documentations.
+
 
 > **Warning**
 >
-> 如果电脑中从未安装过 `PyTorch`，`OpenCV` python包，初次安装可能会遇到不少问题，但一般都是常见问题，可以自行百度/Google解决。
+> If you have never installed the `PyTorch`, `OpenCV` python packages before, you may encounter a lot of problems during the first installation, but they are usually common problems that can be solved by Baidu/Google.
 
-更多说明参考 [安装说明](install.md) 。
+For more instructions, please refer to [Install](install.md) .
 
-## HTTP 服务
+## HTTP Service
 
-使用命令 **`p2t serve`** 开启一个 HTTP 服务，用于接收图片（当前不支持 PDF）并返回识别结果。
+To start an HTTP service for receiving images (currently does not support PDF) and returning recognition results, use the command **`p2t serve`**.
 
 ```bash
 p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
 ```
 
-之后可以使用 curl 调用服务：
+Afterwards, you can call the service using curl:
 
 ```bash
 curl -X POST \
@@ -215,26 +219,23 @@ curl -X POST \
   http://0.0.0.0:8503/pix2text
 ```
 
-更多说明参考 [命令说明/开启服务](command.md) 。
+For more information, refer to [Command/Starting the Service](command.md).
 
-## Mac 桌面客户端
+## MacOS Desktop Application
 
-请参考 [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) 安装 Pix2Text 的 MacOS 桌面客户端。
+Please refer to [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) for installing the Pix2Text Desktop App for MacOS.
 
 <div align="center">
-  <img src="https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg" alt="Pix2Text Mac 客户端" width="400px"/>
+  <img src="https://github.com/breezedeus/Pix2Text-Mac/raw/main/assets/on_menu_bar.jpg" alt="Pix2Text Mac App" width="400px"/>
 </div>
 
 
-## 给作者来杯咖啡
+## A cup of coffee for the author
 
-开源不易，如果此项目对您有帮助，可以考虑 [给作者加点油🥤，鼓鼓气💪🏻](buymeacoffee.md) 。
+It is not easy to maintain and evolve the project, so if it is helpful to you, please consider [offering the author a cup of coffee 🥤](https://www.breezedeus.com/buy-me-coffee).
 
 ---
 
-官方代码库：
+Official code base: [https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text). Please cite it properly.
 
-* **Github**: [https://github.com/breezedeus/pix2text](https://github.com/breezedeus/pix2text) 。
-* **Gitee**: [https://gitee.com/breezedeus/pix2text](https://gitee.com/breezedeus/pix2text) 。
-
-Pix2Text (P2T) 更多信息：[https://www.breezedeus.com/article/pix2text_cn](https://www.breezedeus.com/article/pix2text_cn) 。
+For more information on Pix2Text (P2T), visit: [https://www.breezedeus.com/article/pix2text](https://www.breezedeus.com/article/pix2text).
