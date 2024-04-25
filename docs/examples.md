@@ -22,7 +22,7 @@ doc.to_markdown('output-md')  # 导出的 Markdown 信息保存在 output-md 目
 可以使用函数 `.recognize_text_formula()` 识别图片中的文字和数学公式。如针对以下图片 ([examples/en1.jpg](examples/en1.jpg))：
 
 <div align="center">
-  <img src="examples/en1.jpg" alt="English-mixed-image" width="600px"/>
+  <img src="https://pix2text.readthedocs.io/zh/latest/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
 </div>
 
 调用方式如下：
@@ -45,7 +45,7 @@ print(outs)
 对于只包含数学公式的图片，使用函数 `.recognize_formula()` 可以把数学公式识别为 LaTeX 表达式。如针对以下图片 ([examples/math-formula-42.png](examples/math-formula-42.png))：
 
 <div align="center">
-  <img src="examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
+  <img src="https://pix2text.readthedocs.io/zh/latest/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
 </div>
 
 
@@ -67,7 +67,7 @@ print(outs)
 对于只包含文字不包含数学公式的图片，使用函数 `.recognize_text()` 可以识别出图片中的文字。此时 Pix2Text 相当于一般的文字 OCR 引擎。如针对以下图片 ([examples/general.jpg](examples/general.jpg))：
 
 <div align="center">
-  <img src="examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
+  <img src="https://pix2text.readthedocs.io/zh/latest/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
 </div>
 
 
