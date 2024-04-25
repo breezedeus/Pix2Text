@@ -16,7 +16,7 @@
 
 <figure markdown>
 [📖 Usage](usage.md) |
-[🛠️ Installation](install.md) |
+[🛠️ Install](install.md) |
 [🧳 Models](models.md) |
 [🛀🏻 Demo](demo.md) |
 [💬 Contact](contact.md)
