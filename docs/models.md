@@ -57,6 +57,7 @@ CnOCR 中的文字检测引擎使用的是 [CnSTD](https://github.com/breezedeus
 关于 CnOCR 模型的更多信息请参考 [CnOCR在线文档/可用模型](https://cnocr.readthedocs.io/zh/latest/models)。
 
 CnOCR 也提供**高级版的付费模型**，具体参考本文末尾的说明。
+
 - CnOCR 付费模型：具体参考 [CnOCR详细资料 | Breezedeus.com](https://www.breezedeus.com/article/cnocr)。
 
 <br/>

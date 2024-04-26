@@ -6,7 +6,7 @@
 调用方式如下：
 
 ```python
-from pix2text import Pix2Text, merge_line_texts
+from pix2text import Pix2Text
 
 img_fp = './examples/test-doc.pdf'
 p2t = Pix2Text()
@@ -14,7 +14,41 @@ doc = p2t.recognize_pdf(img_fp, page_numbers=[0, 1])
 doc.to_markdown('output-md')  # 导出的 Markdown 信息保存在 output-md 目录中
 ```
 
+也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
+```bash
+p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
+```
+
+识别结果见 [output-md/output.md](output-md/output.md)。
+
+<br/>
+
 > 如果期望导出 Markdown 之外的其他格式，如 Word、HTML、PDF 等，推荐使用工具 [Pandoc](https://pandoc.org) 对 Markdown 结果进行转换即可。
+
+## 识别带有复杂排版的图片
+可以使用函数 `.recognize_page()` 识别图片中的文字和数学公式。如针对以下图片 ([examples/page2.png](examples/page2.png))：
+
+<div align="center">
+  <img src="https://pix2text.readthedocs.io/zh/latest/examples/page2.png" alt="Page-image" width="600px"/>
+</div>
+
+调用方式如下：
+
+```python
+from pix2text import Pix2Text
+
+img_fp = './examples/test-doc.pdf'
+p2t = Pix2Text()
+page = p2t.recognize_page(img_fp)
+page.to_markdown('output-page')  # 导出的 Markdown 信息保存在 output-page 目录中
+```
+
+也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
+```bash
+p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type page -i docs/examples/page2.png -o output-page --save-debug-res output-debug-page
+```
+
+识别结果和 [output-md/output.md](output-md/output.md) 类似。
 
 ## 识别既有公式又有文本的段落图片
 
