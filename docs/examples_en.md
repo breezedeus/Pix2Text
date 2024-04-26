@@ -1,10 +1,10 @@
 <figure markdown>
 
-[English](examples_en.md) | 中文
+[中文](examples.md) | English
 
 </figure>
 
-# 示例
+# Examples
 ## 识别 PDF 文件，返回其 Markdown 格式
 
 对于 PDF 文件，可以使用函数 `.recognize_pdf()` 对整个文件或者指定页进行识别，并把结果输出为 Markdown 文件。如针对以下 PDF 文件 ([examples/test-doc.pdf](examples/test-doc.pdf))：

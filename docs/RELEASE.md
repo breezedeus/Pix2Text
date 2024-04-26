@@ -1,5 +1,19 @@
 # Release Notes
 
+## Update 2024.05.08：**V1.1** Released
+
+Major changes:
+
+主要变更： 
+
+* 加入了版面分析和表格识别模型，支持对图片中的版面和表格进行识别。
+* 支持把整个 PDF 文件转换为 Markdown 格式。
+* 加入了更丰富的接口，已有接口的参数也有所调整。
+ 
+具体说明见：[Pix2Text 新版发布：加入版面分析和表格识别模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-v1.1) 。
+ 
+
+
 ## Update 2024.03.30：**V1.0.2.3** Released
 
 Major changes:
