@@ -18,14 +18,12 @@ In a traditional 2D convolution, we define a real valued function $F : \mathbb{Z
 
 $$
 ( F * k ) ( \mathbf{p} )=\sum_{\mathbf{s}+\mathbf{t}=\mathbf{p}} F ( \mathbf{s} ) k ( \mathbf{t} ). \qquad\qquad( 1 )
-
 $$
 
 A dilated convolution is essentially a generalization of the traditional 2D convolution that allows the operation to skip some inputs. This enables an increase in the size of the filter (i.e. the size of the receptive field) without losing resolution. Formally, we define from [25] the dilated convolution as
 
 $$
 ( F *_{l} k ) ( \mathbf{p} )=\sum_{\mathbf{s}+l \mathbf{t}=\mathbf{p}} F ( \mathbf{s} ) k ( \mathbf{t} ) \qquad\qquad( 2 )
-
 $$
 
 where $l$ is the index of the current layer of the convolution
