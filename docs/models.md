@@ -33,21 +33,35 @@
 
 > 注：上面路径的 `1.1` 是 pix2text 的版本号，`1.1.*` 都对应 `1.1`。如果是其他版本请自行替换。
 
-## 文字识别引擎
-CnOCR 模型下载请参考 [CnOCR在线文档/可用模型](https://cnocr.readthedocs.io/zh/latest/models/)。
-
-
-EasyOCR 模型下载请参考 [EasyOCR](https://github.com/JaidedAI/EasyOCR)。
-
 ## 数学公式检测模型
 **数学公式检测模型**（MFD）来自 [CnSTD](https://github.com/breezedeus/cnstd) 的数学公式检测模型（MFD），请参考其代码库说明。
 
+如果系统无法自动成功下载模型文件，则需要手动从 [**cnstd-cnocr-models**](https://huggingface.co/breezedeus/cnstd-cnocr-models) （[国内镜像](https://hf-mirror.com/breezedeus/cnstd-cnocr-models)）项目中下载，或者从[百度云盘](https://pan.baidu.com/s/1zDMzArCDrrXHWL0AWxwYQQ?pwd=nstd)（提取码为 `nstd`）下载对应的zip文件并把它存放于 `~/.cnstd/1.2`（Windows下为 `C:\Users\<username>\AppData\Roaming\cnstd\1.2`）目录中。
 
 ## 数学公式识别模型
 **数学公式识别模型** 下载地址：[breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) （不能科学上网请使用 [国内地址](https://hf-mirror.com/breezedeus/pix2text-mfr)）。
 把这里面的所有文件都下载到 `~/.pix2text/1.1/mfr-onnx` （Windows 系统放在 `C:\Users\<username>\AppData\Roaming\pix2text\1.1\mfr-onnx`）目录下即可，目录不存在的话请自己创建。
 
 > 注：上面路径的 `1.1` 是 pix2text 的版本号，`1.1.*` 都对应 `1.1`。如果是其他版本请自行替换。
+
+## 文字识别引擎
+Pix2Text 的**文字识别引擎**可以识别 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 [CnOCR](https://github.com/breezedeus/cnocr) ，其他语言的识别使用的是开源 OCR 工具 [EasyOCR](https://github.com/JaidedAI/EasyOCR) 。
+
+正常情况下，CnOCR 的模型都会自动下载。如果无法自动下载，可以参考以下说明手动下载。
+CnOCR 的开源模型都放在 [**cnstd-cnocr-models**](https://huggingface.co/breezedeus/cnstd-cnocr-models) （[国内镜像](https://hf-mirror.com/breezedeus/cnstd-cnocr-models)）项目中，可免费下载使用。
+如果下载太慢，也可以从 [百度云盘](https://pan.baidu.com/s/1RhLBf8DcLnLuGLPrp89hUg?pwd=nocr) 下载， 提取码为 `nocr`。具体方法可参考 [CnOCR在线文档/使用方法](https://cnocr.readthedocs.io/zh/latest/usage) 。
+
+CnOCR 中的文字检测引擎使用的是 [CnSTD](https://github.com/breezedeus/cnstd)，
+如果系统无法自动成功下载模型文件，则需要手动从 [**cnstd-cnocr-models**](https://huggingface.co/breezedeus/cnstd-cnocr-models) （[国内镜像](https://hf-mirror.com/breezedeus/cnstd-cnocr-models)）项目中下载，或者从[百度云盘](https://pan.baidu.com/s/1zDMzArCDrrXHWL0AWxwYQQ?pwd=nstd)（提取码为 `nstd`）下载对应的zip文件并把它存放于 `~/.cnstd/1.2`（Windows下为 `C:\Users\<username>\AppData\Roaming\cnstd\1.2`）目录中。
+
+关于 CnOCR 模型的更多信息请参考 [CnOCR在线文档/可用模型](https://cnocr.readthedocs.io/zh/latest/models)。
+
+CnOCR 也提供**高级版的付费模型**，具体参考本文末尾的说明。
+- CnOCR 付费模型：具体参考 [CnOCR详细资料 | Breezedeus.com](https://www.breezedeus.com/article/cnocr)。
+
+<br/>
+
+EasyOCR 模型下载请参考 [EasyOCR](https://github.com/JaidedAI/EasyOCR)。
 
 ## 高级版付费模型
 
@@ -62,7 +76,7 @@ EasyOCR 模型下载请参考 [EasyOCR](https://github.com/JaidedAI/EasyOCR)。
 
 **模型购买地址**：
 
-| 模型名称         | 购买地址                                          | 说明 ｜                                                                              
+| 模型名称         | 购买地址                                          | 说明 
 |--------------|-----------------------------------------------|-----------------------------------------------------------------------------------|
 | MFD pro 模型   | [Lemon Squeezy](https://ocr.lemonsqueezy.com) | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn)    | 
 | MFD pro 模型   | [B站工房](https://gf.bilibili.com/item/detail/1102870055)          | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) | 
