@@ -239,7 +239,7 @@ class Page(object):
             return f'## {text}'
         elif type == ElementType.FORMULA:
             isolated_sep = self.config.get('isolated_sep', ('$$\n', '\n$$'))
-            return isolated_sep[0] + text + isolated_sep[1]
+            return isolated_sep[0] + text.strip() + isolated_sep[1]
         elif type == ElementType.FIGURE:
             out_figure_dir = out_dir / 'figures'
             out_figure_dir.mkdir(exist_ok=True, parents=True)
