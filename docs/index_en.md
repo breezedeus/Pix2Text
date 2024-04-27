@@ -199,6 +199,22 @@ If it is your first time to use **OpenCV**, then probably  the installation will
 
 For more instructions, please refer to [Install](install.md) .
 
+## Usage
+
+Refer to: [Usage](usage.md).
+
+## Examples
+
+Refer to: [Examples](examples.md).
+
+## Model Downloads
+
+Refer to: [Models](models.md).
+
+## Command Line Tools
+
+Refer to: [Command Line Tools](command.md).
+
 ## HTTP Service
 
 To start an HTTP service for receiving images (currently does not support PDF) and returning recognition results, use the command **`p2t serve`**.

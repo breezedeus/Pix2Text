@@ -196,6 +196,24 @@ pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 
 更多说明参考 [安装说明](install.md) 。
 
+
+## 使用说明
+
+参见：[使用说明](usage.md)。
+
+## 示例
+
+参见：[示例](examples.md)。
+
+## 模型下载
+
+参见：[模型](models.md)。
+
+## 命令行工具
+
+参见：[命令行工具](command.md)。
+
+
 ## HTTP 服务
 
 使用命令 **`p2t serve`** 开启一个 HTTP 服务，用于接收图片（当前不支持 PDF）并返回识别结果。
