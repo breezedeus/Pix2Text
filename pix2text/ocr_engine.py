@@ -128,6 +128,8 @@ class EasyOCREngine(TextOcrEngine):
     name = 'easyocr'
 
     def detect_only(self, img: np.ndarray, **kwargs):
+        if 'resized_shape' in kwargs:
+            kwargs.pop('resized_shape')
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         height, width = img.shape[:2]
         horizontal_list, free_list = self.ocr_engine.detect(img, **kwargs)
