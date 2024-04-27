@@ -45,8 +45,7 @@
 
 了解更多：[RELEASE.md](docs/RELEASE.md) 。
 
----
-
+<br/>
 
 **Pix2Text (P2T)** 期望成为 **[Mathpix](https://mathpix.com/)** 的**免费开源 Python** 替代工具，目前已经可以完成 **Mathpix** 的核心功能。
 **Pix2Text (P2T) 可以识别图片中的版面、表格、图片、文字、数学公式等内容，并整合所有内容后以 Markdown 格式输出。P2T 也可以把一整个 PDF 文件（PDF 的内容可以是扫描图片或者其他任何格式）转换为 Markdown 格式。**
@@ -63,6 +62,7 @@
 
 具体说明请参考：[Pix2Text在线文档/模型](https://pix2text.readthedocs.io/zh/latest/models/)。
 
+<br/>
 
 P2T 作为Python3工具包，对于不熟悉Python的朋友不太友好，所以我们也发布了**可免费使用**的 **[P2T网页版](https://p2t.breezedeus.com)**，直接把图片丢进网页就能输出P2T的解析结果。**网页版会使用最新的模型，效果会比开源模型更好。**
 
