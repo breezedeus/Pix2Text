@@ -21,6 +21,7 @@ doc.to_markdown('output-md')  # 导出的 Markdown 信息保存在 output-md 目
 ```
 
 也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
+
 ```bash
 p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
@@ -50,6 +51,7 @@ page.to_markdown('output-page')  # 导出的 Markdown 信息保存在 output-pag
 ```
 
 也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
+
 ```bash
 p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type page -i docs/examples/page2.png -o output-page --save-debug-res output-debug-page
 ```
@@ -72,13 +74,23 @@ from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './examples/en1.jpg'
 p2t = Pix2Text()
-outs = p2t.recognize_text_formula(img_fp, resized_shape=608, return_text=True)
+outs = p2t.recognize_text_formula(img_fp, resized_shape=768, return_text=True)
 print(outs)
 ```
 
 返回结果 `outs` 是个 `dict`，其中 key `position` 表示Box位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体说明见[接口说明](#接口说明)。
 
+也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
 
+```bash
+p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+```
+
+或者使用免费开源模型进行识别：
+
+```bash
+p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+```
 
 ## 识别纯公式图片
 
@@ -102,6 +114,18 @@ print(outs)
 
 返回结果为字符串，即对应的 LaTeX 表达式。具体说明见[说明](usage.md)。
 
+也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFR 一个付费模型）进行识别：
+
+```bash
+p2t predict -l en,ch_sim --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --file-type formula -i docs/examples/math-formula-42.png
+```
+
+或者使用免费开源模型进行识别：
+
+```bash
+p2t predict -l en,ch_sim --file-type textformula -i docs/examples/math-formula-42.png
+```
+
 ## 识别纯文字图片
 
 对于只包含文字不包含数学公式的图片，使用函数 `.recognize_text()` 可以识别出图片中的文字。此时 Pix2Text 相当于一般的文字 OCR 引擎。如针对以下图片 ([examples/general.jpg](examples/general.jpg))：
@@ -122,7 +146,19 @@ outs = p2t.recognize_text(img_fp)
 print(outs)
 ```
 
-返回结果为字符串，即对应的文字序列。具体说明见[接口说明](#接口说明)。
+返回结果为字符串，即对应的文字序列。具体说明见[接口说明](https://pix2text.readthedocs.io/zh/latest/pix2text/pix_to_text/)。
+
+也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（CnOCR 一个付费模型）进行识别：
+
+```bash
+p2t predict -l en,ch_sim --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --file-type text -i docs/examples/general.jpg
+```
+
+或者使用免费开源模型进行识别：
+
+```bash
+p2t predict -l en,ch_sim --file-type text -i docs/examples/general.jpg
+```
 
 
 ## 针对不同语言
@@ -136,15 +172,8 @@ print(outs)
 **识别命令**：
 
 ```bash
-p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i examples/en1.jpg
+p2t predict -l en --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
 ```
-
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
-> ```bash
-> p2t predict -l en -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/en1.jpg
-> ```
-
 
 ### 简体中文
 
@@ -155,14 +184,8 @@ p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd
 **识别命令**：
 
 ```bash
-p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i examples/mixed.jpg
+p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/mixed.jpg
 ```
-
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
-> ```bash
-> p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/mixed.jpg
-> ```
 
 ### 繁体中文
 
@@ -173,15 +196,13 @@ p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analy
 **识别命令**：
 
 ```bash
-p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/ch_tra.jpg
+p2t predict -l en,ch_tra --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/ch_tra.jpg
 ```
 
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
+> 注意 ⚠️ ：请通过以下命令安装 pix2text 的多语言版本：
 > ```bash
-> p2t predict -l en,ch_tra -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/ch_tra.jpg
+> pip install pix2text[multilingual]
 > ```
-
 
 
 ### 越南语
@@ -192,12 +213,10 @@ p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analy
 **识别命令**：
 
 ```bash
-p2t predict -l en,vi -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i examples/vietnamese.jpg
+p2t predict -l en,vi --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --no-auto-line-break --file-type text_formula -i docs/examples/vietnamese.jpg
 ```
 
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
+> 注意 ⚠️ ：请通过以下命令安装 pix2text 的多语言版本：
 > ```bash
-> p2t predict -l en,vi -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i examples/vietnamese.jpg
+> pip install pix2text[multilingual]
 > ```
-

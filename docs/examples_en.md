@@ -5,11 +5,11 @@
 </figure>
 
 # Examples
-## 识别 PDF 文件，返回其 Markdown 格式
+## Recognize PDF Files and Return Markdown Format
 
-对于 PDF 文件，可以使用函数 `.recognize_pdf()` 对整个文件或者指定页进行识别，并把结果输出为 Markdown 文件。如针对以下 PDF 文件 ([examples/test-doc.pdf](examples/test-doc.pdf))：
+For PDF files, you can use the `.recognize_pdf()` function to recognize the entire file or specific pages and output the results as a Markdown file. For example, for the following PDF file ([examples/test-doc.pdf](examples/test-doc.pdf)):
 
-调用方式如下：
+You can call the function like this:
 
 ```python
 from pix2text import Pix2Text
@@ -17,28 +17,30 @@ from pix2text import Pix2Text
 img_fp = './examples/test-doc.pdf'
 p2t = Pix2Text()
 doc = p2t.recognize_pdf(img_fp, page_numbers=[0, 1])
-doc.to_markdown('output-md')  # 导出的 Markdown 信息保存在 output-md 目录中
+doc.to_markdown('output-md')  # The exported Markdown information is saved in the output-md directory
 ```
 
-也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
+You can also achieve the same functionality using the command line. Below is a command that uses the premium models (MFD + MFR + CnOCR) for recognition:
+
 ```bash
 p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
-识别结果见 [output-md/output.md](output-md/output.md)。
+You can find the recognition result in [output-md/output.md](output-md/output.md).
 
 <br/>
 
-> 如果期望导出 Markdown 之外的其他格式，如 Word、HTML、PDF 等，推荐使用工具 [Pandoc](https://pandoc.org) 对 Markdown 结果进行转换即可。
+> If you wish to export formats other than Markdown, such as Word, HTML, PDF, etc., it is recommended to use the tool [Pandoc](https://pandoc.org) to convert the Markdown result.
 
-## 识别带有复杂排版的图片
-可以使用函数 `.recognize_page()` 识别图片中的文字和数学公式。如针对以下图片 ([examples/page2.png](examples/page2.png))：
+## Recognize Images with Complex Layout
+
+You can use the `.recognize_page()` function to recognize text and mathematical formulas in images. For example, for the following image ([examples/page2.png](examples/page2.png)):
 
 <div align="center">
   <img src="https://pix2text.readthedocs.io/zh/latest/examples/page2.png" alt="Page-image" width="600px"/>
 </div>
 
-调用方式如下：
+You can call the function like this:
 
 ```python
 from pix2text import Pix2Text
@@ -46,50 +48,60 @@ from pix2text import Pix2Text
 img_fp = './examples/test-doc.pdf'
 p2t = Pix2Text()
 page = p2t.recognize_page(img_fp)
-page.to_markdown('output-page')  # 导出的 Markdown 信息保存在 output-page 目录中
+page.to_markdown('output-page')  # The exported Markdown information is saved in the output-page directory
 ```
 
-也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
+You can also achieve the same functionality using the command line. Below is a command that uses the premium models (MFD + MFR + CnOCR) for recognition:
+
 ```bash
 p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type page -i docs/examples/page2.png -o output-page --save-debug-res output-debug-page
 ```
 
-识别结果和 [output-md/output.md](output-md/output.md) 类似。
+The recognition result is similar to [output-md/output.md](output-md/output.md).
 
-## 识别既有公式又有文本的段落图片
 
-对于既有公式又有文本的段落图片，识别时不需要使用版面分析模型。
-可以使用函数 `.recognize_text_formula()` 识别图片中的文字和数学公式。如针对以下图片 ([examples/en1.jpg](examples/en1.jpg))：
+## Recognize Paragraph Images with Both Formulas and Texts
+
+For paragraph images containing both formulas and texts, you don't need to use the layout analysis model. You can use the `.recognize_text_formula()` function to recognize both texts and mathematical formulas in the image. For example, for the following image ([examples/en1.jpg](examples/en1.jpg)):
 
 <div align="center">
   <img src="https://pix2text.readthedocs.io/zh/latest/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
 </div>
 
-调用方式如下：
+You can call the function like this:
 
 ```python
 from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './examples/en1.jpg'
 p2t = Pix2Text()
-outs = p2t.recognize_text_formula(img_fp, resized_shape=608, return_text=True)
+outs = p2t.recognize_text_formula(img_fp, resized_shape=768, return_text=True)
 print(outs)
 ```
 
-返回结果 `outs` 是个 `dict`，其中 key `position` 表示Box位置信息，`type` 表示类别信息，而 `text` 表示识别的结果。具体说明见[接口说明](#接口说明)。
+The returned result `outs` is a dictionary, where the key `position` represents the box position information, `type` represents the category information, and `text` represents the recognition result. For detailed explanations, see [API Documentation](#api-documentation).
 
+You can also achieve the same functionality using the command line. Below is a command that uses the premium models (MFD + MFR + CnOCR) for recognition:
 
+```bash
+p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+```
 
-## 识别纯公式图片
+Or use the free open-source models for recognition:
 
-对于只包含数学公式的图片，使用函数 `.recognize_formula()` 可以把数学公式识别为 LaTeX 表达式。如针对以下图片 ([examples/math-formula-42.png](examples/math-formula-42.png))：
+```bash
+p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+```
+
+## Recognize Pure Formula Images
+
+For images containing only mathematical formulas, you can use the `.recognize_formula()` function to recognize the formulas as LaTeX expressions. For example, for the following image ([examples/math-formula-42.png](examples/math-formula-42.png)):
 
 <div align="center">
   <img src="https://pix2text.readthedocs.io/zh/latest/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
 </div>
 
-
-调用方式如下：
+You can call the function like this:
 
 ```python
 from pix2text import Pix2Text
@@ -100,18 +112,29 @@ outs = p2t.recognize_formula(img_fp)
 print(outs)
 ```
 
-返回结果为字符串，即对应的 LaTeX 表达式。具体说明见[说明](usage.md)。
+The returned result is a string representing the corresponding LaTeX expression. For detailed explanations, see [Usage](usage.md).
 
-## 识别纯文字图片
+You can also achieve the same functionality using the command line. Below is a command that uses the premium model (MFR) for recognition:
 
-对于只包含文字不包含数学公式的图片，使用函数 `.recognize_text()` 可以识别出图片中的文字。此时 Pix2Text 相当于一般的文字 OCR 引擎。如针对以下图片 ([examples/general.jpg](examples/general.jpg))：
+```bash
+p2t predict -l en,ch_sim --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --file-type formula -i docs/examples/math-formula-42.png
+```
+
+Or use the free open-source model for recognition:
+
+```bash
+p2t predict -l en,ch_sim --file-type textformula -i docs/examples/math-formula-42.png
+```
+
+## Recognize Pure Text Images
+
+For images containing only text without mathematical formulas, you can use the `.recognize_text()` function to recognize the text in the image. In this case, Pix2Text acts as a general text OCR engine. For example, for the following image ([examples/general.jpg](examples/general.jpg)):
 
 <div align="center">
   <img src="https://pix2text.readthedocs.io/zh/latest/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
 </div>
 
-
-调用方式如下：
+You can call the function like this:
 
 ```python
 from pix2text import Pix2Text
@@ -122,82 +145,76 @@ outs = p2t.recognize_text(img_fp)
 print(outs)
 ```
 
-返回结果为字符串，即对应的文字序列。具体说明见[接口说明](#接口说明)。
+The returned result is a string representing the corresponding text sequence. For detailed explanations, see [API Documentation](https://pix2text.readthedocs.io/zh/latest/pix2text/pix_to_text/).
 
-
-## 针对不同语言
-
-### 英文
-
-**识别效果**：
-
-![Pix2Text 识别英文](figs/output-en.jpg)
-
-**识别命令**：
+You can also achieve the same functionality using the command line. Below is a command that uses the premium model (CnOCR) for recognition:
 
 ```bash
-p2t predict -l en -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i examples/en1.jpg
+p2t predict -l en,ch_sim --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --file-type text -i docs/examples/general.jpg
 ```
 
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
-> ```bash
-> p2t predict -l en -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/en1.jpg
-> ```
-
-
-### 简体中文
-
-**识别效果**：
-
-![Pix2Text 识别简体中文](figs/output-ch_sim.jpg)
-
-**识别命令**：
+Or use the free open-source model for recognition:
 
 ```bash
-p2t predict -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --auto-line-break -i examples/mixed.jpg
+p2t predict -l en,ch_sim --file-type text -i docs/examples/general.jpg
 ```
 
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
-> ```bash
-> p2t predict -l en,ch_sim -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/mixed.jpg
-> ```
+## For Different Languages
 
-### 繁体中文
+### English
 
-**识别效果**：
+**Recognition Result**:
 
-![Pix2Text 识别繁体中文](figs/output-ch_tra.jpg)
+![Pix2Text Recognizing English](figs/output-en.jpg)
 
-**识别命令**：
+**Recognition Command**:
 
 ```bash
-p2t predict -l en,ch_tra -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/ch_tra.jpg
+p2t predict -l en --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
 ```
 
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
-> ```bash
-> p2t predict -l en,ch_tra -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --auto-line-break -i examples/ch_tra.jpg
-> ```
+### Simplified Chinese
 
+**Recognition Result**:
 
+![Pix2Text Recognizing Simplified Chinese](figs/output-ch_sim.jpg)
 
-### 越南语
-**识别效果**：
-
-![Pix2Text 识别越南语](figs/output-vietnamese.jpg)
-
-**识别命令**：
+**Recognition Command**:
 
 ```bash
-p2t predict -l en,vi -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i examples/vietnamese.jpg
+p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/mixed.jpg
 ```
 
-> 注意 ⚠️ ：上面命令使用了付费版模型，也可以如下使用免费版模型，只是效果略差：
->
+### Traditional Chinese
+
+**Recognition Result**:
+
+![Pix2Text Recognizing Traditional Chinese](figs/output-ch_tra.jpg)
+
+**Recognition Command**:
+
+```bash
+p2t predict -l en,ch_tra --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/ch_tra.jpg
+```
+
+> Note ⚠️: Please install the multilingual version of pix2text using the following command:
 > ```bash
-> p2t predict -l en,vi -a mfd -t yolov7_tiny --resized-shape 768 --save-analysis-res out_tmp.jpg --no-auto-line-break -i examples/vietnamese.jpg
+> pip install pix2text[multilingual]
 > ```
 
+### Vietnamese
+
+**Recognition Result**:
+
+![Pix2Text Recognizing Vietnamese](figs/output-vietnamese.jpg)
+
+**Recognition Command**:
+
+```bash
+p2t predict -l en,vi --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --no-auto-line-break --file-type text_formula -i docs/examples/vietnamese.jpg
+```
+
+> Note ⚠️: Please install the multilingual version of pix2text using the following command:
+> ```bash
+> pip install pix2text[multilingual]
+> ```
