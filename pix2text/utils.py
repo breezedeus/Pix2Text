@@ -11,6 +11,7 @@ from pathlib import Path
 import logging
 import platform
 from typing import Union, List, Any, Dict
+from collections import Counter, defaultdict
 
 from PIL import Image, ImageOps
 import numpy as np
@@ -166,6 +167,52 @@ def save_img(img: Union[torch.Tensor, np.ndarray], path):
     # Image.fromarray(img).save(path)
 
 
+def get_background_color(image: Image.Image, margin=2):
+    width, height = image.size
+
+    # 边缘区域的像素采样
+    edge_pixels = []
+    for x in range(width):
+        for y in range(height):
+            if (
+                x <= margin
+                or y <= margin
+                or x >= width - margin
+                or y >= height - margin
+            ):
+                edge_pixels.append(image.getpixel((x, y)))
+
+    # 统计边缘像素颜色频率
+    color_counter = Counter(edge_pixels)
+
+    # 获取频率最高的颜色
+    background_color = color_counter.most_common(1)[0][0]
+
+    return background_color
+
+
+def add_img_margin(
+    image: Image.Image, left_right_margin, top_bottom_margin, background_color=None
+):
+    if background_color is None:
+        background_color = get_background_color(image)
+
+    # 获取原始图片尺寸
+    width, height = image.size
+
+    # 计算新图片的尺寸
+    new_width = width + left_right_margin * 2
+    new_height = height + top_bottom_margin * 2
+
+    # 创建新图片对象，并填充指定背景色
+    new_image = Image.new("RGB", (new_width, new_height), background_color)
+
+    # 将原始图片粘贴到新图片中央
+    new_image.paste(image, (left_right_margin, top_bottom_margin))
+
+    return new_image
+
+
 def prepare_imgs(imgs: List[Union[str, Path, Image.Image]]) -> List[Image.Image]:
     output_imgs = []
     for img in imgs:
@@ -191,6 +238,9 @@ COLOR_LIST = [
     [50, 205, 50],  # 石灰绿色
     [60, 20, 220],  # 猩红色
     [130, 0, 75],  # 靛蓝色
+    [255, 0, 0],  # 红色
+    [0, 255, 0],  # 绿色
+    [0, 0, 255],  # 蓝色
 ]
 
 
@@ -202,15 +252,15 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
     if isinstance(img0, Image.Image):
         img0 = cv2.cvtColor(np.asarray(img0.convert('RGB')), cv2.COLOR_RGB2BGR)
 
-    if len(categories) > 10:
+    if len(categories) > 13:
         colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
     else:
         colors = COLOR_LIST
     for one_box in one_out:
-        _type = one_box['type']
+        _type = one_box.get('type', 'text')
         box = one_box[key]
         xyxy = [box[0, 0], box[0, 1], box[2, 0], box[2, 1]]
-        label = f'{_type}'
+        label = str(_type)
         plot_one_box(
             xyxy,
             img0,
@@ -254,6 +304,17 @@ def list2box(xmin, ymin, xmax, ymax, dtype=float):
     return np.array(
         [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype=dtype
     )
+
+
+def box2list(bbox):
+    return [int(bbox[0, 0]), int(bbox[0, 1]), int(bbox[2, 0]), int(bbox[2, 1])]
+
+
+def clipbox(box, img_height, img_width):
+    new_box = np.zeros_like(box)
+    new_box[:, 0] = np.clip(box[:, 0], 0, img_width - 1)
+    new_box[:, 1] = np.clip(box[:, 1], 0, img_height - 1)
+    return new_box
 
 
 def y_overlap(box1, box2, key='position'):
@@ -387,6 +448,29 @@ def sort_and_filter_line_boxes(line_boxes, key):
         anchor = left_box
 
     return res_boxes
+
+
+def merge_boxes(bbox1, bbox2):
+    """
+    Merge two bounding boxes to get a bounding box that encompasses both.
+
+    Parameters:
+    - bbox1, bbox2: The bounding boxes to merge. Each box is np.ndarray, with shape of [4, 2]
+
+    Returns: new merged box, with shape of [4, 2]
+    """
+    # 解包两个边界框的坐标
+    x_min1, y_min1, x_max1, y_max1 = box2list(bbox1)
+    x_min2, y_min2, x_max2, y_max2 = box2list(bbox2)
+
+    # 计算合并后边界框的坐标
+    x_min = min(x_min1, x_min2)
+    y_min = min(y_min1, y_min2)
+    x_max = max(x_max1, x_max2)
+    y_max = max(y_max1, y_max2)
+
+    # 返回合并后的边界框
+    return list2box(x_min, y_min, x_max, y_max)
 
 
 def sort_boxes(boxes: List[dict], key='position') -> List[List[dict]]:
@@ -643,7 +727,9 @@ def remove_overlap_text_bbox(text_box_infos, formula_box_infos):
         # if max_overlap_val > 0.8:  # overlap 太多的情况，直接扔掉 text box
         #     continue
 
-        cropped_text_boxes = crop_box(text_box['position'], max_overlap_fbox['position'])
+        cropped_text_boxes = crop_box(
+            text_box['position'], max_overlap_fbox['position']
+        )
         if cropped_text_boxes:
             for _box in cropped_text_boxes:
                 new_box = deepcopy(text_box)
@@ -660,7 +746,17 @@ def is_chinese(ch):
     return '\u4e00' <= ch <= '\u9fff'
 
 
-def smart_join(str_list):
+def find_first_punctuation_position(text):
+    # 匹配常见标点符号的正则表达式
+    pattern = re.compile(r'[,.!?;:()\[\]{}\'\"\\/-]')
+    match = pattern.search(text)
+    if match:
+        return match.start()
+    else:
+        return len(text)
+
+
+def smart_join(str_list, spellchecker=None):
     """
     对字符串列表进行拼接，如果相邻的两个字符串都是中文或包含空白符号，则不加空格；其他情况则加空格
     """
@@ -680,9 +776,48 @@ def smart_join(str_list):
             res[-1] + str_list[i][0]
         ):
             res += str_list[i]
+        elif spellchecker is not None and res.endswith('-'):
+            fields = res.rsplit(' ', maxsplit=1)
+            if len(fields) > 1:
+                new_res, prev_word = fields[0], fields[1]
+            else:
+                new_res, prev_word = '', res
+
+            fields = str_list[i].split(' ', maxsplit=1)
+            if len(fields) > 1:
+                next_word, new_next = fields[0], fields[1]
+            else:
+                next_word, new_next = str_list[i], ''
+
+            punct_idx = find_first_punctuation_position(next_word)
+            next_word = next_word[:punct_idx]
+            new_next = str_list[i][len(next_word) :]
+            new_word = prev_word[:-1] + next_word
+            if (
+                next_word
+                and spellchecker.unknown([prev_word + next_word])
+                and spellchecker.known([new_word])
+            ):
+                res = new_res + ' ' + new_word + new_next
+            else:
+                new_word = prev_word + next_word
+                res = new_res + ' ' + new_word + new_next
         else:
             res += ' ' + str_list[i]
     return res
+
+
+def cal_block_xmin_xmax(lines, indentation_thrsh):
+    total_min_x, total_max_x = min(lines[:, 0]), max(lines[:, 1])
+    if lines.shape[0] < 2:
+        return total_min_x, total_max_x
+
+    min_x, max_x = min(lines[1:, 0]), max(lines[1:, 1])
+    first_line_is_full = total_max_x > max_x - indentation_thrsh
+    if first_line_is_full:
+        return min_x, total_max_x
+
+    return total_min_x, total_max_x
 
 
 def merge_line_texts(
@@ -691,6 +826,7 @@ def merge_line_texts(
     line_sep='\n',
     embed_sep=(' $', '$ '),
     isolated_sep=('$$\n', '\n$$'),
+    spellchecker=None,
 ) -> str:
     """
     把 Pix2Text.recognize_by_mfd() 的返回结果，合并成单个字符串
@@ -700,6 +836,7 @@ def merge_line_texts(
         line_sep: 行与行之间的分隔符
         embed_sep (tuple): Prefix and suffix for embedding latex; default value is `(' $', '$ ')`
         isolated_sep (tuple): Prefix and suffix for isolated latex; default value is `('$$\n', '\n$$')`
+        spellchecker: Spell Checker
 
     Returns: 合并后的字符串
 
@@ -709,34 +846,56 @@ def merge_line_texts(
     out_texts = []
     line_margin_list = []  # 每行的最左边和最右边的x坐标
     isolated_included = []  # 每行是否包含了 `isolated` 类型的数学公式
+    line_height_dict = defaultdict(list)  # 每行中每个块对应的高度
+    line_ymin_ymax_list = []  # 每行的最上边和最下边的y坐标
     for _out in outs:
         line_number = _out.get('line_number', 0)
         while len(out_texts) <= line_number:
             out_texts.append([])
-            line_margin_list.append([0, 0])
+            line_margin_list.append([100000, 0])
             isolated_included.append(False)
+            line_ymin_ymax_list.append([100000, 0])
         cur_text = _out['text']
-        if _out['type'] in ('embedding', 'isolated'):
+        cur_type = _out.get('type', 'text')
+        box = _out['position']
+        if cur_type in ('embedding', 'isolated'):
             sep = isolated_sep if _out['type'] == 'isolated' else embed_sep
             cur_text = sep[0] + cur_text + sep[1]
-        if _out['type'] == 'isolated':
+        if cur_type == 'isolated':
             isolated_included[line_number] = True
             cur_text = line_sep + cur_text + line_sep
         out_texts[line_number].append(cur_text)
         line_margin_list[line_number][1] = max(
-            line_margin_list[line_number][1], float(_out['position'][2, 0])
+            line_margin_list[line_number][1], float(box[2, 0])
         )
         line_margin_list[line_number][0] = min(
-            line_margin_list[line_number][0], float(_out['position'][0, 0])
+            line_margin_list[line_number][0], float(box[0, 0])
         )
+        if cur_type == 'text':
+            line_height_dict[line_number].append(box[2, 1] - box[1, 1])
+            line_ymin_ymax_list[line_number][0] = min(
+                line_ymin_ymax_list[line_number][0], float(box[0, 1])
+            )
+            line_ymin_ymax_list[line_number][1] = max(
+                line_ymin_ymax_list[line_number][1], float(box[2, 1])
+            )
 
     line_text_list = [smart_join(o) for o in out_texts]
 
+    for _line_number in line_height_dict.keys():
+        if line_height_dict[_line_number]:
+            line_height_dict[_line_number] = np.mean(line_height_dict[_line_number])
+    _line_heights = list(line_height_dict.values())
+    mean_height = np.mean(_line_heights) if _line_heights else None
+
+    default_res = re.sub(rf'{line_sep}+', line_sep, line_sep.join(line_text_list))
     if not auto_line_break:
-        return re.sub(rf'{line_sep}+', line_sep, line_sep.join(line_text_list))
+        return default_res
 
     line_lengths = [rx - lx for lx, rx in line_margin_list]
     line_length_thrsh = max(line_lengths) * 0.3
+    if line_length_thrsh < 1:
+        return default_res
 
     lines = np.array(
         [
@@ -745,21 +904,39 @@ def merge_line_texts(
             if isolated_included[idx] or line_lengths[idx] >= line_length_thrsh
         ]
     )
-    min_x, max_x = lines.max(axis=0)
+    if lines.shape[0] < 1:
+        return default_res
+    min_x, max_x = min(lines[:, 0]), max(lines[:, 1])
 
     indentation_thrsh = (max_x - min_x) * 0.1
+    if mean_height is not None:
+        indentation_thrsh = 1.5 * mean_height
+
+    min_x, max_x = cal_block_xmin_xmax(lines, indentation_thrsh)
+
+    line_text_list = [(idx, txt) for idx, txt in enumerate(line_text_list) if txt]
     res_line_texts = [''] * len(line_text_list)
-    for idx, txt in enumerate(line_text_list):
-        if isolated_included[idx]:
-            res_line_texts[idx] = line_sep + txt + line_sep
+    for idx, (line_number, txt) in enumerate(line_text_list):
+        if isolated_included[line_number]:
+            res_line_texts[line_number] = line_sep + txt + line_sep
             continue
 
         tmp = txt
-        if line_margin_list[idx][0] > min_x + indentation_thrsh:
+        if line_margin_list[line_number][0] > min_x + indentation_thrsh:
             tmp = line_sep + txt
-        if line_margin_list[idx][1] < max_x - indentation_thrsh:
+        if line_margin_list[line_number][1] < max_x - indentation_thrsh:
             tmp = tmp + line_sep
+        if idx < len(line_text_list) - 1:
+            cur_height = line_ymin_ymax_list[line_number][1] - line_ymin_ymax_list[line_number][0]
+            next_line_number = line_text_list[idx + 1][0]
+            if (
+                cur_height > 0
+                and line_ymin_ymax_list[next_line_number][0] < line_ymin_ymax_list[next_line_number][1]
+                and line_ymin_ymax_list[next_line_number][0] - line_ymin_ymax_list[line_number][1]
+                > cur_height
+            ):  # 当前行与下一行的间距超过了一行的行高，则认为它们之间应该是不同的段落
+                tmp = tmp + line_sep
         res_line_texts[idx] = tmp
 
-    outs = smart_join(res_line_texts)
+    outs = smart_join(res_line_texts, spellchecker)
     return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'

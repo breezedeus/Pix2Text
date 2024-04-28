@@ -33,6 +33,8 @@ required = [
     "torchvision",
     "transformers>=4.37.0",
     "optimum[onnxruntime]",
+    "PyMuPDF",
+    "pyspellchecker",
 ]
 extras_require = {
     "multilingual": ["easyocr"],
@@ -59,7 +61,7 @@ setup(
     platforms=["Mac", "Linux", "Windows"],
     packages=find_packages(),
     include_package_data=True,
-    # data_files=[('', ['pix2text/latex_config.yaml',],)],
+    # data_files=[('', ['pix2text/doc_xl_layout/map_info.json',],)],
     entry_points=entry_points,
     install_requires=required,
     extras_require=extras_require,

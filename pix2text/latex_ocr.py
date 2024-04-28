@@ -1,6 +1,8 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
+import os
+import shutil
 import string
 from typing import Optional, Union, List, Dict, Any
 import logging
@@ -52,15 +54,16 @@ class LatexOCR(object):
             root (Union[str, Path], optional): The model root directory. Defaults to data_dir().
             more_processor_configs (Optional[Dict[str, Any]], optional): Additional processor configurations. Defaults to None.
             more_model_configs (Optional[Dict[str, Any]], optional): Additional model configurations. Defaults to None.
-             - provider (`str`, defaults to `None`, which means to select one provider automatically):
-                 ONNX Runtime provider to use for loading the model. See https://onnxruntime.ai/docs/execution-providers/ for
-                 possible providers.
-             - session_options (`Optional[onnxruntime.SessionOptions]`, defaults to `None`),:
-                 ONNX Runtime session options to use for loading the model.
-             - provider_options (`Optional[Dict[str, Any]]`, defaults to `None`):
-                 Provider option dictionaries corresponding to the provider used. See available options
-                 for each provider: https://onnxruntime.ai/docs/api/c/group___global.html .
-             - ...: see more information here: optimum.onnxruntime.modeling_ort.ORTModel.from_pretrained()
+
+                - provider (`str`, defaults to `None`, which means to select one provider automatically):
+                    ONNX Runtime provider to use for loading the model. See https://onnxruntime.ai/docs/execution-providers/ for
+                    possible providers.
+                - session_options (`Optional[onnxruntime.SessionOptions]`, defaults to `None`),:
+                    ONNX Runtime session options to use for loading the model.
+                - provider_options (`Optional[Dict[str, Any]]`, defaults to `None`):
+                    Provider option dictionaries corresponding to the provider used. See available options
+                    for each provider: https://onnxruntime.ai/docs/api/c/group___global.html .
+                - ...: see more information here: optimum.onnxruntime.modeling_ort.ORTModel.from_pretrained()
             **kwargs: Additional arguments, currently not used.
         """
 
@@ -100,24 +103,14 @@ class LatexOCR(object):
         if model_dir.is_dir():
             return str(model_dir)
         assert 'hf_model_id' in model_info
-        try:
-            more_model_configs = (
-                {'provider': 'CPUExecutionProvider'} if model_backend == 'onnx' else {}
-            )
-            model, processor = self._init_model(
-                model_backend,
-                model_info['hf_model_id'],
-                more_model_config=more_model_configs,
-            )
-            model.save_pretrained(model_dir)
-            processor.save_pretrained(model_dir)
-            logger.info(f'Saved Pix2Text MFR model to: {model_dir}')
-        except Exception as e:
-            logger.warning(f'Failed to download model from HuggingFace: {e}')
-            logger.warning(f'Downloading model from CN OSS ...')
-            get_model_file(
-                model_info, model_dir, download_source='CN'
-            )  # download the .zip file and unzip
+        model_dir.mkdir(parents=True)
+        download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {model_info["hf_model_id"]} --local-dir {model_dir}'
+        os.system(download_cmd)
+        # 如果当前目录下无文件，就从huggingface上下载
+        if not list(model_dir.glob('**/[!.]*')):
+            if model_dir.exists():
+                shutil.rmtree(str(model_dir))
+            os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
         return model_dir
 
     def _init_model(

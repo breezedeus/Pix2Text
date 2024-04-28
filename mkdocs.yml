@@ -1,0 +1,119 @@
+# Project information
+site_name: Pix2Text
+site_url: https://pix2text.readthedocs.io
+site_description: Pix2Text Online Documents
+site_author: Breezedeus
+
+# Repository
+repo_url: https://github.com/breezedeus/pix2text
+repo_name: Breezedeus/Pix2Text
+edit_uri: "" #disables edit button
+
+# Copyright
+copyright: Copyright &copy; 2022 - 2024
+
+# Social media
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/breezedeus
+    - icon: fontawesome/brands/zhihu
+      link: https://www.zhihu.com/people/breezedeus-50
+    - icon: fontawesome/brands/youtube
+      link: https://www.youtube.com/@breezedeus
+    - icon: fontawesome/brands/youtube
+      link: https://space.bilibili.com/509307267
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/breezedeus
+
+# Configuration
+theme:
+  name: material
+#  name: readthedocs
+  logo: figs/breezedeus.png
+  favicon: figs/breezedeus.ico
+  palette:
+    primary: indigo
+    accent: indigo
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.expand
+  icon:
+    repo: fontawesome/brands/github
+
+# Extensions
+markdown_extensions:
+  - meta
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - admonition # alerts
+  - pymdownx.details #  collapsible alerts
+  - pymdownx.superfences # nest code and content inside alerts
+  - attr_list # add HTML and CSS to Markdown elements
+  - md_in_html
+  - pymdownx.inlinehilite # inline code highlights
+  - pymdownx.keys # show keystroke symbols
+  - pymdownx.snippets # insert content from other files
+  - pymdownx.tabbed # content tabs
+  - footnotes
+  - def_list
+  - pymdownx.arithmatex: # mathjax
+      generic: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+      clickable_checkbox: false
+  - codehilite
+  - pymdownx.highlight:
+      use_pygments: true
+  - toc:
+      toc_depth: 4
+
+# Plugins
+plugins:
+  - search
+  - macros
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_root_heading: false
+            show_source: true
+            show_category_heading: true
+      watch:
+        - cnocr
+
+# Extra CSS
+extra_css:
+  - static/css/custom.css
+
+# Extra JS
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+# Page tree
+nav:
+  - 🏠 Home: index.md
+  - 🛠️ Install: install.md
+  - 🛀🏻 Demo: demo.md
+  - 🧳 Models: models.md
+  - 📚 Examples: examples.md
+  - 📖 Usage: usage.md
+  - 🎮 APIs:
+    - Pix2Text: pix2text/pix_to_text.md
+    - TextFormulaOCR: pix2text/text_formula_ocr.md
+    - LatexOCR: pix2text/latex_ocr.md
+    - TableOCR: pix2text/table_ocr.md
+  - 💬 Contact: contact.md
+  - 🎛️ More:
+      - 🏄🏻 ‍️Command Tools: command.md
+      - 🕹 Model Training: train.md
+      - 🗒 RELEASE Notes: RELEASE.md
+      - 🙋🏽 FAQ: faq.md
+      - 🥤 Buy Me Coffee: buymeacoffee.md

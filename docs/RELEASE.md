@@ -1,5 +1,22 @@
 # Release Notes
 
+## Update 2024.04.28：**V1.1** Released
+
+Major changes:
+
+* Added layout analysis and table recognition models, supporting the conversion of images with complex layouts into Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh/latest/examples_en/).
+* Added support for converting entire PDF files to Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh/latest/examples_en/).
+* Enhanced the interface with more features, including adjustments to existing interface parameters.
+* Launched the [Pix2Text Online Documentation](https://pix2text.readthedocs.io).
+
+主要变更： 
+
+* 加入了版面分析和表格识别模型，支持把复杂排版的图片转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh/latest/examples/)。
+* 支持把整个 PDF 文件转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh/latest/examples/)。
+* 加入了更丰富的接口，已有接口的参数也有所调整。
+* 上线了 [Pix2Text 在线文档](https://pix2text.readthedocs.io)。
+ 
+
 ## Update 2024.03.30：**V1.0.2.3** Released
 
 Major changes:

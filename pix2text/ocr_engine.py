@@ -11,12 +11,13 @@ def clip(x, min_value, max_value):
     return min(max(x, min_value), max_value)
 
 
-class OcrEngineWrapper:
+class TextOcrEngine:
     """Text OCR Engine Wrapper"""
 
     name = 'unknown'
 
-    def __init__(self, ocr_engine):
+    def __init__(self, languages: Sequence[str], ocr_engine):
+        self.languages = languages
         self.ocr_engine = ocr_engine
 
     def detect_only(self, img: np.ndarray, **kwargs):
@@ -102,11 +103,11 @@ class OcrEngineWrapper:
         pass
 
 
-class CnOCREngineWrapper(OcrEngineWrapper):
+class CnOCREngine(TextOcrEngine):
     name = 'cnocr'
 
     def detect_only(self, img: np.ndarray, **kwargs):
-        outs = self.ocr_engine.det_model.detect(img)
+        outs = self.ocr_engine.det_model.detect(img, **kwargs)
         for out in outs['detected_texts']:
             out['position'] = out.pop('box')
         return outs
@@ -123,10 +124,12 @@ class CnOCREngineWrapper(OcrEngineWrapper):
         return outs
 
 
-class EasyOCREngineWrapper(OcrEngineWrapper):
+class EasyOCREngine(TextOcrEngine):
     name = 'easyocr'
 
     def detect_only(self, img: np.ndarray, **kwargs):
+        if 'resized_shape' in kwargs:
+            kwargs.pop('resized_shape')
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         height, width = img.shape[:2]
         horizontal_list, free_list = self.ocr_engine.detect(img, **kwargs)
@@ -175,7 +178,7 @@ def prepare_ocr_engine(languages: Sequence[str], ocr_engine_config):
         from cnocr import CnOcr
 
         ocr_engine = CnOcr(**ocr_engine_config)
-        engine_wrapper = CnOCREngineWrapper(ocr_engine)
+        engine_wrapper = CnOCREngine(languages, ocr_engine)
     else:
         try:
             from easyocr import Reader
@@ -186,5 +189,5 @@ def prepare_ocr_engine(languages: Sequence[str], ocr_engine_config):
             context = ocr_engine_config.pop('context').lower()
             gpu = 'gpu' in context or 'cuda' in context
         ocr_engine = Reader(lang_list=list(languages), gpu=gpu, **ocr_engine_config)
-        engine_wrapper = EasyOCREngineWrapper(ocr_engine)
+        engine_wrapper = EasyOCREngine(languages, ocr_engine)
     return engine_wrapper
