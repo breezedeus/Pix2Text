@@ -15,7 +15,7 @@ You can call the function like this:
 from pix2text import Pix2Text
 
 img_fp = './examples/test-doc.pdf'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 doc = p2t.recognize_pdf(img_fp, page_numbers=[0, 1])
 doc.to_markdown('output-md')  # The exported Markdown information is saved in the output-md directory
 ```
@@ -46,7 +46,7 @@ You can call the function like this:
 from pix2text import Pix2Text
 
 img_fp = './examples/test-doc.pdf'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 page = p2t.recognize_page(img_fp)
 page.to_markdown('output-page')  # The exported Markdown information is saved in the output-page directory
 ```
@@ -74,7 +74,7 @@ You can call the function like this:
 from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './examples/en1.jpg'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 outs = p2t.recognize_text_formula(img_fp, resized_shape=768, return_text=True)
 print(outs)
 ```
@@ -107,7 +107,7 @@ You can call the function like this:
 from pix2text import Pix2Text
 
 img_fp = './examples/math-formula-42.png'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 outs = p2t.recognize_formula(img_fp)
 print(outs)
 ```
@@ -140,7 +140,7 @@ You can call the function like this:
 from pix2text import Pix2Text
 
 img_fp = './examples/general.jpg'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 outs = p2t.recognize_text(img_fp)
 print(outs)
 ```

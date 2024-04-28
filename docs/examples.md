@@ -15,7 +15,7 @@
 from pix2text import Pix2Text
 
 img_fp = './examples/test-doc.pdf'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 doc = p2t.recognize_pdf(img_fp, page_numbers=[0, 1])
 doc.to_markdown('output-md')  # 导出的 Markdown 信息保存在 output-md 目录中
 ```
@@ -45,7 +45,7 @@ p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Us
 from pix2text import Pix2Text
 
 img_fp = './examples/test-doc.pdf'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 page = p2t.recognize_page(img_fp)
 page.to_markdown('output-page')  # 导出的 Markdown 信息保存在 output-page 目录中
 ```
@@ -73,7 +73,7 @@ p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Us
 from pix2text import Pix2Text, merge_line_texts
 
 img_fp = './examples/en1.jpg'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 outs = p2t.recognize_text_formula(img_fp, resized_shape=768, return_text=True)
 print(outs)
 ```
@@ -107,7 +107,7 @@ p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/ex
 from pix2text import Pix2Text
 
 img_fp = './examples/math-formula-42.png'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 outs = p2t.recognize_formula(img_fp)
 print(outs)
 ```
@@ -141,7 +141,7 @@ p2t predict -l en,ch_sim --file-type textformula -i docs/examples/math-formula-4
 from pix2text import Pix2Text
 
 img_fp = './examples/general.jpg'
-p2t = Pix2Text()
+p2t = Pix2Text.from_config()
 outs = p2t.recognize_text(img_fp)
 print(outs)
 ```
