@@ -192,15 +192,15 @@ You can also try the **[Online Demo](https://huggingface.co/spaces/breezedeus/Pi
 
 ## Examples
 
-See: [Pix2Text Online Documentation/Examples](https://pix2text.readthedocs.io/en/latest/examples/).
+See: [Pix2Text Online Documentation/Examples](https://pix2text.readthedocs.io/zh/latest/examples_en/).
 
 ## Usage
 
-See: [Pix2Text Online Documentation/Usage](https://pix2text.readthedocs.io/en/latest/usage/).
+See: [Pix2Text Online Documentation/Usage](https://pix2text.readthedocs.io/zh/latest/usage/).
 
 ## Models
 
-See: [Pix2Text Online Documentation/Models](https://pix2text.readthedocs.io/en/latest/models/).
+See: [Pix2Text Online Documentation/Models](https://pix2text.readthedocs.io/zh/latest/models/).
 
 ## Install
 
