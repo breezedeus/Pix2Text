@@ -34,6 +34,7 @@ required = [
     "transformers>=4.37.0",
     "optimum[onnxruntime]",
     "PyMuPDF",
+    "pyspellchecker",
 ]
 extras_require = {
     "multilingual": ["easyocr"],
