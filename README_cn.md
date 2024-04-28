@@ -29,19 +29,20 @@
 
 # Pix2Text (P2T)
 
+## Update 2024.04.28：发布 **V1.1**
+
+主要变更：
+
+* 加入了版面分析和表格识别模型，支持把复杂排版的图片转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh/latest/examples/)。
+* 支持把整个 PDF 文件转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh/latest/examples/)。
+* 加入了更丰富的接口，已有接口的参数也有所调整。
+* 上线了 [Pix2Text 在线文档](https://pix2text.readthedocs.io)。
+
 ## Update 2024.02.26：发布 **V1.0**
 
 主要变更：
 
 * 数学公式识别（MFR）模型使用新架构，在新的数据集上训练，获得了 SOTA 的精度。具体说明请见：[Pix2Text V1.0 新版发布：最好的开源公式识别模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-v1.0)。
-
-## Update 2024.01.10：发布 V0.3
-
-主要变更：
-
-* 支持识别 **`80+` 种语言**，详细语言列表见 [支持的语言列表](#支持的语言列表)；
-* 模型自动下载增加国内站点；
-* 优化对检测 boxes 的合并逻辑。
 
 了解更多：[RELEASE.md](docs/RELEASE.md) 。
 

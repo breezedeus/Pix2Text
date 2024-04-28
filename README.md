@@ -30,19 +30,20 @@
 
 # Pix2Text
 
+## Update 2024.04.28: **V1.1** Released
+
+Major changes:
+
+* Added layout analysis and table recognition models, supporting the conversion of images with complex layouts into Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh/latest/examples_en/).
+* Added support for converting entire PDF files to Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh/latest/examples_en/).
+* Enhanced the interface with more features, including adjustments to existing interface parameters.
+* Launched the [Pix2Text Online Documentation](https://pix2text.readthedocs.io).
+
 ## Update 2024.02.26: **V1.0** Released
 
 Main Changes:
 
 * The Mathematical Formula Recognition (MFR) model employs a new architecture and has been trained on a new dataset, achieving state-of-the-art (SOTA) accuracy. For detailed information, please see: [Pix2Text V1.0 New Release: The Best Open-Source Formula Recognition Model | Breezedeus.com](https://www.breezedeus.com/article/p2t-v1.0).
-
-## Update 2024.01.10: **V0.3** Released
-
-Major Changes:
-
-* Support for recognizing **`80+` languages**; for a detailed list of supported languages, see [List of Supported Languages](#list-of-supported-languages);
-* Added domestic sites for automatic model downloads;
-* Optimized the logic for merging detection boxes.
 
 See more at: [RELEASE.md](docs/RELEASE.md) .
 
