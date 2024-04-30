@@ -205,12 +205,10 @@ class DocXLayoutParser(LayoutParser):
             debug_dir = Path(kwargs.get('save_debug_res'))
             debug_dir.mkdir(exist_ok=True, parents=True)
         if debug_dir is not None:
-            json.dump(
-                layout_out,
-                open(debug_dir / 'layout_out.json', 'w'),
-                indent=2,
-                ensure_ascii=False,
-            )
+            with open(debug_dir / 'layout_out.json', 'w', encoding='utf-8') as f:
+                json.dump(
+                    layout_out, f, indent=2, ensure_ascii=False,
+                )
         if layout_out:
             layout_out = self._preprocess_outputs(img0, layout_out)
             layout_out, column_meta = self._format_outputs(
@@ -339,8 +337,7 @@ class DocXLayoutParser(LayoutParser):
                         cur_box_xmax < full_column_xmin
                         or cur_box_xmin > full_column_xmax
                     )
-                    and cur_box_ymax - cur_box_ymin
-                    > 5 * (cur_box_xmax - cur_box_xmin)
+                    and cur_box_ymax - cur_box_ymin > 5 * (cur_box_xmax - cur_box_xmin)
                 ):  # unnecessary block
                     box_info['type'] = ElementType.IGNORED
                 filtered_out.append(box_info)

@@ -1098,7 +1098,7 @@ def output_result(key, val, args, img, img_file):
         # if args.verbose:
         #     print(val)
         out_file = img_file.replace(".jpg", "_objects.json")
-        with open(os.path.join(args.out_dir, out_file), 'w') as f:
+        with open(os.path.join(args.out_dir, out_file), 'w', encoding='utf-8') as f:
             json.dump(val, f)
         # if args.visualize:
         #     out_file = img_file.replace(".jpg", "_fig_tables.jpg")
@@ -1113,11 +1113,11 @@ def output_result(key, val, args, img, img_file):
                         os.path.join(args.out_dir, out_img_file)
                     )
                     out_words_file = out_img_file.replace(".jpg", "_words.json")
-                    with open(os.path.join(args.out_dir, out_words_file), 'w') as f:
+                    with open(os.path.join(args.out_dir, out_words_file), 'w', encoding='utf-8') as f:
                         json.dump(cropped_table['tokens'], f)
             elif key == 'cells':
                 out_file = img_file.replace(".jpg", "_{}_objects.json".format(idx))
-                with open(os.path.join(args.out_dir, out_file), 'w') as f:
+                with open(os.path.join(args.out_dir, out_file), 'w', encoding='utf-8') as f:
                     json.dump(elem, f)
                 # if args.verbose:
                 #     print(elem)
@@ -1127,7 +1127,7 @@ def output_result(key, val, args, img, img_file):
                     visualize_cells(img, elem, out_path)
             else:
                 out_file = img_file.replace(".jpg", "_{}.{}".format(idx, key))
-                with open(os.path.join(args.out_dir, out_file), 'w') as f:
+                with open(os.path.join(args.out_dir, out_file), 'w', encoding='utf-8') as f:
                     f.write(elem)
                 if args.verbose:
                     print(elem)

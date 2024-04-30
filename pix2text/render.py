@@ -213,5 +213,5 @@ def render_html(newest_fp, image_type, text, out_html_fp):
 </html>
     """
 
-    with open(out_html_fp, 'w') as f:
+    with open(out_html_fp, 'w', encoding='utf-8') as f:
         f.writelines(html_str)
