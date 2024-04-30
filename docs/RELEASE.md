@@ -1,5 +1,16 @@
 # Release Notes
 
+## Update 2024.04.30：**V1.1.0.1** Released
+
+Major changes:
+
+* Fix the exception occurring when saving files on Windows.
+
+主要变更： 
+
+* 修复 Windows 下存储文件时出现的异常。
+
+
 ## Update 2024.04.28：**V1.1** Released
 
 Major changes:
