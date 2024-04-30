@@ -220,7 +220,7 @@ class Page(object):
             rf'{line_sep}{{2,}}', f'{line_sep}{line_sep}', md_out
         )  # 把2个以上的连续 '\n' 替换为 '\n\n'
         if markdown_fn:
-            with open(out_dir / markdown_fn, 'w') as f:
+            with open(out_dir / markdown_fn, 'w', encoding='utf-8') as f:
                 f.write(md_out)
         return md_out
 
@@ -314,6 +314,6 @@ class Document(object):
             rf'{line_sep}{{2,}}', f'{line_sep}{line_sep}', md_out
         )  # 把2个以上的连续 '\n' 替换为 '\n\n'
         if markdown_fn:
-            with open(out_dir / markdown_fn, 'w') as f:
+            with open(out_dir / markdown_fn, 'w', encoding='utf-8') as f:
                 f.write(md_out)
         return md_out

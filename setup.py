@@ -26,8 +26,8 @@ required = [
     "tqdm",
     "numpy",
     "opencv-python",
-    "cnocr[ort-cpu]>=2.3.0.1",
-    "cnstd>=1.2.3.5",
+    "cnocr[ort-cpu]>=2.3.0.2",
+    "cnstd>=1.2.3.6",
     "pillow",
     "torch",
     "torchvision",
@@ -50,8 +50,7 @@ p2t = pix2text.cli:cli
 setup(
     name=PACKAGE_NAME,
     version=about['__version__'],
-    description="An Open-Source Python3 tool for Optical Character Recognition (OCR) "
-    "and LaTeX expression extraction from images; a Free Alternative to Mathpix",
+    description="An Open-Source Python3 tool for recognizing layouts, tables, math formulas, and text in images, converting them into Markdown format. A free alternative to Mathpix, empowering seamless conversion of visual content into text-based representations.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='breezedeus',
@@ -74,10 +73,10 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: Implementation',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
 )
