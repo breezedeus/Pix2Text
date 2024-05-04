@@ -23,12 +23,15 @@
 正常情况小助手会定期邀请入群，但无法保证时间。如果期望尽快得到答复，可以加入上面的知识星球 [**CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) 。
 
 
-## 三、QQ 交流群【不推荐，作者不常使用】
+## 三、Discord
 
-作者在QQ上的活跃度不太好，所以QQ群的问题未必能得到很好的回复。QQ群主要作为备胎存在，当其他的交流方式失效时可使用。欢迎扫码加入：
+欢迎加入 [**我的Discord 服务器**](https://discord.gg/GgD87WM8Tf) 。
 
-<figure markdown>
-![QQ群二维码](https://cnocr.readthedocs.io/zh/latest/cnocr-qq.jpg){: style="width:230px"}
-</figure>
+Welcome to join [**my Discord Server**](https://discord.gg/GgD87WM8Tf) .
 
 
+## 四、邮件 / Email
+
+**邮箱**：breezedeus AT gmail.com，看的不勤，除非其他方式联系不上。
+
+Email: breezedeus AT gmail.com .
