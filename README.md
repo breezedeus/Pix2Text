@@ -244,7 +244,7 @@ Please refer to [Pix2Text-Mac](https://github.com/breezedeus/Pix2Text-Mac) for i
 
 ## A cup of coffee for the author
 
-It is not easy to maintain and evolve the project, so if it is helpful to you, please consider [offering the author a cup of coffee 🥤](https://www.breezedeus.com/buy-me-coffee).
+It is not easy to maintain and evolve the project, so if it is helpful to you, please consider [offering the author a cup of coffee 🥤](https://www.breezedeus.com/article/buy-me-coffee).
 
 ---
 
