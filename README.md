@@ -16,7 +16,7 @@
 [📖 Doc](https://pix2text.readthedocs.io) |
 [👩🏻‍💻 Online Service](https://p2t.breezedeus.com) |
 [👨🏻‍💻 Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo) |
-[💬 Contact](https://www.breezedeus.com/join-group)
+[💬 Contact](https://www.breezedeus.com/article/join-group)
 
 </div>
 
