@@ -914,8 +914,8 @@ def merge_line_texts(
 
     min_x, max_x = cal_block_xmin_xmax(lines, indentation_thrsh)
 
-    line_text_list = [(idx, txt) for idx, txt in enumerate(line_text_list) if txt]
     res_line_texts = [''] * len(line_text_list)
+    line_text_list = [(idx, txt) for idx, txt in enumerate(line_text_list) if txt]
     for idx, (line_number, txt) in enumerate(line_text_list):
         if isolated_included[line_number]:
             res_line_texts[line_number] = line_sep + txt + line_sep
@@ -938,5 +938,5 @@ def merge_line_texts(
                 tmp = tmp + line_sep
         res_line_texts[idx] = tmp
 
-    outs = smart_join(res_line_texts, spellchecker)
+    outs = smart_join([c for c in res_line_texts if c], spellchecker)
     return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'
