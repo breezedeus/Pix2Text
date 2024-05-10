@@ -1,5 +1,16 @@
 # Release Notes
 
+## Update 2024.05.10：**V1.1.0.2** Released
+
+Major changes:
+
+* Fixed the error caused by empty lines in `merge_line_texts`.
+
+主要变更：
+
+* 修复 `merge_line_texts` 中空行导致的错误。
+
+
 ## Update 2024.04.30：**V1.1.0.1** Released
 
 Major changes:
