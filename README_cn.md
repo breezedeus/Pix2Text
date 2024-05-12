@@ -61,6 +61,10 @@
 
 其中多个模型来自其他开源作者， 非常感谢他们的贡献。
 
+<div align="center">
+  <img src="docs/figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
+</div>
+
 具体说明请参考：[Pix2Text在线文档/模型](https://pix2text.readthedocs.io/zh/latest/models/)。
 
 <br/>

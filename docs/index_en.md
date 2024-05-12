@@ -36,6 +36,10 @@
 
 Several models are contributed by other open-source authors, and their contributions are highly appreciated. 
 
+<div align="center">
+  <img src="figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
+</div>
+
 For detailed explanations, please refer to the [Models](models.md).
 
 As a Python3 toolkit, P2T may not be very user-friendly for those who are not familiar with Python. Therefore, we also provide a **[free-to-use P2T Online Web](https://p2t.breezedeus.com)**, where you can directly upload images and get P2T parsing results. The web version uses the latest models, resulting in better performance compared to the open-source models.
