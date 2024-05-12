@@ -37,6 +37,10 @@
 
 其中多个模型来自其他开源作者， 非常感谢他们的贡献。
 
+<div align="center">
+  <img src="figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
+</div>
+
 具体说明请参考 [可用模型](models.md)。
 
 

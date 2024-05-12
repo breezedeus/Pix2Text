@@ -61,6 +61,10 @@ See more at: [RELEASE.md](docs/RELEASE.md) .
 
 Several models are contributed by other open-source authors, and their contributions are highly appreciated.
 
+<div align="center">
+  <img src="docs/figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
+</div>
+
 For detailed explanations, please refer to the [Pix2Text Online Documentation/Models](https://pix2text.readthedocs.io/zh/latest/models/).
 
 <br/>
