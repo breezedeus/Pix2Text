@@ -1,6 +1,7 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
+import string
 from typing import Sequence, List, Optional
 
 import numpy as np
@@ -177,6 +178,8 @@ def prepare_ocr_engine(languages: Sequence[str], ocr_engine_config):
     if len(set(languages).difference({'en', 'ch_sim'})) == 0:
         from cnocr import CnOcr
 
+        if 'ch_sim' not in languages and 'cand_alphabet' not in ocr_engine_config:  # only recognize english characters
+            ocr_engine_config['cand_alphabet'] = string.printable
         ocr_engine = CnOcr(**ocr_engine_config)
         engine_wrapper = CnOCREngine(languages, ocr_engine)
     else:
