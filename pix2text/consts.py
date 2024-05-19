@@ -55,6 +55,15 @@ class AvailableModels(object):
                 'filename': 'p2t-mfr-pro-pytorch.zip',  # download the file from CN OSS
                 'local_model_id': 'mfr-pro-pytorch',
             },
+            ('mfr-plus', 'onnx'): {
+                'filename': 'p2t-mfr-plus-onnx.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-plus',
+                'local_model_id': 'mfr-plus-onnx',
+            },
+            ('mfr-plus', 'pytorch'): {
+                'filename': 'p2t-mfr-plus-pytorch.zip',  # download the file from CN OSS
+                'local_model_id': 'mfr-plus-pytorch',
+            },
         }
     )
 
