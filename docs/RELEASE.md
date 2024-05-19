@@ -1,5 +1,20 @@
 # Release Notes
 
+## Update 2024.05.19：**V1.1.0.3** Released
+
+Major changes:
+
+* A new paid model, `mfr-plus`, has been added, which offers better recognition for multi-line formulas.
+* When recognizing only English, CnOCR does not output Chinese.
+* Bugs have been fixed.
+
+主要变更：
+
+* 加入新的付费模型：`mfr-plus`，对多行公式的识别效果更好。
+* 在只识别英文时，CnOCR 不输出中文。
+* 修复 bugs。
+
+
 ## Update 2024.05.10：**V1.1.0.2** Released
 
 Major changes:
