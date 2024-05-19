@@ -190,7 +190,10 @@ class Page(object):
         return f"Page(id={self.id}, number={self.number}, elements={self.elements})"
 
     def to_markdown(
-        self, out_dir: Union[str, Path], root_url: Optional[str]=None, markdown_fn: Optional[str] = 'output.md'
+        self,
+        out_dir: Union[str, Path],
+        root_url: Optional[str] = None,
+        markdown_fn: Optional[str] = 'output.md',
     ) -> str:
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
@@ -224,7 +227,9 @@ class Page(object):
                 f.write(md_out)
         return md_out
 
-    def _ele_to_markdown(self, element: Element, root_url: Optional[str], out_dir: Union[str, Path]):
+    def _ele_to_markdown(
+        self, element: Element, root_url: Optional[str], out_dir: Union[str, Path]
+    ):
         type = element.type
         text = element.text
         if type in (ElementType.TEXT, ElementType.TABLE):
@@ -283,17 +288,20 @@ class Document(object):
         return f"Document(id={self.id}, number={self.number}, pages={self.pages})"
 
     def to_markdown(
-        self, out_dir: Union[str, Path], markdown_fn: Optional[str] = 'output.md'
+        self,
+        out_dir: Union[str, Path],
+        root_url: Optional[str] = None,
+        markdown_fn: Optional[str] = 'output.md',
     ) -> str:
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.pages.sort(key=lambda page: page.number)
         if not self.pages:
             return ''
-        md_out = self.pages[0].to_markdown(out_dir, markdown_fn=None)
+        md_out = self.pages[0].to_markdown(out_dir, root_url=root_url, markdown_fn=None)
         for idx, page in enumerate(self.pages[1:]):
             prev_page = self.pages[idx]
-            cur_txt = page.to_markdown(out_dir, markdown_fn=None)
+            cur_txt = page.to_markdown(out_dir, mroot_url=root_url, arkdown_fn=None)
             if (
                 md_out
                 and prev_page.elements

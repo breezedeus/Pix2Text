@@ -18,8 +18,11 @@ from transformers import (
 )
 
 from PIL import Image
-from cnstd.utils import get_model_file
 from cnocr.utils import get_default_ort_providers
+from transformers.generation import (
+    GenerateEncoderDecoderOutput,
+    GenerateBeamEncoderDecoderOutput,
+)
 
 from .consts import MODEL_VERSION, AVAILABLE_MODELS
 from .utils import data_dir, select_device, prepare_imgs
@@ -196,19 +199,7 @@ class LatexOCR(object):
             output_scores=True,
             **rec_config,
         )
-        logits = torch.stack(outs.scores, dim=1)
-        scores = torch.softmax(logits, dim=-1).max(dim=2).values
-
-        mean_probs = []
-        for idx, example in enumerate(scores):
-            cur_length = int(
-                (outs.sequences[idx] != self.processor.tokenizer.pad_token_id).sum()
-            )
-            assert cur_length > 1
-            # 获得几何平均值。注意：example中的第一个元素对应sequence中的第二个元素
-            mean_probs.append(
-                float((example[: cur_length - 1] + 1e-8).log().mean().exp())
-            )
+        mean_probs = self._cal_scores(outs)
 
         generated_text = self.processor.batch_decode(
             outs.sequences, skip_special_tokens=True
@@ -219,6 +210,28 @@ class LatexOCR(object):
         for text, prob in zip(generated_text, mean_probs):
             final_out.append({'text': text, 'score': prob})
         return final_out
+
+    def _cal_scores(self, outs):
+        if isinstance(outs, GenerateBeamEncoderDecoderOutput):
+            mean_probs = outs.sequences_scores.exp().tolist()
+        elif isinstance(outs, GenerateEncoderDecoderOutput):
+            logits = torch.stack(outs.scores, dim=1)
+            scores = torch.softmax(logits, dim=-1).max(dim=2).values
+
+            mean_probs = []
+            for idx, example in enumerate(scores):
+                cur_length = int(
+                    (outs.sequences[idx] != self.processor.tokenizer.pad_token_id).sum()
+                )
+                assert cur_length > 1
+                # 获得几何平均值。注意：example中的第一个元素对应sequence中的第二个元素
+                mean_probs.append(
+                    float((example[: cur_length - 1] + 1e-8).log().mean().exp())
+                )
+        else:
+            raise Exception(f'unprocessed output type: {type(outs)}')
+
+        return mean_probs
 
     def post_process(self, text):
         text = remove_redundant_script(text)
@@ -247,10 +260,10 @@ def remove_redundant_script(text):
 
 def replace_illegal_symbols(text):
     illegal_to_legals = [
-        (r'\\\.', r'\\ .'),   # \. -> \ .
-        (r'\\=', r'\\ ='),   # \= -> \ =
-        (r'\\-', r'\\ -'),   # \- -> \ -
-        (r'\\~', r'\\ ~'),   # \~ -> \ ~
+        (r'\\\.', r'\\ .'),  # \. -> \ .
+        (r'\\=', r'\\ ='),  # \= -> \ =
+        (r'\\-', r'\\ -'),  # \- -> \ -
+        (r'\\~', r'\\ ~'),  # \~ -> \ ~
     ]
     for illegal, legal in illegal_to_legals:
         text = re.sub(illegal, legal, text)
