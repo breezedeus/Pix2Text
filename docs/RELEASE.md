@@ -1,5 +1,17 @@
 # Release Notes
 
+## Update 2024.05.20：**V1.1.0.4** Released
+
+Major changes:
+
+* set `table_as_image` as `True` if `self.table_ocr` is not available.
+* fix typo: https://github.com/breezedeus/Pix2Text/pull/108 . Thanks to [@billvsme](https://github.com/billvsme).
+
+主要变更：
+
+* 如果 `self.table_ocr` 不可用，将 `table_as_image` 设置为 `True`。
+* 修复拼写错误：https://github.com/breezedeus/Pix2Text/pull/108 。感谢 [@billvsme](https://github.com/billvsme)。
+
 ## Update 2024.05.19：**V1.1.0.3** Released
 
 Major changes:
