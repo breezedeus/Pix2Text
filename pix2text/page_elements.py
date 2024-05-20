@@ -301,7 +301,7 @@ class Document(object):
         md_out = self.pages[0].to_markdown(out_dir, root_url=root_url, markdown_fn=None)
         for idx, page in enumerate(self.pages[1:]):
             prev_page = self.pages[idx]
-            cur_txt = page.to_markdown(out_dir, mroot_url=root_url, arkdown_fn=None)
+            cur_txt = page.to_markdown(out_dir, root_url=root_url, markdown_fn=None)
             if (
                 md_out
                 and prev_page.elements
