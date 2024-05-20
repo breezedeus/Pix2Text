@@ -99,7 +99,7 @@ class Pix2Text(object):
         # layout_parser = LayoutParser.from_config(layout_config, device=device)
         layout_parser = DocXLayoutParser.from_config(layout_config, device=device)
         text_formula_ocr = TextFormulaOCR.from_config(
-            text_formula_config, enable_formula=enable_formula, device=device
+            text_formula_config, enable_formula=enable_formula, device=device, **kwargs
         )
         if enable_table:
             table_ocr = TableOCR.from_config(
@@ -252,6 +252,8 @@ class Pix2Text(object):
         layout_kwargs = deepcopy(kwargs)
         layout_kwargs['resized_shape'] = resized_shape
         layout_kwargs['table_as_image'] = kwargs.get('table_as_image', False)
+        if self.table_ocr is None:
+            layout_kwargs['table_as_image'] = True
         layout_out, column_meta = self.layout_parser.parse(
             img0.copy(), **layout_kwargs,
         )

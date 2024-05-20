@@ -195,6 +195,16 @@ class Page(object):
         root_url: Optional[str] = None,
         markdown_fn: Optional[str] = 'output.md',
     ) -> str:
+        """
+        Convert the Page to markdown.
+        Args:
+            out_dir (Union[str, Path]): The output directory.
+            root_url (Optional[str]): The root url for the saved images in the markdown files.
+            markdown_fn (Optional[str]): The markdown file name. Default is 'output.md'.
+
+        Returns: The markdown string.
+
+        """
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.elements.sort()
@@ -293,6 +303,16 @@ class Document(object):
         root_url: Optional[str] = None,
         markdown_fn: Optional[str] = 'output.md',
     ) -> str:
+        """
+        Convert the Document to markdown.
+        Args:
+            out_dir (Union[str, Path]): The output directory.
+            root_url (Optional[str]): The root url for the saved images in the markdown files.
+            markdown_fn (Optional[str]): The markdown file name. Default is 'output.md'.
+
+        Returns: The markdown string.
+
+        """
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
         self.pages.sort(key=lambda page: page.number)
