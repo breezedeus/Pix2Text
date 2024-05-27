@@ -1,5 +1,15 @@
 # Release Notes
 
+## Update 2024.05.27：**V1.1.0.5** Released
+
+Major changes:
+
+* Fixed bugs such as that in `._parse_remaining`.
+
+主要变更：
+
+* 修复 `._parse_remaining` 等 bug。
+
 ## Update 2024.05.20：**V1.1.0.4** Released
 
 Major changes:
