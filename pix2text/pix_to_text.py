@@ -406,8 +406,11 @@ class Pix2Text(object):
             for col_number, col_info in column_meta.items():
                 overlap_val = x_overlap(_box_info, col_info, key='position')
                 overlap_vals.append([col_number, overlap_val])
-            overlap_vals.sort(key=lambda x: (x[1], x[0]), reverse=True)
-            match_col_number = overlap_vals[0][0]
+            if len(overlap_vals) > 0:
+                overlap_vals.sort(key=lambda x: (x[1], x[0]), reverse=True)
+                match_col_number = overlap_vals[0][0]
+            else:
+                match_col_number = 0
             _box_info['col_number'] = match_col_number
 
         if len(_out) < 2:
