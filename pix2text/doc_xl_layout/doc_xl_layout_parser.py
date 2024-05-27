@@ -122,7 +122,7 @@ class DocXLayoutParser(LayoutParser):
         )
 
     def _prepare_model_files(self, root, model_info):
-        model_root_dir = Path(root) / MODEL_VERSION
+        model_root_dir = Path(root).expanduser() / MODEL_VERSION
         model_dir = model_root_dir / 'layout-parser'
         model_fp = model_dir / 'DocXLayout_231012.pth'
         if model_fp.exists():
