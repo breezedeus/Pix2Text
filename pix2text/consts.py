@@ -44,6 +44,7 @@ class AvailableModels(object):
         {
             ('mfr', 'pytorch'): {
                 'filename': 'p2t-mfr-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-pytorch',
                 'local_model_id': 'mfr-pytorch',
             },
             ('mfr-pro', 'onnx'): {
@@ -53,6 +54,7 @@ class AvailableModels(object):
             },
             ('mfr-pro', 'pytorch'): {
                 'filename': 'p2t-mfr-pro-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-pro-pytorch',
                 'local_model_id': 'mfr-pro-pytorch',
             },
             ('mfr-plus', 'onnx'): {
@@ -62,6 +64,7 @@ class AvailableModels(object):
             },
             ('mfr-plus', 'pytorch'): {
                 'filename': 'p2t-mfr-plus-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-plus-pytorch',
                 'local_model_id': 'mfr-plus-pytorch',
             },
         }
