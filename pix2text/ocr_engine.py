@@ -2,6 +2,7 @@
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
 import string
+from copy import deepcopy
 from typing import Sequence, List, Optional
 
 import numpy as np
@@ -175,6 +176,7 @@ class EasyOCREngine(TextOcrEngine):
 
 
 def prepare_ocr_engine(languages: Sequence[str], ocr_engine_config):
+    ocr_engine_config = deepcopy(ocr_engine_config) if ocr_engine_config else {}
     if len(set(languages).difference({'en', 'ch_sim'})) == 0:
         from cnocr import CnOcr
 

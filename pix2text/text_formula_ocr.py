@@ -157,8 +157,8 @@ class TextFormulaOCR(object):
     ):
         def _to_default(_conf, _def_val):
             if not _conf:
-                _conf = _def_val
-            return _conf
+                _conf = deepcopy(_def_val)
+            return deepcopy(_conf)
 
         mfd_config = _to_default(mfd_config, DEFAULT_CONFIGS['mfd'])
         # FIXME
