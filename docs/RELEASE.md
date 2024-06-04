@@ -1,5 +1,15 @@
 # Release Notes
 
+## Update 2024.06.04：**V1.1.0.6** Released
+
+Major changes:
+
+* Fix: The Text OCR incorrectly carried over the configuration from previous calls when it was called multiple times.
+
+主要变更：
+
+* 修复 bug：Text OCR 多次调用时错误沿用了之前的配置信息。
+
 ## Update 2024.05.27：**V1.1.0.5** Released
 
 Major changes:
