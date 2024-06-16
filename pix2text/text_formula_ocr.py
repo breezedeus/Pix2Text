@@ -12,7 +12,7 @@ from copy import copy, deepcopy
 from PIL import Image
 import numpy as np
 import torch
-from cnstd import LayoutAnalyzer
+# from cnstd import LayoutAnalyzer
 from cnstd.utils import box_partial_overlap
 from spellchecker import SpellChecker
 
@@ -31,6 +31,7 @@ from .utils import (
     y_overlap,
 )
 from .ocr_engine import prepare_ocr_engine, TextOcrEngine
+from .formula_detector import MathFormulaDetector
 from .latex_ocr import LatexOCR
 from .utils import (
     read_img,
@@ -66,7 +67,7 @@ class TextFormulaOCR(object):
         self,
         *,
         text_ocr: Optional[TextOcrEngine] = None,
-        mfd: Optional[LayoutAnalyzer] = None,
+        mfd: Optional[Any] = None,
         latex_ocr: Optional[LatexOCR] = None,
         spellchecker: Optional[SpellChecker] = None,
         **kwargs,
@@ -129,9 +130,10 @@ class TextFormulaOCR(object):
         text_ocr = prepare_ocr_engine(languages, text_config)
 
         if enable_formula:
-            if 'model_name' in mfd_config:
-                mfd_config.pop('model_name')
-            mfd = LayoutAnalyzer(model_name='mfd', **mfd_config)
+            # if 'model_name' in mfd_config:
+            #     mfd_config.pop('model_name')
+            # mfd = LayoutAnalyzer(model_name='mfd', **mfd_config)
+            mfd = MathFormulaDetector(**mfd_config)
             latex_ocr = LatexOCR(**formula_config)
         else:
             mfd = None
@@ -161,8 +163,7 @@ class TextFormulaOCR(object):
             return deepcopy(_conf)
 
         mfd_config = _to_default(mfd_config, DEFAULT_CONFIGS['mfd'])
-        # FIXME
-        mfd_config['device'] = device if device != 'mps' else 'cpu'
+        mfd_config['device'] = device
         text_config = _to_default(text_config, DEFAULT_CONFIGS['text'])
         text_config['context'] = device
         formula_config = _to_default(formula_config, DEFAULT_CONFIGS['formula'])
