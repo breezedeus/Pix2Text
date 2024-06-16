@@ -5,6 +5,7 @@
 import hashlib
 import os
 import re
+import shutil
 from copy import deepcopy
 from functools import cmp_to_key
 from pathlib import Path
@@ -19,6 +20,7 @@ from numpy import random
 import torch
 from torchvision.utils import save_image
 
+from .consts import MODEL_VERSION
 
 fmt = '[%(levelname)s %(asctime)s %(funcName)s:%(lineno)d] %(' 'message)s '
 logging.basicConfig(format=fmt)
@@ -940,3 +942,20 @@ def merge_line_texts(
 
     outs = smart_join([c for c in res_line_texts if c], spellchecker)
     return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'
+
+
+def prepare_model_files(root, model_info) -> Path:
+    model_root_dir = Path(root) / MODEL_VERSION
+    model_dir = model_root_dir / model_info['local_model_id']
+    if model_dir.is_dir() and list(model_dir.glob('**/[!.]*')):
+        return model_dir
+    assert 'hf_model_id' in model_info
+    model_dir.mkdir(parents=True)
+    download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {model_info["hf_model_id"]} --local-dir {model_dir}'
+    os.system(download_cmd)
+    # 如果当前目录下无文件，就从huggingface上下载
+    if not list(model_dir.glob('**/[!.]*')):
+        if model_dir.exists():
+            shutil.rmtree(str(model_dir))
+        os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
+    return model_dir

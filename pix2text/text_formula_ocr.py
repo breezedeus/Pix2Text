@@ -13,7 +13,7 @@ from PIL import Image
 import numpy as np
 import torch
 from cnstd import LayoutAnalyzer
-from cnstd.utils.utils import box_partial_overlap
+from cnstd.utils import box_partial_overlap
 from spellchecker import SpellChecker
 
 from .utils import (
