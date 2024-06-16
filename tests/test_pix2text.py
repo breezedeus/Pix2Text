@@ -56,7 +56,13 @@ def test_recognize_page():
     # img_fp = './docs/examples/mixed.jpg'
     total_config = {
         'layout': {'scores_thresh': 0.45},
-        'text_formula': {'formula': {'model_name': 'mfr-pro', 'model_backend': 'onnx'}},
+        'text_formula': {
+            'formula': {
+                'model_name': 'mfr',
+                'model_backend': 'onnx',
+                'more_model_configs': {'provider': 'CPUExecutionProvider'},
+            }
+        },
     }
     p2t = Pix2Text.from_config(total_configs=total_config)
     out_page = p2t.recognize_page(
