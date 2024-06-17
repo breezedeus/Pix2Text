@@ -36,7 +36,7 @@ cnocr[ort-cpu]==2.3.0.2
     # via
     #   -r requirements.in
     #   cnocr
-cnstd==1.2.3.6
+cnstd==1.2.4
     # via
     #   -r requirements.in
     #   cnocr

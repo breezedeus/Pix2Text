@@ -1,5 +1,15 @@
 # Release Notes
 
+## Update 2024.06.17：**V1.1.0.7** Released
+
+Major changes:
+
+* adapted with cnstd==1.2.4 , thanks to https://github.com/g1y5x3 .
+
+主要变更：
+
+* 适配 cnstd==1.2.4 ，感谢 https://github.com/g1y5x3 。
+
 ## Update 2024.06.04：**V1.1.0.6** Released
 
 Major changes:

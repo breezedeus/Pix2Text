@@ -27,7 +27,7 @@ required = [
     "numpy",
     "opencv-python",
     "cnocr[ort-cpu]>=2.3.0.2",
-    "cnstd>=1.2.3.6",
+    "cnstd>=1.2.4",
     "pillow",
     "torch",
     "torchvision",
