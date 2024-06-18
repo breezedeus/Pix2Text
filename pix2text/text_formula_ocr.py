@@ -12,7 +12,6 @@ from copy import copy, deepcopy
 from PIL import Image
 import numpy as np
 import torch
-# from cnstd import LayoutAnalyzer
 from cnstd.utils import box_partial_overlap
 from spellchecker import SpellChecker
 
@@ -130,9 +129,6 @@ class TextFormulaOCR(object):
         text_ocr = prepare_ocr_engine(languages, text_config)
 
         if enable_formula:
-            # if 'model_name' in mfd_config:
-            #     mfd_config.pop('model_name')
-            # mfd = LayoutAnalyzer(model_name='mfd', **mfd_config)
             mfd = MathFormulaDetector(**mfd_config)
             latex_ocr = LatexOCR(**formula_config)
         else:
@@ -219,8 +215,6 @@ class TextFormulaOCR(object):
                 * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
 
         """
-        # 对于大图片，把图片宽度resize到此大小；宽度比此小的图片，其实不会放大到此大小，
-        # 具体参考：cnstd.yolov7.layout_analyzer.LayoutAnalyzer._preprocess_images 中的 `letterbox` 行
         resized_shape = kwargs.get('resized_shape', 768)
         if isinstance(img, Image.Image):
             img0 = img.convert('RGB')

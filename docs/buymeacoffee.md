@@ -9,11 +9,11 @@ By supporting my projects through a donation, you can be a part of this journey 
 
 ## 1. 知识星球
 
-欢迎加入**知识星球** **[CnOCR/CnSTD私享群](https://t.zsxq.com/FEYZRJQ)**。**知识星球私享群**会陆续发布一些 CnOCR/CnSTD/P2T 相关的私有资料。
-关于星球的更详细说明请参考：[知识星球 | Breezedeus.com](https://www.breezedeus.com/article/zsxq)。
+欢迎加入**知识星球** **[P2T/CnOCR/CnSTD私享群](https://t.zsxq.com/FEYZRJQ)**。**知识星球私享群**会陆续发布一些 CnOCR/CnSTD/P2T 相关的私有资料。
+关于星球会员享受福利的更详细说明请参考：[知识星球 | Breezedeus.com](https://www.breezedeus.com/article/zsxq)。
 
 <figure markdown>
-![知识星球二维码](https://cnocr.readthedocs.io/zh/latest/cnocr-zsxq.jpeg){: style="width:280px"}
+![知识星球二维码](https://cnocr.readthedocs.io/zh/stable/cnocr-zsxq.jpeg){: style="width:280px"}
 </figure>
 
 
@@ -23,7 +23,7 @@ By supporting my projects through a donation, you can be a part of this journey 
 Give the author a reward through Alipay.
 
 <figure markdown>
-![支付宝收款码](https://cnocr.readthedocs.io/zh/latest/cnocr-zfb.jpg){: style="width:280px"}
+![支付宝收款码](https://cnocr.readthedocs.io/zh/stable/cnocr-zfb.jpg){: style="width:280px"}
 </figure>
 
 

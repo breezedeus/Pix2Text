@@ -1,5 +1,13 @@
 # Release Notes
 
+## Update 2024.06.17：**V1.1.1** Released
+
+主要变更：
+
+* 数学公式检测模型（MFD）更新，检测精度获得较大提升。
+* 修复 bugs。
+
+
 ## Update 2024.06.17：**V1.1.0.7** Released
 
 Major changes:

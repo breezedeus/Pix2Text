@@ -7,7 +7,8 @@ CnOCR 和 CnSTD 中的模型分别存于 `~/.cnocr` 和 `~/.cnstd` 中（Windows
 下载过程请耐心等待，无法科学上网时系统会自动尝试其他可用站点进行下载，所以可能需要等待较长时间。
 对于没有网络连接的机器，可以先把模型下载到其他机器上，然后拷贝到对应目录。
 
-如果系统无法自动成功下载模型文件，则需要手动下载模型文件，可以参考 [huggingface.co/breezedeus](https://huggingface.co/breezedeus) （[国内链接](https://hf-mirror.com/breezedeus)）自己手动下载。
+如果系统无法自动成功下载模型文件，则需要手动下载模型文件，可以参考 [huggingface.co/breezedeus](https://huggingface.co/breezedeus) （[国内镜像](https://hf-mirror.com/breezedeus)）自己手动下载。
+
 具体说明见 [模型下载](models.md)。
 
 
@@ -105,17 +106,16 @@ from pix2text import Pix2Text
 
 text_formula_config = dict(
 	languages=('en', 'ch_sim'),  # 设置识别的语言
-	mfd=dict(  # 声明 LayoutAnalyzer 的初始化参数
-		model_type='yolov7',  # 表示使用的是 YoloV7 模型，而不是 YoloV7_Tiny 模型
-		model_fp=os.path.expanduser(
-			'~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt'
+	mfd=dict(  # 声明 MFD 的初始化参数
+		model_path=os.path.expanduser(
+			'~/.pix2text/1.1/mfd-onnx/mfd-v20240618.onnx'
 		),  # 注：修改成你的模型文件所存储的路径
 	),
 	formula=dict(
 		model_name='mfr-pro',
 		model_backend='onnx',
 		model_dir=os.path.expanduser(
-			'~/.pix2text/1.0/mfr-pro-onnx'
+			'~/.pix2text/1.1/mfr-pro-onnx'
 		),  # 注：修改成你的模型文件所存储的路径
 	),
 	text=dict(

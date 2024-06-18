@@ -28,7 +28,7 @@ def test_infer_with_transformers():
     from transformers import TrOCRProcessor
     from optimum.onnxruntime import ORTModelForVision2Seq
 
-    model_dir = os.path.expanduser('~/.pix2text/1.0/mfr-pro-onnx')
+    model_dir = os.path.expanduser('~/.pix2text/1.1/mfr-pro-onnx')
     processor = TrOCRProcessor.from_pretrained(model_dir)
     model = ORTModelForVision2Seq.from_pretrained(model_dir, use_cache=False)
 
