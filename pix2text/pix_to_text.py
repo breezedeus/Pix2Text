@@ -159,7 +159,8 @@ class Pix2Text(object):
             pdf_fp (Union[str, Path]): pdf file path
             pdf_number (int): pdf number
             pdf_id (str): pdf id
-            page_numbers (List[int]): page numbers to recognize; default is `None`, which means to recognize all pages
+            page_numbers (List[int]): page numbers to recognize; default is `None`, which means to recognize all pages.
+                                      Numbers started from 0 (the first page).
             kwargs (dict): Optional keyword arguments. The same as `recognize_page`
 
         Returns: a Document object. Use `doc.to_markdown('output-dir')` to get the markdown output of the recognized document.

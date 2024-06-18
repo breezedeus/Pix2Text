@@ -36,17 +36,16 @@ def test_blog_example():
     img_fp = './docs/examples/mixed.jpg'
 
     total_config = dict(
-        mfd=dict(  # 声明 LayoutAnalyzer 的初始化参数
-            model_type='yolov7',  # 表示使用的是 YoloV7 模型，而不是 YoloV7_Tiny 模型
-            model_fp=os.path.expanduser(
-                '~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt'
+        mfd=dict(  # 声明 MFD 的初始化参数
+            model_path=os.path.expanduser(
+                '~/.pix2text/1.1/mfd-onnx/mfd-v20240618.onnx'
             ),  # 注：修改成你的模型文件所存储的路径
         ),
         formula=dict(
             model_name='mfr-pro',
             model_backend='onnx',
             model_dir=os.path.expanduser(
-                '~/.pix2text/1.0/mfr-pro-onnx'
+                '~/.pix2text/1.1/mfr-pro-onnx'
             ),  # 注：修改成你的模型文件所存储的路径
         ),
     )
@@ -65,17 +64,16 @@ def test_blog_pro_example():
 
     total_config = dict(
         languages=('en', 'ch_sim'),
-        mfd=dict(  # 声明 LayoutAnalyzer 的初始化参数
-            model_type='yolov7',  # 表示使用的是 YoloV7 模型，而不是 YoloV7_Tiny 模型
-            model_fp=os.path.expanduser(
-                '~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt'
+        mfd=dict(  # 声明 MFD 的初始化参数
+            model_path=os.path.expanduser(
+                '~/.pix2text/1.1/mfd-onnx/mfd-v20240618.onnx'
             ),  # 注：修改成你的模型文件所存储的路径
         ),
         formula=dict(
             model_name='mfr-pro',
             model_backend='onnx',
             model_dir=os.path.expanduser(
-                '~/.pix2text/1.0/mfr-pro-onnx'
+                '~/.pix2text/1.1/mfr-pro-onnx'
             ),  # 注：修改成你的模型文件所存储的路径
         ),
         text=dict(

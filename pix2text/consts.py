@@ -37,6 +37,11 @@ class AvailableModels(object):
                 'hf_model_id': 'breezedeus/pix2text-mfr',
                 'local_model_id': 'mfr-onnx',
             },
+            ('mfd', 'onnx'): {
+                'filename': 'p2t-mfd-onnx.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfd',
+                'local_model_id': 'mfd-onnx',
+            },
         }
     )
 
@@ -66,6 +71,31 @@ class AvailableModels(object):
                 'filename': 'p2t-mfr-plus-pytorch.zip',  # download the file from CN OSS
                 'hf_model_id': 'breezedeus/pix2text-mfr-plus-pytorch',
                 'local_model_id': 'mfr-plus-pytorch',
+            },
+            ('mfd', 'pytorch'): {
+                'filename': 'p2t-mfd-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfd-pytorch',
+                'local_model_id': 'mfd-pytorch',
+            },
+            ('mfd-advanced', 'onnx'): {
+                'filename': 'p2t-mfd-advanced-onnx.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfd-advanced',
+                'local_model_id': 'mfd-advanced-onnx',
+            },
+            ('mfd-advanced', 'pytorch'): {
+                'filename': 'p2t-mfd-advanced-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfd-advanced-pytorch',
+                'local_model_id': 'mfd-advanced-pytorch',
+            },
+            ('mfd-pro', 'onnx'): {
+                'filename': 'p2t-mfd-pro-onnx.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfd-pro',
+                'local_model_id': 'mfd-pro-onnx',
+            },
+            ('mfd-pro', 'pytorch'): {
+                'filename': 'p2t-mfd-pro-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfd-pro-pytorch',
+                'local_model_id': 'mfd-pro-pytorch',
             },
         }
     )

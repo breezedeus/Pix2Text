@@ -23,7 +23,7 @@ doc.to_markdown('output-md')  # The exported Markdown information is saved in th
 You can also achieve the same functionality using the command line. Below is a command that uses the premium models (MFD + MFR + CnOCR) for recognition:
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
 You can find the recognition result in [output-md/output.md](output-md/output.md).
@@ -37,7 +37,7 @@ You can find the recognition result in [output-md/output.md](output-md/output.md
 You can use the `.recognize_page()` function to recognize text and mathematical formulas in images. For example, for the following image ([examples/page2.png](examples/page2.png)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/latest/examples/page2.png" alt="Page-image" width="600px"/>
+  <img src="https://pix2text.readthedocs.io/zh/stable/examples/page2.png" alt="Page-image" width="600px"/>
 </div>
 
 You can call the function like this:
@@ -54,7 +54,7 @@ page.to_markdown('output-page')  # The exported Markdown information is saved in
 You can also achieve the same functionality using the command line. Below is a command that uses the premium models (MFD + MFR + CnOCR) for recognition:
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type page -i docs/examples/page2.png -o output-page --save-debug-res output-debug-page
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type page -i docs/examples/page2.png -o output-page --save-debug-res output-debug-page
 ```
 
 The recognition result is similar to [output-md/output.md](output-md/output.md).
@@ -65,7 +65,7 @@ The recognition result is similar to [output-md/output.md](output-md/output.md).
 For paragraph images containing both formulas and texts, you don't need to use the layout analysis model. You can use the `.recognize_text_formula()` function to recognize both texts and mathematical formulas in the image. For example, for the following image ([examples/en1.jpg](examples/en1.jpg)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/latest/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
+  <img src="https://pix2text.readthedocs.io/zh/stable/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
 </div>
 
 You can call the function like this:
@@ -84,13 +84,13 @@ The returned result `outs` is a dictionary, where the key `position` represents 
 You can also achieve the same functionality using the command line. Below is a command that uses the premium models (MFD + MFR + CnOCR) for recognition:
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg --save-debug-res out-debug-en1.jpg
 ```
 
 Or use the free open-source models for recognition:
 
 ```bash
-p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg --save-debug-res out-debug-en1.jpg
 ```
 
 ## Recognize Pure Formula Images
@@ -98,7 +98,7 @@ p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/ex
 For images containing only mathematical formulas, you can use the `.recognize_formula()` function to recognize the formulas as LaTeX expressions. For example, for the following image ([examples/math-formula-42.png](examples/math-formula-42.png)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/latest/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
+  <img src="https://pix2text.readthedocs.io/zh/stable/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
 </div>
 
 You can call the function like this:
@@ -123,7 +123,7 @@ p2t predict -l en,ch_sim --formula-ocr-config '{"model_name":"mfr-pro","model_ba
 Or use the free open-source model for recognition:
 
 ```bash
-p2t predict -l en,ch_sim --file-type textformula -i docs/examples/math-formula-42.png
+p2t predict -l en,ch_sim --file-type formula -i docs/examples/math-formula-42.png
 ```
 
 ## Recognize Pure Text Images
@@ -131,7 +131,7 @@ p2t predict -l en,ch_sim --file-type textformula -i docs/examples/math-formula-4
 For images containing only text without mathematical formulas, you can use the `.recognize_text()` function to recognize the text in the image. In this case, Pix2Text acts as a general text OCR engine. For example, for the following image ([examples/general.jpg](examples/general.jpg)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/latest/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
+  <img src="https://pix2text.readthedocs.io/zh/stable/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
 </div>
 
 You can call the function like this:
@@ -150,13 +150,13 @@ The returned result is a string representing the corresponding text sequence. Fo
 You can also achieve the same functionality using the command line. Below is a command that uses the premium model (CnOCR) for recognition:
 
 ```bash
-p2t predict -l en,ch_sim --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --file-type text -i docs/examples/general.jpg
+p2t predict -l en,ch_sim --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --file-type text --no-return-text -i docs/examples/general.jpg --save-debug-res out-debug-general.jpg
 ```
 
 Or use the free open-source model for recognition:
 
 ```bash
-p2t predict -l en,ch_sim --file-type text -i docs/examples/general.jpg
+p2t predict -l en,ch_sim --file-type text --no-return-text -i docs/examples/general.jpg --save-debug-res out-debug-general.jpg
 ```
 
 ## For Different Languages
@@ -170,7 +170,7 @@ p2t predict -l en,ch_sim --file-type text -i docs/examples/general.jpg
 **Recognition Command**:
 
 ```bash
-p2t predict -l en --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+p2t predict -l en --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
 ```
 
 ### Simplified Chinese
@@ -182,7 +182,7 @@ p2t predict -l en --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/kin
 **Recognition Command**:
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/mixed.jpg
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/mixed.jpg --save-debug-res out-debug-mixed.jpg
 ```
 
 ### Traditional Chinese
@@ -194,7 +194,7 @@ p2t predict -l en,ch_sim --mfd-config '{"model_type": "yolov7", "model_fp": "/Us
 **Recognition Command**:
 
 ```bash
-p2t predict -l en,ch_tra --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/ch_tra.jpg
+p2t predict -l en,ch_tra --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/ch_tra.jpg --save-debug-res out-debug-tra.jpg
 ```
 
 > Note ⚠️: Please install the multilingual version of pix2text using the following command:
@@ -211,7 +211,7 @@ p2t predict -l en,ch_tra --mfd-config '{"model_type": "yolov7", "model_fp": "/Us
 **Recognition Command**:
 
 ```bash
-p2t predict -l en,vi --mfd-config '{"model_type": "yolov7", "model_fp": "/Users/king/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --no-auto-line-break --file-type text_formula -i docs/examples/vietnamese.jpg
+p2t predict -l en,vi --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 608 --no-auto-line-break --file-type text_formula -i docs/examples/vietnamese.jpg --save-debug-res out-debug-vi.jpg
 ```
 
 > Note ⚠️: Please install the multilingual version of pix2text using the following command:

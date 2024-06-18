@@ -159,7 +159,7 @@ def predict(
     """Use Pix2Text (P2T) to predict the text information in an image or PDF."""
     logger = set_logger(log_level=log_level)
 
-    analyzer_config = json.loads(mfd_config) if mfd_config else {}
+    mfd_config = json.loads(mfd_config) if mfd_config else {}
     formula_ocr_config = json.loads(formula_ocr_config) if formula_ocr_config else {}
     languages = [lang.strip() for lang in languages.split(',') if lang.strip()]
     text_ocr_config = json.loads(text_ocr_config) if text_ocr_config else {}
@@ -167,7 +167,7 @@ def predict(
     layout_config = json.loads(layout_config) if layout_config else {}
     text_formula_config = {
         'languages': languages,  # 'en,ch_sim
-        'mfd': analyzer_config,
+        'mfd': mfd_config,
         'formula': formula_ocr_config,
         'text': text_ocr_config,
     }

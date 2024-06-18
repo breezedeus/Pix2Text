@@ -11,7 +11,7 @@
 
 ## 在线 Demo 🤗
 
-也可以使用 **[在线 Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo)**（无法科学上网可以使用 [国内 Demo](https://hf-mirror.com/spaces/breezedeus/Pix2Text-Demo)） 尝试 **P2T** 在不同语言上的效果。但在线 Demo 使用的硬件配置较低，速度会较慢。如果是简体中文或者英文图片，建议使用 **[P2T网页版](https://p2t.breezedeus.com)**。
+也可以使用 **[在线 Demo](https://huggingface.co/spaces/breezedeus/Pix2Text-Demo)**（无法科学上网可以使用 [国内镜像](https://hf.qhduan.com/spaces/breezedeus/Pix2Text-Demo)） 尝试 **P2T** 在不同语言上的效果。但在线 Demo 使用的硬件配置较低，速度会较慢。如果是简体中文或者英文图片，建议使用 **[P2T网页版](https://p2t.breezedeus.com)**。
 
 <figure markdown>
 ![在线 Demo](https://pic3.zhimg.com/80/v2-ebe8d3d955a580a297aabcd27439604e_720w.webp)
