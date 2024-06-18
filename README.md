@@ -30,6 +30,12 @@
 
 # Pix2Text
 
+## Update 2024.06.18：**V1.1.1** Released
+
+Major changes:
+
+* Support the new mathematical formula detection models (MFD): [breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd)), which significantly improves the accuracy of formula detection.
+
 ## Update 2024.04.28: **V1.1** Released
 
 Major changes:

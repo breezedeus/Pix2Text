@@ -4,12 +4,12 @@
 
 Major changes:
 
-* Support the new mathematical formula detection models (MFD), which significantly improves the accuracy of formula detection.
+* Support the new mathematical formula detection models (MFD): [breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd)), which significantly improves the accuracy of formula detection.
 
 
 主要变更：
 
-* 支持新的数学公式检测模型（MFD），公式检测精度获得较大提升。
+* 支持新的数学公式检测模型（MFD）：[breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfd))，公式检测精度获得较大提升。
 
 
 ## Update 2024.06.17：**V1.1.0.7** Released
