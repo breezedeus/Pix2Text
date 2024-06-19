@@ -5,7 +5,7 @@
 # Pix2Text (P2T)
 [![Discord](https://img.shields.io/discord/1200765964434821260?label=Discord)](https://discord.gg/GgD87WM8Tf)
 [![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
-[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F&label=Visitors&countColor=%23f5c791&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F)
+[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh-cn%2Fstable%2F&label=Visitors&countColor=%23f5c791&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh-cn%2Fstable%2F)
 [![license](https://img.shields.io/github/license/breezedeus/pix2text)](./LICENSE)
 [![PyPI version](https://badge.fury.io/py/pix2text.svg)](https://badge.fury.io/py/pix2text)
 [![forks](https://img.shields.io/github/forks/breezedeus/pix2text)](https://github.com/breezedeus/pix2text)

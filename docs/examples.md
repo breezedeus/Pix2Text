@@ -36,7 +36,7 @@ p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend"
 可以使用函数 `.recognize_page()` 识别图片中的文字和数学公式。如针对以下图片 ([examples/page2.png](examples/page2.png))：
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/page2.png" alt="Page-image" width="600px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/page2.png" alt="Page-image" width="600px"/>
 </div>
 
 调用方式如下：
@@ -64,7 +64,7 @@ p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend"
 可以使用函数 `.recognize_text_formula()` 识别图片中的文字和数学公式。如针对以下图片 ([examples/en1.jpg](examples/en1.jpg))：
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
 </div>
 
 调用方式如下：
@@ -97,7 +97,7 @@ p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/ex
 对于只包含数学公式的图片，使用函数 `.recognize_formula()` 可以把数学公式识别为 LaTeX 表达式。如针对以下图片 ([examples/math-formula-42.png](examples/math-formula-42.png))：
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
 </div>
 
 
@@ -131,7 +131,7 @@ p2t predict -l en,ch_sim --file-type formula -i docs/examples/math-formula-42.pn
 对于只包含文字不包含数学公式的图片，使用函数 `.recognize_text()` 可以识别出图片中的文字。此时 Pix2Text 相当于一般的文字 OCR 引擎。如针对以下图片 ([examples/general.jpg](examples/general.jpg))：
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
 </div>
 
 
@@ -146,7 +146,7 @@ outs = p2t.recognize_text(img_fp)
 print(outs)
 ```
 
-返回结果为字符串，即对应的文字序列。具体说明见[接口说明](https://pix2text.readthedocs.io/zh/latest/pix2text/pix_to_text/)。
+返回结果为字符串，即对应的文字序列。具体说明见[接口说明](https://pix2text.readthedocs.io/zh-cn/latest/pix2text/pix_to_text/)。
 
 也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（CnOCR 一个付费模型）进行识别：
 

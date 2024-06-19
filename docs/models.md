@@ -53,12 +53,12 @@ Pix2Text 的**文字识别引擎**可以识别 **`80+` 种语言**，如**英文
 
 正常情况下，CnOCR 的模型都会自动下载。如果无法自动下载，可以参考以下说明手动下载。
 CnOCR 的开源模型都放在 [**cnstd-cnocr-models**](https://huggingface.co/breezedeus/cnstd-cnocr-models) （[国内镜像](https://hf-mirror.com/breezedeus/cnstd-cnocr-models)）项目中，可免费下载使用。
-如果下载太慢，也可以从 [百度云盘](https://pan.baidu.com/s/1RhLBf8DcLnLuGLPrp89hUg?pwd=nocr) 下载， 提取码为 `nocr`。具体方法可参考 [CnOCR在线文档/使用方法](https://cnocr.readthedocs.io/zh/latest/usage) 。
+如果下载太慢，也可以从 [百度云盘](https://pan.baidu.com/s/1RhLBf8DcLnLuGLPrp89hUg?pwd=nocr) 下载， 提取码为 `nocr`。具体方法可参考 [CnOCR在线文档/使用方法](https://cnocr.readthedocs.io/zh-cn/latest/usage) 。
 
 CnOCR 中的文字检测引擎使用的是 [CnSTD](https://github.com/breezedeus/cnstd)，
 如果系统无法自动成功下载模型文件，则需要手动从 [**cnstd-cnocr-models**](https://huggingface.co/breezedeus/cnstd-cnocr-models) （[国内镜像](https://hf-mirror.com/breezedeus/cnstd-cnocr-models)）项目中下载，或者从[百度云盘](https://pan.baidu.com/s/1zDMzArCDrrXHWL0AWxwYQQ?pwd=nstd)（提取码为 `nstd`）下载对应的zip文件并把它存放于 `~/.cnstd/1.2`（Windows下为 `C:\Users\<username>\AppData\Roaming\cnstd\1.2`）目录中。
 
-关于 CnOCR 模型的更多信息请参考 [CnOCR在线文档/可用模型](https://cnocr.readthedocs.io/zh/latest/models)。
+关于 CnOCR 模型的更多信息请参考 [CnOCR在线文档/可用模型](https://cnocr.readthedocs.io/zh-cn/latest/models)。
 
 CnOCR 也提供**高级版的付费模型**，具体参考本文末尾的说明。
 

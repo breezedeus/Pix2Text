@@ -35,12 +35,14 @@
 
 * 支持新的数学公式检测模型（MFD）：[breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfd))，公式检测精度获得较大提升。
 
+具体说明请见：[Pix2Text V1.1.1 发布，带来更好的数学公式检测模型 | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-v1.1.1)。
+
 ## Update 2024.04.28：发布 **V1.1**
 
 主要变更：
 
-* 加入了版面分析和表格识别模型，支持把复杂排版的图片转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh/stable/examples/)。
-* 支持把整个 PDF 文件转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh/stable/examples/)。
+* 加入了版面分析和表格识别模型，支持把复杂排版的图片转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh-cn/stable/examples/)。
+* 支持把整个 PDF 文件转换为 Markdown 格式，示例见：[Pix2Text 在线文档/Examples](https://pix2text.readthedocs.io/zh-cn/stable/examples/)。
 * 加入了更丰富的接口，已有接口的参数也有所调整。
 * 上线了 [Pix2Text 在线文档](https://pix2text.readthedocs.io)。
 
@@ -71,7 +73,7 @@
   <img src="docs/figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
 </div>
 
-具体说明请参考：[Pix2Text在线文档/模型](https://pix2text.readthedocs.io/zh/stable/models/)。
+具体说明请参考：[Pix2Text在线文档/模型](https://pix2text.readthedocs.io/zh-cn/stable/models/)。
 
 <br/>
 
@@ -203,15 +205,15 @@ Pix2Text 的文字识别引擎支持 **`80+` 种语言**，如**英文、简体�
 
 ## 示例
 
-参见：[Pix2Text在线文档/示例](https://pix2text.readthedocs.io/zh/stable/examples/)。
+参见：[Pix2Text在线文档/示例](https://pix2text.readthedocs.io/zh-cn/stable/examples/)。
 
 ## 使用说明
 
-参见：[Pix2Text在线文档/使用说明](https://pix2text.readthedocs.io/zh/stable/usage/)。
+参见：[Pix2Text在线文档/使用说明](https://pix2text.readthedocs.io/zh-cn/stable/usage/)。
 
 ## 模型下载
 
-参见：[Pix2Text在线文档/模型](https://pix2text.readthedocs.io/zh/stable/models/)。
+参见：[Pix2Text在线文档/模型](https://pix2text.readthedocs.io/zh-cn/stable/models/)。
 
 
 
@@ -237,15 +239,15 @@ pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 
 <br/>
 
-更多说明参见：[Pix2Text在线文档/安装](https://pix2text.readthedocs.io/zh/stable/install/)。
+更多说明参见：[Pix2Text在线文档/安装](https://pix2text.readthedocs.io/zh-cn/stable/install/)。
 
 ## 命令行工具
 
-参见：[Pix2Text在线文档/命令行工具](https://pix2text.readthedocs.io/zh/stable/command/)。
+参见：[Pix2Text在线文档/命令行工具](https://pix2text.readthedocs.io/zh-cn/stable/command/)。
 
 ## HTTP 服务
 
-参见：[Pix2Text在线文档/命令行工具/开启服务](https://pix2text.readthedocs.io/zh/stable/command/)。
+参见：[Pix2Text在线文档/命令行工具/开启服务](https://pix2text.readthedocs.io/zh-cn/stable/command/)。
 
 ## Mac 桌面客户端
 

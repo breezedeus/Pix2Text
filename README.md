@@ -36,12 +36,14 @@ Major changes:
 
 * Support the new mathematical formula detection models (MFD): [breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd)), which significantly improves the accuracy of formula detection.
 
+See details: [Pix2Text V1.1.1 Released, Bringing Better Mathematical Formula Detection Models | Breezedeus.com](https://www.breezedeus.com/article/p2t-mfd-v1.1.1).
+
 ## Update 2024.04.28: **V1.1** Released
 
 Major changes:
 
-* Added layout analysis and table recognition models, supporting the conversion of images with complex layouts into Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh/stable/examples_en/).
-* Added support for converting entire PDF files to Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh/stable/examples_en/).
+* Added layout analysis and table recognition models, supporting the conversion of images with complex layouts into Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh-cn/stable/examples_en/).
+* Added support for converting entire PDF files to Markdown format. See examples: [Pix2Text Online Documentation / Examples](https://pix2text.readthedocs.io/zh-cn/stable/examples_en/).
 * Enhanced the interface with more features, including adjustments to existing interface parameters.
 * Launched the [Pix2Text Online Documentation](https://pix2text.readthedocs.io).
 
@@ -71,7 +73,7 @@ Several models are contributed by other open-source authors, and their contribut
   <img src="docs/figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
 </div>
 
-For detailed explanations, please refer to the [Pix2Text Online Documentation/Models](https://pix2text.readthedocs.io/zh/stable/models/).
+For detailed explanations, please refer to the [Pix2Text Online Documentation/Models](https://pix2text.readthedocs.io/zh-cn/stable/models/).
 
 <br/>
 
@@ -80,12 +82,12 @@ As a Python3 toolkit, P2T may not be very user-friendly for those who are not fa
 If you're interested, feel free to add the assistant as a friend by scanning the QR code and mentioning `p2t`. The assistant will regularly invite everyone to join the group where the latest developments related to P2T tools will be announced:
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/figs/wx-qr-code.JPG" alt="Wechat-QRCode" width="300px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/figs/wx-qr-code.JPG" alt="Wechat-QRCode" width="300px"/>
 </div>
 
 The author also maintains a **Knowledge Planet** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), where questions are answered promptly. You're welcome to join. The **knowledge planet private group** will also gradually release some private materials related to P2T/CnOCR/CnSTD, including **some unreleased models**, **discounts on purchasing premium models**, **code snippets for different application scenarios**, and answers to difficult problems encountered during use. The planet will also publish the latest research materials related to P2T/OCR/STD.
 
-For more contact method, please refer to [Contact](https://pix2text.readthedocs.io/zh/stable/contact/).
+For more contact method, please refer to [Contact](https://pix2text.readthedocs.io/zh-cn/stable/contact/).
 
 
 ## List of Supported Languages
@@ -202,15 +204,15 @@ You can also try the **[Online Demo](https://huggingface.co/spaces/breezedeus/Pi
 
 ## Examples
 
-See: [Pix2Text Online Documentation/Examples](https://pix2text.readthedocs.io/zh/stable/examples_en/).
+See: [Pix2Text Online Documentation/Examples](https://pix2text.readthedocs.io/zh-cn/stable/examples_en/).
 
 ## Usage
 
-See: [Pix2Text Online Documentation/Usage](https://pix2text.readthedocs.io/zh/stable/usage/).
+See: [Pix2Text Online Documentation/Usage](https://pix2text.readthedocs.io/zh-cn/stable/usage/).
 
 ## Models
 
-See: [Pix2Text Online Documentation/Models](https://pix2text.readthedocs.io/zh/stable/models/).
+See: [Pix2Text Online Documentation/Models](https://pix2text.readthedocs.io/zh-cn/stable/models/).
 
 ## Install
 
@@ -232,15 +234,15 @@ If the installation is slow, you can specify an installation source, such as usi
 pip install pix2text -i https://mirrors.aliyun.com/pypi/simple
 ```
 
-For more information, please refer to: [Pix2Text Online Documentation/Install](https://pix2text.readthedocs.io/zh/stable/install/).
+For more information, please refer to: [Pix2Text Online Documentation/Install](https://pix2text.readthedocs.io/zh-cn/stable/install/).
 
 ## Command Line Tool
 
-See: [Pix2Text Online Documentation/Command Tool](https://pix2text.readthedocs.io/zh/stable/command/).
+See: [Pix2Text Online Documentation/Command Tool](https://pix2text.readthedocs.io/zh-cn/stable/command/).
 
 ## HTTP Service
 
-See: [Pix2Text Online Documentation/Command Tool/Start Service](https://pix2text.readthedocs.io/zh/stable/command/).
+See: [Pix2Text Online Documentation/Command Tool/Start Service](https://pix2text.readthedocs.io/zh-cn/stable/command/).
 
 
 ## MacOS Desktop Application
