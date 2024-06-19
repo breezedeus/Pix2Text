@@ -37,7 +37,7 @@ You can find the recognition result in [output-md/output.md](output-md/output.md
 You can use the `.recognize_page()` function to recognize text and mathematical formulas in images. For example, for the following image ([examples/page2.png](examples/page2.png)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/page2.png" alt="Page-image" width="600px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/page2.png" alt="Page-image" width="600px"/>
 </div>
 
 You can call the function like this:
@@ -65,7 +65,7 @@ The recognition result is similar to [output-md/output.md](output-md/output.md).
 For paragraph images containing both formulas and texts, you don't need to use the layout analysis model. You can use the `.recognize_text_formula()` function to recognize both texts and mathematical formulas in the image. For example, for the following image ([examples/en1.jpg](examples/en1.jpg)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
 </div>
 
 You can call the function like this:
@@ -98,7 +98,7 @@ p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/ex
 For images containing only mathematical formulas, you can use the `.recognize_formula()` function to recognize the formulas as LaTeX expressions. For example, for the following image ([examples/math-formula-42.png](examples/math-formula-42.png)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
 </div>
 
 You can call the function like this:
@@ -131,7 +131,7 @@ p2t predict -l en,ch_sim --file-type formula -i docs/examples/math-formula-42.pn
 For images containing only text without mathematical formulas, you can use the `.recognize_text()` function to recognize the text in the image. In this case, Pix2Text acts as a general text OCR engine. For example, for the following image ([examples/general.jpg](examples/general.jpg)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
 </div>
 
 You can call the function like this:
@@ -145,7 +145,7 @@ outs = p2t.recognize_text(img_fp)
 print(outs)
 ```
 
-The returned result is a string representing the corresponding text sequence. For detailed explanations, see [API Documentation](https://pix2text.readthedocs.io/zh/latest/pix2text/pix_to_text/).
+The returned result is a string representing the corresponding text sequence. For detailed explanations, see [API Documentation](https://pix2text.readthedocs.io/zh-cn/latest/pix2text/pix_to_text/).
 
 You can also achieve the same functionality using the command line. Below is a command that uses the premium model (CnOCR) for recognition:
 

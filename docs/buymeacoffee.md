@@ -13,7 +13,7 @@ By supporting my projects through a donation, you can be a part of this journey 
 关于星球会员享受福利的更详细说明请参考：[知识星球 | Breezedeus.com](https://www.breezedeus.com/article/zsxq)。
 
 <figure markdown>
-![知识星球二维码](https://cnocr.readthedocs.io/zh/stable/cnocr-zsxq.jpeg){: style="width:280px"}
+![知识星球二维码](https://cnocr.readthedocs.io/zh-cn/stable/cnocr-zsxq.jpeg){: style="width:280px"}
 </figure>
 
 
@@ -23,7 +23,7 @@ By supporting my projects through a donation, you can be a part of this journey 
 Give the author a reward through Alipay.
 
 <figure markdown>
-![支付宝收款码](https://cnocr.readthedocs.io/zh/stable/cnocr-zfb.jpg){: style="width:280px"}
+![支付宝收款码](https://cnocr.readthedocs.io/zh-cn/stable/cnocr-zfb.jpg){: style="width:280px"}
 </figure>
 
 

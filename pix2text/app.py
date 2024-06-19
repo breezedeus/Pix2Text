@@ -22,7 +22,7 @@ def main():
     st.markdown(f"<h1 style='text-align: center;'>{title}</h1>", unsafe_allow_html=True)
 
     subtitle = '作者：<a href="https://github.com/breezedeus">breezedeus</a>； ' \
-               '欢迎加入 <a href="https://cnocr.readthedocs.io/zh/latest/contact/">交流群</a>'
+               '欢迎加入 <a href="https://cnocr.readthedocs.io/zh-cn/stable/contact/">交流群</a>'
 
     st.markdown(f"<div style='text-align: center;'>{subtitle}</div>", unsafe_allow_html=True)
     st.markdown('')

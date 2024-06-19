@@ -5,7 +5,7 @@
 # Pix2Text (P2T)
 [![Discord](https://img.shields.io/discord/1200765964434821260?label=Discord)](https://discord.gg/GgD87WM8Tf)
 [![Downloads](https://static.pepy.tech/personalized-badge/pix2text?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pix2text)
-[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F&label=Visitors&countColor=%23f5c791&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh%2Flatest%2F)
+[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh-cn%2Fstable%2F&label=Visitors&countColor=%23f5c791&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=https%3A%2F%2Fpix2text.readthedocs.io%2Fzh-cn%2Fstable%2F)
 [![license](https://img.shields.io/github/license/breezedeus/pix2text)](./LICENSE)
 [![PyPI version](https://badge.fury.io/py/pix2text.svg)](https://badge.fury.io/py/pix2text)
 [![forks](https://img.shields.io/github/forks/breezedeus/pix2text)](https://github.com/breezedeus/pix2text)
@@ -37,7 +37,7 @@
 Several models are contributed by other open-source authors, and their contributions are highly appreciated. 
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/latest/figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/latest/figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
 </div>
 
 For detailed explanations, please refer to the [Models](models.md).
@@ -49,7 +49,7 @@ Welcome to join [**Pix2Text Discord Server**](https://discord.gg/GgD87WM8Tf), if
 If you're interested, feel free to add the WeChat assistant as a friend by scanning the QR code and mentioning `p2t`. The assistant will regularly invite everyone to join the group where the latest developments related to P2T tools will be announced:
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh/stable/figs/wx-qr-code.JPG" alt="Wechat-QRCode" width="300px"/>
+  <img src="https://pix2text.readthedocs.io/zh-cn/stable/figs/wx-qr-code.JPG" alt="Wechat-QRCode" width="300px"/>
 </div>
 
 The author also maintains a **Knowledge Planet** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), where questions are answered promptly. You're welcome to join. The **knowledge planet private group** will also gradually release some private materials related to P2T/CnOCR/CnSTD, including **some unreleased models**, **discounts on purchasing premium models**, **code snippets for different application scenarios**, and answers to difficult problems encountered during use. The planet will also publish the latest research materials related to P2T/OCR/STD.
