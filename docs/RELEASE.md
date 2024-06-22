@@ -1,6 +1,17 @@
 # Release Notes
 
-## Update 2024.06.18：**V1.1.1** Released
+# Update 2024.06.23: **V1.1.1.1** Released
+
+Major Changes:
+
+* Added a new parameter `static_resized_shape` when initializing `MathFormulaDetector`, which is used to resize the input image to a fixed size. Some formats of models require fixed-size input images during inference, such as `CoreML`.
+
+主要变更：
+
+* `MathFormulaDetector` 初始化时加入了参数 `static_resized_shape`, 用于把输入图片 resize 为固定大小。某些格式的模型在推理时需要固定大小的输入图片，如 `CoreML`。
+
+
+## Update 2024.06.18: **V1.1.1** Released
 
 Major changes:
 
