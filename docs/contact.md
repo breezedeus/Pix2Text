@@ -8,7 +8,7 @@
 关于星球会员享受福利的更详细说明请参考：[知识星球 | Breezedeus.com](https://www.breezedeus.com/article/zsxq)。
 
 <figure markdown>
-![知识星球二维码](https://cnocr.readthedocs.io/zh-cn/stable/cnocr-zsxq.jpeg){: style="width:280px"}
+![知识星球二维码](figs/zsxq-qr-code.jpg){: style="width:280px"}
 </figure>
 
 
@@ -17,7 +17,7 @@
 扫码加小助手为好友，备注 `p2t`，小助手会定期统一邀请大家入群：
 
 <figure markdown>
-![微信交流群](https://huggingface.co/datasets/breezedeus/cnocr-wx-qr-code/resolve/main/wx-qr-code.JPG){: style="width:270px"}
+![微信交流群](figs/wx-qr-code.JPG){: style="width:270px"}
 </figure>
 
 正常情况小助手会定期邀请入群，但无法保证时间。如果期望尽快得到答复，可以加入上面的知识星球 [**P2T/CnOCR/CnSTD私享群**](https://t.zsxq.com/FEYZRJQ) 。

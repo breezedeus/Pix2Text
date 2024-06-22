@@ -7,9 +7,8 @@
 # Examples
 ## Recognize PDF Files and Return Markdown Format
 
-For PDF files, you can use the `.recognize_pdf()` function to recognize the entire file or specific pages and output the results as a Markdown file. For example, for the following PDF file ([examples/test-doc.pdf](examples/test-doc.pdf)):
-
-You can call the function like this:
+For PDF files, you can use the `.recognize_pdf()` function to recognize the entire file or specific pages and output the results as a Markdown file. For example, for the following PDF file ([examples/test-doc.pdf](examples/test-doc.pdf)), 
+you can call the function like this:
 
 ```python
 from pix2text import Pix2Text
@@ -26,7 +25,7 @@ You can also achieve the same functionality using the command line. Below is a c
 p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
-You can find the recognition result in [output-md/output.md](output-md/output.md).
+The recognition result can be found in [output-md/output.md](output-md/output.md).
 
 <br/>
 
@@ -37,7 +36,7 @@ You can find the recognition result in [output-md/output.md](output-md/output.md
 You can use the `.recognize_page()` function to recognize text and mathematical formulas in images. For example, for the following image ([examples/page2.png](examples/page2.png)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/page2.png" alt="Page-image" width="600px"/>
+  <img src="examples/page2.png" alt="Page-image" width="600px"/>
 </div>
 
 You can call the function like this:
@@ -65,7 +64,7 @@ The recognition result is similar to [output-md/output.md](output-md/output.md).
 For paragraph images containing both formulas and texts, you don't need to use the layout analysis model. You can use the `.recognize_text_formula()` function to recognize both texts and mathematical formulas in the image. For example, for the following image ([examples/en1.jpg](examples/en1.jpg)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/en1.jpg" alt="English-mixed-image" width="600px"/>
+  <img src="examples/en1.jpg" alt="English-mixed-image" width="600px"/>
 </div>
 
 You can call the function like this:
@@ -98,7 +97,7 @@ p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/ex
 For images containing only mathematical formulas, you can use the `.recognize_formula()` function to recognize the formulas as LaTeX expressions. For example, for the following image ([examples/math-formula-42.png](examples/math-formula-42.png)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
+  <img src="examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
 </div>
 
 You can call the function like this:
@@ -131,7 +130,7 @@ p2t predict -l en,ch_sim --file-type formula -i docs/examples/math-formula-42.pn
 For images containing only text without mathematical formulas, you can use the `.recognize_text()` function to recognize the text in the image. In this case, Pix2Text acts as a general text OCR engine. For example, for the following image ([examples/general.jpg](examples/general.jpg)):
 
 <div align="center">
-  <img src="https://pix2text.readthedocs.io/zh-cn/stable/examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
+  <img src="examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
 </div>
 
 You can call the function like this:
