@@ -36,9 +36,9 @@
 
 Several models are contributed by other open-source authors, and their contributions are highly appreciated. 
 
-<div align="center">
-  <img src="figs/arch-flow.jpg" alt="Pix2Text Arch Flow"/>
-</div>
+<figure markdown>
+![Pix2Text Architecture Flow](figs/arch-flow.jpg)
+</figure>
 
 For detailed explanations, please refer to the [Models](models.md).
 
@@ -48,9 +48,9 @@ Welcome to join [**Pix2Text Discord Server**](https://discord.gg/GgD87WM8Tf), if
 
 If you're interested, feel free to add the WeChat assistant as a friend by scanning the QR code and mentioning `p2t`. The assistant will regularly invite everyone to join the group where the latest developments related to P2T tools will be announced:
 
-<div align="center">
-  <img src="figs/wx-qr-code.JPG" alt="Wechat-QRCode" width="300px"/>
-</div>
+<figure markdown>
+![Wechat-QRCode](figs/wx-qr-code.JPG){: style="width:300px"}
+</figure>
 
 The author also maintains a **Knowledge Planet** [**P2T/CnOCR/CnSTD Private Group**](https://t.zsxq.com/FEYZRJQ), where questions are answered promptly. You're welcome to join. The **knowledge planet private group** will also gradually release some private materials related to P2T/CnOCR/CnSTD, including **some unreleased models**, **discounts on purchasing premium models**, **code snippets for different application scenarios**, and answers to difficult problems encountered during use. The planet will also publish the latest research materials related to P2T/OCR/STD.
 
