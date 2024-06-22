@@ -35,9 +35,9 @@ The recognition result can be found in [output-md/output.md](output-md/output.md
 
 You can use the `.recognize_page()` function to recognize text and mathematical formulas in images. For example, for the following image ([examples/page2.png](examples/page2.png)):
 
-<div align="center">
-  <img src="examples/page2.png" alt="Page-image" width="600px"/>
-</div>
+<figure markdown>
+![Page-image](examples/page2.png){: style="width:600px"}
+</figure>
 
 You can call the function like this:
 
@@ -63,9 +63,9 @@ The recognition result is similar to [output-md/output.md](output-md/output.md).
 
 For paragraph images containing both formulas and texts, you don't need to use the layout analysis model. You can use the `.recognize_text_formula()` function to recognize both texts and mathematical formulas in the image. For example, for the following image ([examples/en1.jpg](examples/en1.jpg)):
 
-<div align="center">
-  <img src="examples/en1.jpg" alt="English-mixed-image" width="600px"/>
-</div>
+<figure markdown>
+![English-mixed-image](examples/en1.jpg){: style="width:600px"}
+</figure>
 
 You can call the function like this:
 
@@ -96,9 +96,9 @@ p2t predict -l en,ch_sim --resized-shape 768 --file-type text_formula -i docs/ex
 
 For images containing only mathematical formulas, you can use the `.recognize_formula()` function to recognize the formulas as LaTeX expressions. For example, for the following image ([examples/math-formula-42.png](examples/math-formula-42.png)):
 
-<div align="center">
-  <img src="examples/math-formula-42.png" alt="Pure-Math-Formula-image" width="300px"/>
-</div>
+<figure markdown>
+![Pure-Math-Formula-image](examples/math-formula-42.png){: style="width:300px"}
+</figure>
 
 You can call the function like this:
 
@@ -129,9 +129,9 @@ p2t predict -l en,ch_sim --file-type formula -i docs/examples/math-formula-42.pn
 
 For images containing only text without mathematical formulas, you can use the `.recognize_text()` function to recognize the text in the image. In this case, Pix2Text acts as a general text OCR engine. For example, for the following image ([examples/general.jpg](examples/general.jpg)):
 
-<div align="center">
-  <img src="examples/general.jpg" alt="Pure-Math-Formula-image" width="400px"/>
-</div>
+<figure markdown>
+![Scene-Text](examples/general.jpg){: style="width:400px"}
+</figure>
 
 You can call the function like this:
 
