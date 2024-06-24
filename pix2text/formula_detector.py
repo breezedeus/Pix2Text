@@ -1,7 +1,7 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
 # Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 from pathlib import Path
 import logging
 
@@ -23,15 +23,31 @@ BACKEND_TO_EXTENSION_MAPPING = {
 
 class MathFormulaDetector(YoloDetector):
     def __init__(
-            self,
-            *,
-            model_name: str = 'mfd',
-            model_backend: str = 'onnx',
-            device: str = None,
-            model_path: Optional[Union[str, Path]] = None,
-            root: Union[str, Path] = data_dir(),
-            **kwargs,
+        self,
+        *,
+        model_name: str = 'mfd',
+        model_backend: str = 'onnx',
+        device: Optional[str] = None,
+        model_path: Optional[Union[str, Path]] = None,
+        root: Union[str, Path] = data_dir(),
+        static_resized_shape: Optional[Union[int, Tuple[int, int]]] = None,
+        **kwargs,
     ):
+        """
+        Math Formula Detector based on YOLO.
+
+        Args:
+            model_name (str): model name, default is 'mfd'.
+            model_backend (str): model backend, default is 'onnx'.
+            device (optional str): device to use, default is None.
+            model_path (optional str): model path, default is None.
+            root (optional str): root directory to save model files, default is data_dir().
+            static_resized_shape (optional int or tuple): static resized shape, default is None.
+                When it is not None, the input image will be resized to this shape before detection,
+                ignoring the input parameter `resized_shape` if .detect() is called.
+                Some format of models may require a fixed input size, such as CoreML.
+            **kwargs (): other parameters.
+        """
         if model_path is None:
             model_info = AVAILABLE_MODELS.get_info(model_name, model_backend)
             model_path = prepare_model_files(root, model_info)
@@ -42,7 +58,12 @@ class MathFormulaDetector(YoloDetector):
             model_path = cand_paths[0]
         logger.info(f'Use model path for MFD: {model_path}')
 
-        super().__init__(model_path=model_path, device=device)
+        super().__init__(
+            model_path=model_path,
+            device=device,
+            static_resized_shape=static_resized_shape,
+            **kwargs,
+        )
 
 
 def find_files(directory, extension):
