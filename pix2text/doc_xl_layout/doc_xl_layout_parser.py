@@ -4,7 +4,7 @@ import json
 import os
 import shutil
 from collections import defaultdict
-from copy import deepcopy
+from copy import deepcopy, copy
 from pathlib import Path
 import logging
 from typing import Union, List, Dict, Any, Optional
@@ -110,16 +110,13 @@ class DocXLayoutParser(LayoutParser):
 
     @classmethod
     def from_config(cls, configs: Optional[dict] = None, device: str = None, **kwargs):
-        configs = configs or {}
+        configs = copy(configs or {})
         device = select_device(device)
-        # configs['device'] = device if device != 'mps' else 'cpu'
+        model_fp = configs.pop('model_fp', None)
+        root = configs.pop('root', data_dir())
+        configs.pop('device', None)
 
-        return cls(
-            device=device,
-            model_fp=configs.get('model_fp', None),
-            root=configs.get('root', data_dir()),
-            **configs,
-        )
+        return cls(device=device, model_fp=model_fp, root=root, **configs)
 
     def _prepare_model_files(self, root, model_info):
         model_root_dir = Path(root).expanduser() / MODEL_VERSION

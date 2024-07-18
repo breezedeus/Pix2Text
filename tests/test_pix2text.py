@@ -37,7 +37,7 @@ def test_recognize_pdf():
         'layout': {'scores_thresh': 0.45},
         'text_formula': text_formula_config,
     }
-    p2t = Pix2Text.from_config(total_configs=total_config)
+    p2t = Pix2Text.from_config(total_configs=total_config, enable_formula=True)
     out_md = p2t.recognize_pdf(
         img_fp,
         page_numbers=[0, 7, 8],
@@ -173,6 +173,6 @@ def test_example_formula():
 
 def test_example_text():
     img_fp = './docs/examples/general.jpg'
-    p2t = Pix2Text()
+    p2t = Pix2Text(enable_formula=False)
     outs = p2t.recognize_text(img_fp)
     print(outs)

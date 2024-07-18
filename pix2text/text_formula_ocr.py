@@ -6,7 +6,7 @@ import logging
 import re
 from itertools import chain
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List, Sequence
+from typing import Dict, Any, Optional, Union, List
 from copy import copy, deepcopy
 
 from PIL import Image
@@ -69,8 +69,19 @@ class TextFormulaOCR(object):
         mfd: Optional[Any] = None,
         latex_ocr: Optional[LatexOCR] = None,
         spellchecker: Optional[SpellChecker] = None,
+        enable_formula: bool = True,
         **kwargs,
     ):
+        """
+        Recognize text and formula from an image.
+        Args:
+            text_ocr (Optional[TextOcrEngine]): Text OCR engine; defaults to `None`.
+            mfd (Optional[Any]): Math Formula Detector; defaults to `None`.
+            latex_ocr (Optional[LatexOCR]): Latex OCR engine; defaults to `None`.
+            spellchecker (Optional[SpellChecker]): Spell Checker; defaults to `None`.
+            enable_formula (bool): Whether to enable the capability of Math Formula Detection (MFD) and Recognition (MFR); defaults to `True`.
+            **kwargs ():
+        """
         if text_ocr is None:
             text_config = deepcopy(DEFAULT_CONFIGS['text'])
             device = select_device(device=None)
@@ -92,6 +103,7 @@ class TextFormulaOCR(object):
         self.mfd = mfd
         self.latex_ocr = latex_ocr
         self.spellchecker = spellchecker
+        self.enable_formula = enable_formula
 
     @classmethod
     def from_config(
@@ -146,6 +158,7 @@ class TextFormulaOCR(object):
             mfd=mfd,
             latex_ocr=latex_ocr,
             spellchecker=spellchecker,
+            enable_formula=enable_formula,
             **kwargs,
         )
 
@@ -227,11 +240,8 @@ class TextFormulaOCR(object):
         analyzer_outs = []
         crop_patches = []
         mf_results = []
-        if (
-            kwargs.get('contain_formula', True)
-            and self.mfd is not None
-            and self.latex_ocr is not None
-        ):
+        enable_formula = kwargs.get('contain_formula', True) and self.enable_formula
+        if enable_formula and self.mfd is not None and self.latex_ocr is not None:
             analyzer_outs = self.mfd(img0.copy(), resized_shape=resized_shape)
             for mf_box_info in analyzer_outs:
                 box = mf_box_info['box']
@@ -543,6 +553,8 @@ class TextFormulaOCR(object):
                     * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
+        if not self.enable_formula:
+            raise RuntimeError('Formula recognition is not enabled')
         if self.latex_ocr is None:
             raise RuntimeError('`latex_ocr` model MUST NOT be None')
         outs = self.latex_ocr.recognize(

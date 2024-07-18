@@ -41,6 +41,7 @@ class Pix2Text(object):
         layout_parser: Optional[LayoutParser] = None,
         text_formula_ocr: Optional[TextFormulaOCR] = None,
         table_ocr: Optional[TableOCR] = None,
+        enable_formula: bool = True,
         **kwargs,
     ):
         """
@@ -49,6 +50,7 @@ class Pix2Text(object):
             layout_parser (LayoutParser): The layout parser object; default value is `None`, which means to create a default one
             text_formula_ocr (TextFormulaOCR): The text and formula OCR object; default value is `None`, which means to create a default one
             table_ocr (TableOCR): The table OCR object; default value is `None`, which means not to recognize tables
+            enable_formula (bool): Whether to enable formula recognition; default value is `True`
             **kwargs (dict): Other arguments, currently not used
         """
         if layout_parser is None:
@@ -58,11 +60,12 @@ class Pix2Text(object):
         if text_formula_ocr is None:
             device = select_device(None)
             text_formula_ocr = TextFormulaOCR.from_config(
-                None, enable_formula=True, device=device
+                None, enable_formula=enable_formula, device=device
             )
         self.layout_parser = layout_parser
         self.text_formula_ocr = text_formula_ocr
         self.table_ocr = table_ocr
+        self.enable_formula = enable_formula
 
     @classmethod
     def from_config(
@@ -115,6 +118,7 @@ class Pix2Text(object):
             layout_parser=layout_parser,
             text_formula_ocr=text_formula_ocr,
             table_ocr=table_ocr,
+            enable_formula=enable_formula,
             **kwargs,
         )
 
@@ -273,6 +277,8 @@ class Pix2Text(object):
             crop_patch = img0.crop(box)
             crop_width, _ = crop_patch.size
             score = 1.0
+            if not self.enable_formula and image_type == ElementType.FORMULA:
+                image_type = ElementType.TEXT
             if image_type in (ElementType.TEXT, ElementType.TITLE):
                 _resized_shape = resized_shape
                 while crop_width > 1.5 * _resized_shape and _resized_shape < 2048:
