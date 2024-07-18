@@ -1,5 +1,19 @@
 # Release Notes
 
+# Update 2024.07.18: **V1.1.1.2** Released
+
+Major Changes:
+
+* fix bugs：
+    * https://github.com/breezedeus/Pix2Text/issues/129
+    * https://github.com/breezedeus/Pix2Text/issues/116
+
+主要变更：
+
+* 修复 bugs：
+  * https://github.com/breezedeus/Pix2Text/issues/129
+  * https://github.com/breezedeus/Pix2Text/issues/116
+
 # Update 2024.06.24: **V1.1.1.1** Released
 
 Major Changes:
