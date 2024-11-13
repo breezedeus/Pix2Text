@@ -135,6 +135,52 @@ def read_tsv_file(fp, sep='\t', img_folder=None, mode='eval'):
     return (img_fp_list, labels_list) if mode != 'test' else (img_fp_list, None)
 
 
+def get_average_color(img):
+    # Convert image to numpy array
+    img_array = np.array(img)
+    # Get average color, ignoring fully transparent pixels
+    if img_array.shape[2] == 4:  # RGBA
+        alpha = img_array[:,:,3]
+        rgb = img_array[:,:,:3]
+        mask = alpha > 0
+        if mask.any():
+            avg_color = rgb[mask].mean(axis=0)
+        else:
+            avg_color = rgb.mean(axis=(0,1))
+    else:  # RGB
+        avg_color = img_array.mean(axis=(0,1))
+    return tuple(map(int, avg_color))
+
+
+def get_contrasting_color(color):
+    return tuple(255 - c for c in color)
+
+
+def convert_transparent_to_contrasting(img: Image.Image):
+    """
+    Convert transparent pixels to a contrasting color.
+    """
+    # Check if the image has an alpha channel
+    if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+        # Get average color of non-transparent pixels
+        avg_color = get_average_color(img)
+
+        # Get contrasting color for background
+        bg_color = get_contrasting_color(avg_color)
+
+        # Create a new background image with the contrasting color
+        background = Image.new('RGBA', img.size, bg_color)
+
+        # Paste the image on the background.
+        # If the image has an alpha channel, it will be used as a mask
+        background.paste(img, (0, 0), img)
+
+        # Convert to RGB (removes alpha channel)
+        return background.convert('RGB')
+
+    return img.convert('RGB')
+
+
 def read_img(
     path: Union[str, Path], return_type='Tensor'
 ) -> Union[Image.Image, np.ndarray, torch.Tensor]:
@@ -149,10 +195,11 @@ def read_img(
     """
     assert return_type in ('Tensor', 'ndarray', 'Image')
     img = Image.open(path)
-    img = ImageOps.exif_transpose(img).convert('RGB')  # 识别旋转后的图片（pillow不会自动识别）
+    img = ImageOps.exif_transpose(img)  # 识别旋转后的图片（pillow不会自动识别）
+    img = convert_transparent_to_contrasting(img)
     if return_type == 'Image':
         return img
-    img = np.array(img)
+    img = np.ascontiguousarray(np.array(img))
     if return_type == 'ndarray':
         return img
     return torch.tensor(img.transpose((2, 0, 1)))
@@ -263,6 +310,10 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
         box = one_box[key]
         xyxy = [box[0, 0], box[0, 1], box[2, 0], box[2, 1]]
         label = str(_type)
+        if 'score' in one_box:
+            label += f', Score: {one_box["score"]:.2f}'
+        if 'col_number' in one_box:
+            label += f', ColNO: {one_box["col_number"]}'
         plot_one_box(
             xyxy,
             img0,
