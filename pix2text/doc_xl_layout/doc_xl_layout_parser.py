@@ -361,7 +361,8 @@ class DocXLayoutParser(LayoutParser):
 
         return final_out, column_meta
 
-    def _merge_overlapped_boxes(self, layout_out):
+    @classmethod
+    def _merge_overlapped_boxes(cls, layout_out):
         """
         Detected bounding boxes may overlap; merge these overlapping boxes into a single one.
         """
@@ -405,7 +406,8 @@ class DocXLayoutParser(LayoutParser):
 
         return [box_info for box_info in layout_out if not box_info.get('used', False)]
 
-    def _expand_boxes(self, layout_out, expansion_margin, height, width):
+    @classmethod
+    def _expand_boxes(cls, layout_out, expansion_margin, height, width):
         """
         Expand boxes with some margin to get better results
         Args:
