@@ -64,7 +64,6 @@ class DocYoloLayoutParser(object):
         device = select_device(device)
         # device = 'cpu' if device == 'mps' else device
         self.device = device
-        # names: {0: 'title', 1: 'plain text', 2: 'abandon', 3: 'figure', 4: 'figure_caption', 5: 'table', 6: 'table_caption', 7: 'table_footnote', 8: 'isolate_formula', 9: 'formula_caption'}
         self.mapping = {
             0: 'title',
             1: 'plain text',
@@ -77,6 +76,7 @@ class DocYoloLayoutParser(object):
             8: 'isolate_formula',
             9: 'formula_caption',
         }
+        logger.info('Use DocLayout-YOLO model for Layout Analysis: {}'.format(model_fp))
         self.predictor = YOLOv10(model_fp)
 
     def _prepare_model_files(self, root):
@@ -166,7 +166,11 @@ class DocYoloLayoutParser(object):
 
         if page_layout_result:
             # 去掉 ignored 类型
-            _page_layout_result = [item for item in page_layout_result if item['type'] not in self.ignored_types]
+            _page_layout_result = [
+                item
+                for item in page_layout_result
+                if item['type'] not in self.ignored_types
+            ]
             layout_out = fetch_column_info(_page_layout_result, img_width, img_height)
             layout_out, column_meta = self._format_outputs(
                 img_width, img_height, layout_out, table_as_image
@@ -199,16 +203,27 @@ class DocYoloLayoutParser(object):
             debug_dir / 'layout_res.jpg' if debug_dir is not None else None,
         )
         if save_layout_fp:
+            # only for plot
+            ignored_layout_result = [
+                item
+                for item in page_layout_result
+                if item['type'] in self.ignored_types
+            ]
+            for x in ignored_layout_result:
+                x['col_number'] = -1
+            ignored_layout_out, _ = self._format_outputs(
+                img_width, img_height, ignored_layout_result, table_as_image
+            )
+
             element_type_list = [t for t in ElementType]
             save_layout_img(
                 img0,
                 element_type_list,
-                layout_out,
+                layout_out + ignored_layout_out,
                 save_path=save_layout_fp,
                 key='position',
             )
 
-        breakpoint()
         return layout_out, column_meta
 
     def _format_outputs(self, width, height, layout_out, table_as_image: bool):
@@ -266,12 +281,7 @@ def cal_column_width(layout_res, img_width, img_height):
         width = x1 - x0
         height = y1 - y0
         area = width * height
-        boxes_info.append({
-            'width': width,
-            'area': area,
-            'y0': y0,
-            'height': height
-        })
+        boxes_info.append({'width': width, 'area': area, 'y0': y0, 'height': height})
 
     # 按面积排序，获取最大的几个box
     boxes_info.sort(key=lambda x: x['area'], reverse=True)
@@ -281,7 +291,7 @@ def cal_column_width(layout_res, img_width, img_height):
     weighted_width_sum = 0
 
     # 只考虑面积最大的前30%的boxes
-    top_boxes = boxes_info[:max(2, int(len(boxes_info) * 0.3))]
+    top_boxes = boxes_info[: max(2, int(len(boxes_info) * 0.3))]
 
     for box in top_boxes:
         # 使用面积作为权重
@@ -292,7 +302,9 @@ def cal_column_width(layout_res, img_width, img_height):
         weighted_width_sum += box['width'] * weight
         total_weight += weight
 
-    estimated_width = weighted_width_sum / total_weight if total_weight > 0 else img_width
+    estimated_width = (
+        weighted_width_sum / total_weight if total_weight > 0 else img_width
+    )
 
     # 设置合理的界限
     min_width = img_width * 0.3  # 列宽不应该太窄
