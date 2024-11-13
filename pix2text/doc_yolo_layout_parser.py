@@ -88,7 +88,7 @@ class DocYoloLayoutParser(object):
         if model_dir.exists():
             shutil.rmtree(str(model_dir))
         model_dir.mkdir(parents=True)
-        download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False breezedeus/pix2text-layout-docyolo--local-dir {model_dir}'
+        download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False breezedeus/pix2text-layout-docyolo --local-dir {model_dir}'
         os.system(download_cmd)
         if not model_fp.exists():  # download failed above
             if model_dir.exists():
