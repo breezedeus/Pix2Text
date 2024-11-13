@@ -313,7 +313,7 @@ def save_layout_img(img0, categories, one_out, save_path, key='position'):
         if 'score' in one_box:
             label += f', Score: {one_box["score"]:.2f}'
         if 'col_number' in one_box:
-            label += f', ColNO: {one_box["col_number"]}'
+            label += f', Col: {one_box["col_number"]}'
         plot_one_box(
             xyxy,
             img0,
