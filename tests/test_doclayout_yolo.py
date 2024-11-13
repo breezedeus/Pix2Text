@@ -13,4 +13,3 @@ det_res = model.predict(
     device="mps"    # Device to use (e.g., 'cuda:0' or 'cpu')
 )[0]
 print(det_res.boxes)
-breakpoint()
