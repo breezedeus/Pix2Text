@@ -7,7 +7,7 @@ import shutil
 from collections import defaultdict
 from copy import deepcopy, copy
 from pathlib import Path
-from typing import Union, Any, Optional, List, Dict
+from typing import Union, Optional
 
 from PIL import Image
 import numpy as np
@@ -24,6 +24,7 @@ from .utils import (
     save_layout_img,
     data_dir,
     select_device,
+    y_overlap,
 )
 from . import DocXLayoutParser
 
@@ -46,7 +47,7 @@ class DocYoloLayoutParser(object):
         'figure_caption': ElementType.TEXT,
         'isolate_formula': ElementType.FORMULA,
         'inline formula': ElementType.FORMULA,
-        'formula_caption': ElementType.TEXT,
+        'formula_caption': ElementType.PLAIN_TEXT,
         'ocr text': ElementType.TEXT,
     }
     # types that are isolated and usually don't cross different columns. They should not be merged with other elements
@@ -164,7 +165,18 @@ class DocYoloLayoutParser(object):
                 }
             )
 
+        ignored_layout_result = [
+            item for item in page_layout_result if item['type'] in self.ignored_types
+        ]
+        for x in ignored_layout_result:
+            x['col_number'] = -1
+        ignored_layout_out, _ = self._format_outputs(
+            img_width, img_height, ignored_layout_result, table_as_image
+        )
         if page_layout_result:
+            # 目前 MFR 对带 tag 的公式识别效果不太好，所以暂时不合并
+            # page_layout_result = self._merge_isolated_formula_and_caption(page_layout_result)
+
             # 去掉 ignored 类型
             _page_layout_result = [
                 item
@@ -202,29 +214,66 @@ class DocYoloLayoutParser(object):
             'save_layout_res',
             debug_dir / 'layout_res.jpg' if debug_dir is not None else None,
         )
-        if save_layout_fp:
-            # only for plot
-            ignored_layout_result = [
-                item
-                for item in page_layout_result
-                if item['type'] in self.ignored_types
-            ]
-            for x in ignored_layout_result:
-                x['col_number'] = -1
-            ignored_layout_out, _ = self._format_outputs(
-                img_width, img_height, ignored_layout_result, table_as_image
-            )
 
+        layout_out.extend(ignored_layout_out)
+
+        if save_layout_fp:
             element_type_list = [t for t in ElementType]
             save_layout_img(
                 img0,
                 element_type_list,
-                layout_out + ignored_layout_out,
+                layout_out,
                 save_path=save_layout_fp,
                 key='position',
             )
 
         return layout_out, column_meta
+
+    def _merge_isolated_formula_and_caption(self, page_layout_result):
+        # 合并孤立的公式和公式标题
+        # 对于每个公式标题，找到与它在同一行且在其左侧距离最近的孤立公式，并把它们合并
+        isolated_formula = [
+            item for item in page_layout_result if item['type'] == 'isolate_formula'
+        ]
+        formula_caption = [
+            item for item in page_layout_result if item['type'] == 'formula_caption'
+        ]
+        remaining_elements = [
+            item
+            for item in page_layout_result
+            if item['type'] not in ['isolate_formula', 'formula_caption']
+        ]
+        for caption in formula_caption:
+            caption_xmin, caption_ymin, caption_xmax, caption_ymax = box2list(
+                caption['position']
+            )
+            min_dist = float('inf')
+            nearest_formula = None
+            for formula in isolated_formula:
+                formula_xmin, formula_ymin, formula_xmax, formula_ymax = box2list(
+                    formula['position']
+                )
+                if y_overlap(caption, formula, key='position') >= 0.7:
+                    dist = caption_xmin - formula_xmax
+                    if 0 <= dist < min_dist:
+                        min_dist = dist
+                        nearest_formula = formula
+            if nearest_formula is not None:
+                new_formula = deepcopy(nearest_formula)
+                formula_xmin, formula_ymin, formula_xmax, formula_ymax = box2list(
+                    new_formula['position']
+                )
+                new_formula['position'] = list2box(
+                    min(caption_xmin, formula_xmin),
+                    min(caption_ymin, formula_ymin),
+                    max(caption_xmax, formula_xmax),
+                    max(caption_ymax, formula_ymax),
+                )
+                remaining_elements.append(new_formula)
+                isolated_formula.remove(nearest_formula)
+            else:  # not found
+                remaining_elements.append(caption)
+        return remaining_elements + isolated_formula
 
     def _format_outputs(self, width, height, layout_out, table_as_image: bool):
         # 获取每一列的信息

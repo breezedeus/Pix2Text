@@ -19,6 +19,7 @@ class ElementType(Enum):
     FIGURE = 3
     TABLE = 4
     FORMULA = 5
+    PLAIN_TEXT = 11  # 与 TEXT 类似，但是绝对不包含公式
 
     def __repr__(self) -> str:
         return self.name

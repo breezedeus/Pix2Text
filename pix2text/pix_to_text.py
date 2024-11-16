@@ -293,7 +293,7 @@ class Pix2Text(object):
             score = 1.0
             if not self.enable_formula and image_type == ElementType.FORMULA:
                 image_type = ElementType.TEXT
-            if image_type in (ElementType.TEXT, ElementType.TITLE):
+            if image_type in (ElementType.TEXT, ElementType.TITLE, ElementType.PLAIN_TEXT):
                 _resized_shape = resized_shape
                 while crop_width > 1.5 * _resized_shape and _resized_shape < 2048:
                     _resized_shape = min(int(1.5 * _resized_shape), 2048)
@@ -309,10 +309,14 @@ class Pix2Text(object):
                     text_formula_kwargs['contain_formula'] = kwargs[
                         'title_contain_formula'
                     ]
-                if image_type == ElementType.TEXT:
+                elif image_type == ElementType.TEXT:
                     text_formula_kwargs['contain_formula'] = kwargs[
                         'text_contain_formula'
                     ]
+                elif image_type == ElementType.PLAIN_TEXT:
+                    text_formula_kwargs['contain_formula'] = False
+                    image_type = ElementType.TEXT
+
                 text_formula_kwargs['return_text'] = False
                 _out = self.text_formula_ocr.recognize(
                     padding_patch, **text_formula_kwargs,
