@@ -14,6 +14,12 @@ aiohttp==3.9.3
     #   fsspec
 aiosignal==1.3.1
     # via aiohttp
+albucore==0.0.20
+    # via albumentations
+albumentations==1.3.1
+    # via doclayout-yolo
+annotated-types==0.7.0
+    # via pydantic
 appdirs==1.4.4
     # via wandb
 async-timeout==4.0.3
@@ -59,8 +65,12 @@ dill==0.3.8
     #   multiprocess
 docker-pycreds==0.4.0
     # via wandb
+doclayout-yolo==0.0.2
+    # via -r requirements.in
 easyocr==1.7.1
     # via -r requirements.in
+eval-type-backport==0.2.0
+    # via albumentations
 evaluate==0.4.1
     # via optimum
 filelock==3.13.1
@@ -121,6 +131,7 @@ markupsafe==2.1.5
 matplotlib==3.8.3
     # via
     #   cnstd
+    #   doclayout-yolo
     #   seaborn
     #   ultralytics
 mpmath==1.3.0
@@ -142,6 +153,8 @@ ninja==1.11.1.1
 numpy==1.26.4
     # via
     #   -r requirements.in
+    #   albucore
+    #   albumentations
     #   cnocr
     #   cnstd
     #   contourpy
@@ -180,9 +193,13 @@ opencv-python==4.9.0.80
     # via
     #   -r requirements.in
     #   cnstd
+    #   doclayout-yolo
     #   ultralytics
 opencv-python-headless==4.9.0.80
-    # via easyocr
+    # via
+    #   albucore
+    #   albumentations
+    #   easyocr
 optimum[onnxruntime]==1.16.2
     # via -r requirements.in
 packaging==23.2
@@ -202,6 +219,7 @@ pandas==2.2.0
     # via
     #   cnstd
     #   datasets
+    #   doclayout-yolo
     #   evaluate
     #   seaborn
     #   ultralytics
@@ -210,6 +228,7 @@ pillow==10.2.0
     #   -r requirements.in
     #   cnocr
     #   cnstd
+    #   doclayout-yolo
     #   easyocr
     #   imageio
     #   matplotlib
@@ -227,10 +246,13 @@ protobuf==4.25.3
     #   wandb
 psutil==5.9.8
     # via
+    #   doclayout-yolo
     #   ultralytics
     #   wandb
 py-cpuinfo==9.0.0
-    # via ultralytics
+    # via
+    #   doclayout-yolo
+    #   ultralytics
 pyarrow==15.0.0
     # via datasets
 pyarrow-hotfix==0.6
@@ -239,6 +261,10 @@ pyclipper==1.3.0.post5
     # via
     #   cnstd
     #   easyocr
+pydantic==2.9.2
+    # via albumentations
+pydantic-core==2.23.4
+    # via pydantic
 pymupdf==1.24.1
     # via -r requirements.in
 pymupdfb==1.24.1
@@ -261,8 +287,10 @@ pytz==2024.1
     # via pandas
 pyyaml==6.0.1
     # via
+    #   albumentations
     #   cnstd
     #   datasets
+    #   doclayout-yolo
     #   easyocr
     #   huggingface-hub
     #   pytorch-lightning
@@ -274,6 +302,7 @@ regex==2023.12.25
 requests==2.31.0
     # via
     #   datasets
+    #   doclayout-yolo
     #   evaluate
     #   fsspec
     #   huggingface-hub
@@ -290,13 +319,16 @@ scikit-image==0.22.0
     # via easyocr
 scipy==1.12.0
     # via
+    #   albumentations
     #   cnstd
+    #   doclayout-yolo
     #   easyocr
     #   scikit-image
     #   ultralytics
 seaborn==0.13.2
     # via
     #   cnstd
+    #   doclayout-yolo
     #   ultralytics
 sentencepiece==0.1.99
     # via transformers
@@ -308,6 +340,8 @@ shapely==2.0.2
     # via
     #   cnstd
     #   easyocr
+simsimd==6.0.5
+    # via albucore
 six==1.16.0
     # via
     #   docker-pycreds
@@ -315,11 +349,15 @@ six==1.16.0
     #   python-dateutil
 smmap==5.0.1
     # via gitdb
+stringzilla==3.10.10
+    # via albucore
 sympy==1.12
     # via
     #   onnxruntime
     #   optimum
     #   torch
+thop==0.1.1.post2209072238
+    # via doclayout-yolo
 tifffile==2024.2.12
     # via scikit-image
 tokenizers==0.15.2
@@ -329,9 +367,11 @@ torch==2.2.0
     #   -r requirements.in
     #   cnocr
     #   cnstd
+    #   doclayout-yolo
     #   easyocr
     #   optimum
     #   pytorch-lightning
+    #   thop
     #   torchmetrics
     #   torchvision
     #   ultralytics
@@ -345,6 +385,7 @@ torchvision==0.17.0
     #   -r requirements.in
     #   cnocr
     #   cnstd
+    #   doclayout-yolo
     #   easyocr
     #   ultralytics
 tqdm==4.66.2
@@ -353,6 +394,7 @@ tqdm==4.66.2
     #   cnocr
     #   cnstd
     #   datasets
+    #   doclayout-yolo
     #   evaluate
     #   huggingface-hub
     #   pytorch-lightning
@@ -364,8 +406,12 @@ transformers[sentencepiece]==4.37.2
     #   optimum
 typing-extensions==4.9.0
     # via
+    #   albucore
+    #   albumentations
     #   huggingface-hub
     #   lightning-utilities
+    #   pydantic
+    #   pydantic-core
     #   pytorch-lightning
     #   torch
     #   wandb
