@@ -30,6 +30,12 @@
 
 # Pix2Text
 
+## Update 2024.11.17: **V1.1.2** Released
+
+Major Changes:
+
+* A new layout analysis model [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO) has been integrated, improving the accuracy of layout analysis.
+
 ## Update 2024.06.18：**V1.1.1** Released
 
 Major changes:

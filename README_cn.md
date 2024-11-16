@@ -29,6 +29,12 @@
 
 # Pix2Text (P2T)
 
+## Update 2024.11.17：发布 **V1.1.2**
+
+主要变更：
+
+* 版面分析模型加入 [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)，提升版面分析的准确性。
+
 ## Update 2024.06.18：发布 **V1.1.1**
 
 主要变更：
