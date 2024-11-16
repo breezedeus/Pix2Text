@@ -25,11 +25,27 @@ from .utils import (
 )
 from .layout_parser import LayoutParser, ElementType
 from .doc_xl_layout import DocXLayoutParser
+# from .layoutlmv3 import LayoutLMv3LayoutParser
+from .doc_yolo_layout_parser import DocYoloLayoutParser
 from .text_formula_ocr import TextFormulaOCR
 from .table_ocr import TableOCR
 from .page_elements import Element, Page, Document
 
 logger = logging.getLogger(__name__)
+
+
+def prepare_layout_engine(layout_config: Optional[Dict[str, Any]], device: str = None) -> LayoutParser:
+    layout_config = layout_config or {}
+    kls = layout_config.pop('model_type', 'DocYoloLayoutParser')
+    if kls == 'DocXLayoutParser':
+        layout_engine = DocXLayoutParser.from_config(layout_config, device=device)
+    # elif kls == 'LayoutLMv3LayoutParser':
+    #     layout_engine = LayoutLMv3LayoutParser.from_config(layout_config, device=device)
+    elif kls == 'DocYoloLayoutParser':
+        layout_engine = DocYoloLayoutParser.from_config(layout_config, device=device)
+    else:
+        raise ValueError(f'Unsupported layout parser: {kls}')
+    return layout_engine
 
 
 class Pix2Text(object):
@@ -55,8 +71,7 @@ class Pix2Text(object):
         """
         if layout_parser is None:
             device = select_device(None)
-            # layout_parser = LayoutParser.from_config(None, device=device)
-            layout_parser = DocXLayoutParser.from_config(None, device=device)
+            layout_parser = prepare_layout_engine({}, device=device)
         if text_formula_ocr is None:
             device = select_device(None)
             text_formula_ocr = TextFormulaOCR.from_config(
@@ -99,8 +114,7 @@ class Pix2Text(object):
         text_formula_config = total_configs.get('text_formula', None)
         table_config = total_configs.get('table', None)
 
-        # layout_parser = LayoutParser.from_config(layout_config, device=device)
-        layout_parser = DocXLayoutParser.from_config(layout_config, device=device)
+        layout_parser = prepare_layout_engine(layout_config, device=device)
         text_formula_ocr = TextFormulaOCR.from_config(
             text_formula_config, enable_formula=enable_formula, device=device, **kwargs
         )
@@ -279,7 +293,7 @@ class Pix2Text(object):
             score = 1.0
             if not self.enable_formula and image_type == ElementType.FORMULA:
                 image_type = ElementType.TEXT
-            if image_type in (ElementType.TEXT, ElementType.TITLE):
+            if image_type in (ElementType.TEXT, ElementType.TITLE, ElementType.PLAIN_TEXT):
                 _resized_shape = resized_shape
                 while crop_width > 1.5 * _resized_shape and _resized_shape < 2048:
                     _resized_shape = min(int(1.5 * _resized_shape), 2048)
@@ -295,10 +309,14 @@ class Pix2Text(object):
                     text_formula_kwargs['contain_formula'] = kwargs[
                         'title_contain_formula'
                     ]
-                if image_type == ElementType.TEXT:
+                elif image_type == ElementType.TEXT:
                     text_formula_kwargs['contain_formula'] = kwargs[
                         'text_contain_formula'
                     ]
+                elif image_type == ElementType.PLAIN_TEXT:
+                    text_formula_kwargs['contain_formula'] = False
+                    image_type = ElementType.TEXT
+
                 text_formula_kwargs['return_text'] = False
                 _out = self.text_formula_ocr.recognize(
                     padding_patch, **text_formula_kwargs,

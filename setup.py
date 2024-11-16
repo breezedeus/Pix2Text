@@ -35,6 +35,7 @@ required = [
     "optimum[onnxruntime]",
     "PyMuPDF",
     "pyspellchecker",
+    "doclayout-yolo<0.1",
 ]
 extras_require = {
     "multilingual": ["easyocr"],

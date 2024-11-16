@@ -1,5 +1,23 @@
 # Release Notes
 
+# Update 2024.11.17: **V1.1.2** Released
+
+Major Changes:
+
+* A new layout analysis model [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO) has been integrated, improving the accuracy of layout analysis.
+* Bug fixes:
+  * When the text language is set to English only, a dedicated English OCR model is used to avoid including Chinese in the output.
+  * The processing logic for PNG images has been optimized, enhancing recognition performance.
+
+
+主要变更：
+
+* 版面分析模型加入 [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)，提升版面分析的准确性。
+* 修复 bugs：
+  * 在设置文本语言只有英语时，使用专门的英文 OCR 模型，避免输出中包含中文。
+  * 对 PNG 图片的处理逻辑进行了优化，提升了识别效果。
+
+
 # Update 2024.07.18: **V1.1.1.2** Released
 
 Major Changes:

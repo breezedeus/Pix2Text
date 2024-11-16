@@ -180,8 +180,13 @@ def prepare_ocr_engine(languages: Sequence[str], ocr_engine_config):
     if len(set(languages).difference({'en', 'ch_sim'})) == 0:
         from cnocr import CnOcr
 
-        if 'ch_sim' not in languages and 'cand_alphabet' not in ocr_engine_config:  # only recognize english characters
-            ocr_engine_config['cand_alphabet'] = string.printable
+        # if 'ch_sim' not in languages and 'cand_alphabet' not in ocr_engine_config:  # only recognize english characters
+        #     ocr_engine_config['cand_alphabet'] = list(string.printable) + ['<space>']
+        if tuple(languages) == ('en',):  # only recognize english characters
+            if 'det_model_name' not in ocr_engine_config:
+                ocr_engine_config['det_model_name'] = 'en_PP-OCRv3_det'
+            if 'rec_model_name' not in ocr_engine_config:
+                ocr_engine_config['rec_model_name'] = 'en_PP-OCRv3'
         ocr_engine = CnOcr(**ocr_engine_config)
         engine_wrapper = CnOCREngine(languages, ocr_engine)
     else:

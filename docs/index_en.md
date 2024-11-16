@@ -28,7 +28,7 @@
 
 **Pix2Text (P2T)** integrates the following models:
 
-- **Layout Analysis Model**: [breezedeus/pix2text-layout](https://huggingface.co/breezedeus/pix2text-layout) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-layout)).
+- **Layout Analysis Model**: [breezedeus/pix2text-layout-docyolo](https://huggingface.co/breezedeus/pix2text-layout-docyolo) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-layout-docyolo)).
 - **Table Recognition Model**: [breezedeus/pix2text-table-rec](https://huggingface.co/breezedeus/pix2text-table-rec) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-table-rec)).
 - **Text Recognition Engine**: Supports **80+ languages** such as **English, Simplified Chinese, Traditional Chinese, Vietnamese**, etc. For English and Simplified Chinese recognition, it uses the open-source OCR tool [CnOCR](https://github.com/breezedeus/cnocr), while for other languages, it uses the open-source OCR tool [EasyOCR](https://github.com/JaidedAI/EasyOCR).
 - **Mathematical Formula Detection Model (MFD)**: [breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd)). Implemented based on [CnSTD](https://github.com/breezedeus/cnstd).

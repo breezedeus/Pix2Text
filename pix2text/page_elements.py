@@ -1,5 +1,6 @@
 # coding: utf-8
 import dataclasses
+from copy import deepcopy
 from pathlib import Path
 import re
 from typing import Sequence, Any, Union, Optional
@@ -7,8 +8,10 @@ from typing import Sequence, Any, Union, Optional
 from PIL import Image
 
 from .table_ocr import visualize_cells
-from .utils import merge_line_texts, smart_join
+from .utils import merge_line_texts, smart_join, y_overlap, list2box
 from .layout_parser import ElementType
+
+FORMULA_TAG = '^[（\(]\d+(\.\d+)*[）\)]$'
 
 
 @dataclasses.dataclass
@@ -207,6 +210,7 @@ class Page(object):
         """
         out_dir = Path(out_dir)
         out_dir.mkdir(exist_ok=True, parents=True)
+        self.elements = self._merge_isolated_formula_and_tag(self.elements)
         self.elements.sort()
         if not self.elements:
             return ''
@@ -270,6 +274,60 @@ class Page(object):
         if root_url is not None:
             return f'{root_url}/{rel_url}'
         return str(rel_url)
+
+    @classmethod
+    def _merge_isolated_formula_and_tag(cls, elements):
+        # 合并孤立的公式和公式标题
+        # 对于每个公式标题，找到与它在同一行且在其左侧距离最近的孤立公式，并把它们合并
+        isolated_formula = [
+            item
+            for item in elements
+            if item.type == ElementType.FORMULA and item.isolated
+        ]
+        formula_caption = [
+            item
+            for item in elements
+            if item.type == ElementType.TEXT and re.match(FORMULA_TAG, item.text)
+        ]
+        ele_ids = set([item.id for item in isolated_formula + formula_caption])
+        remaining_elements = [item for item in elements if item.id not in ele_ids]
+        for caption in formula_caption:
+            caption_xmin, caption_ymin, caption_xmax, caption_ymax = caption.box
+            min_dist = float('inf')
+            nearest_formula = None
+            for formula in isolated_formula:
+                formula_xmin, formula_ymin, formula_xmax, formula_ymax = formula.box
+                if (
+                    caption.col_number == formula.col_number
+                    and y_overlap(
+                        list2box(*caption.box), list2box(*formula.box), key=None
+                    )
+                    >= 0.8
+                ):
+                    dist = caption_xmin - formula_xmax
+                    if 0 <= dist < min_dist:
+                        min_dist = dist
+                        nearest_formula = formula
+            if nearest_formula is not None:
+                new_formula = deepcopy(nearest_formula)
+                formula_xmin, formula_ymin, formula_xmax, formula_ymax = new_formula.box
+                new_formula.box = [
+                    min(caption_xmin, formula_xmin),
+                    min(caption_ymin, formula_ymin),
+                    max(caption_xmax, formula_xmax),
+                    max(caption_ymax, formula_ymax),
+                ]
+                new_text = new_formula.text.strip() + ' \\tag{{{}}}'.format(
+                    caption.text[1:-1]
+                )
+                new_formula.text = new_text
+                if new_formula.meta and isinstance(new_formula.meta, dict):
+                    new_formula.meta['text'] = new_text
+                remaining_elements.append(new_formula)
+                isolated_formula.remove(nearest_formula)
+            else:  # not found
+                remaining_elements.append(caption)
+        return remaining_elements + isolated_formula
 
 
 class Document(object):

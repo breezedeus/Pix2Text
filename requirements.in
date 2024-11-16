@@ -16,3 +16,4 @@ optimum[onnxruntime]
 easyocr
 pymupdf>=1.20.0
 pyspellchecker
+doclayout-yolo<0.1
