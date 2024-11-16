@@ -34,7 +34,7 @@ def test_recognize_pdf():
         ),
     )
     total_config = {
-        'layout': {'scores_thresh': 0.45},
+        'layout': {},
         'text_formula': text_formula_config,
     }
     p2t = Pix2Text.from_config(total_configs=total_config, enable_formula=True)
@@ -51,10 +51,10 @@ def test_recognize_pdf():
 
 def test_recognize_page():
     # img_fp = './docs/examples/formula.jpg'
-    img_fp = './docs/examples/page3.png'
+    img_fp = './docs/examples/page2.png'
     # img_fp = './docs/examples/mixed.jpg'
     total_config = {
-        'layout': {'scores_thresh': 0.45},
+        'layout': {},
         'text_formula': {
             'formula': {
                 'model_name': 'mfr',
@@ -68,7 +68,7 @@ def test_recognize_page():
         img_fp,
         page_id='test_page_1',
         title_contain_formula=False,
-        text_contain_formula=False,
+        text_contain_formula=True,
         save_debug_res='./outputs',
     )
     # print(out_page)
