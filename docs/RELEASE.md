@@ -1,5 +1,16 @@
 # Release Notes
 
+# Update 2024.11.21: **V1.1.2.1** Released
+
+Major Changes:
+
+* Fixed an error in `fetch_column_info()@DocYoloLayoutParser`, thanks to Bin.
+
+主要变更：
+
+* 修复了 fetch_column_info()@DocYoloLayoutParser 中的错误，感谢网友 Bin 。
+
+
 # Update 2024.11.17: **V1.1.2** Released
 
 Major Changes:
