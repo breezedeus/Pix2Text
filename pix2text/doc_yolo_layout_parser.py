@@ -386,7 +386,8 @@ def fetch_column_info(layout_res, img_width, img_height):
             item['position'][1][0] - item['position'][0][0]
             for item in layout_res
             if item['category'] == 'sub column'
-        ]
+        ],
+        default=col_width,
     )
 
     # 分配模块到列中
