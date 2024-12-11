@@ -1,5 +1,16 @@
 # Release Notes
 
+# Update 2024.12.11: **V1.1.2.2** Released
+
+Major Changes:
+
+- Bugfix: Resolved issues related to serialization errors when handling ONNX Runtime session options by ensuring that non-serializable configurations are managed appropriately.
+
+主要变更：
+
+- 修复了与 ONNX Runtime session options 相关的序列化错误，通过确保不可序列化的配置信息在适当的管理下进行处理。
+
+
 # Update 2024.12.02: **V1.1.2.1** Released
 
 Major Changes:

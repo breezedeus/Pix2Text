@@ -16,6 +16,7 @@ from cnstd.utils import box_partial_overlap
 from spellchecker import SpellChecker
 
 from .utils import (
+    custom_deepcopy,
     sort_boxes,
     merge_adjacent_bboxes,
     adjust_line_height,
@@ -83,7 +84,7 @@ class TextFormulaOCR(object):
             **kwargs ():
         """
         if text_ocr is None:
-            text_config = deepcopy(DEFAULT_CONFIGS['text'])
+            text_config = custom_deepcopy(DEFAULT_CONFIGS['text'])
             device = select_device(device=None)
             text_config['context'] = device
             logger.warning(
@@ -168,8 +169,8 @@ class TextFormulaOCR(object):
     ):
         def _to_default(_conf, _def_val):
             if not _conf:
-                _conf = deepcopy(_def_val)
-            return deepcopy(_conf)
+                _conf = custom_deepcopy(_def_val)
+            return custom_deepcopy(_conf)
 
         mfd_config = _to_default(mfd_config, DEFAULT_CONFIGS['mfd'])
         mfd_config['device'] = device
