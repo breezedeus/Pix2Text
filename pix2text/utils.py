@@ -51,6 +51,22 @@ def set_logger(log_file=None, log_level=logging.INFO, log_file_level=logging.NOT
     return logger
 
 
+def custom_deepcopy(value):
+    if isinstance(value, dict):
+        return {key: custom_deepcopy(val) for key, val in value.items()}
+    elif isinstance(value, list):
+        return [custom_deepcopy(item) for item in value]
+    elif isinstance(value, tuple):
+        return tuple([custom_deepcopy(item) for item in value])
+    elif isinstance(value, set):
+        return set([custom_deepcopy(item) for item in value])
+    else:
+        try:
+            return deepcopy(value)
+        except TypeError:
+            return value  # Return the original value if it cannot be deep copied
+
+
 def select_device(device) -> str:
     if device is not None:
         return device
