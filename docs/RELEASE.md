@@ -1,5 +1,16 @@
 # Release Notes
 
+# Update 2024.12.17: **V1.1.2.3** Released
+
+Major Changes:
+
+- Bugfix: Fixed issues related to downloading models on Windows.
+
+主要变更：
+
+- 修复了在 Windows 环境下下载模型的问题。
+
+
 # Update 2024.12.11: **V1.1.2.2** Released
 
 Major Changes:
