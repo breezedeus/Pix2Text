@@ -8,12 +8,22 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.DS_Store
+data/
+models/
+output-*/
+outputs-*/
+outputs/
+*.jpg
+*.jpeg
+*.png
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
+.idea/
 lib/
 lib64/
 parts/

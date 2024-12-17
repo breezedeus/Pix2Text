@@ -11,6 +11,7 @@ from functools import cmp_to_key
 from pathlib import Path
 import logging
 import platform
+import subprocess
 from typing import Union, List, Any, Dict
 from collections import Counter, defaultdict
 
@@ -1011,7 +1012,7 @@ def merge_line_texts(
     return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'
 
 
-def prepare_model_files(root, model_info) -> Path:
+def prepare_model_files(root, model_info, mirror_url='https://hf-mirror.com') -> Path:
     model_root_dir = Path(root) / MODEL_VERSION
     model_dir = model_root_dir / model_info['local_model_id']
     if model_dir.is_dir() and list(model_dir.glob('**/[!.]*')):
@@ -1019,10 +1020,50 @@ def prepare_model_files(root, model_info) -> Path:
     assert 'hf_model_id' in model_info
     model_dir.mkdir(parents=True)
     download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {model_info["hf_model_id"]} --local-dir {model_dir}'
-    os.system(download_cmd)
+    subprocess.run(download_cmd, shell=True)
     # 如果当前目录下无文件，就从huggingface上下载
     if not list(model_dir.glob('**/[!.]*')):
         if model_dir.exists():
             shutil.rmtree(str(model_dir))
-        os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
+        # os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
+        env = os.environ.copy()
+        env['HF_ENDPOINT'] = mirror_url
+        subprocess.run(download_cmd, env=env, shell=True)
     return model_dir
+
+
+def prepare_model_files2(model_fp_or_dir, remote_repo, file_or_dir='file', mirror_url='https://hf-mirror.com'):
+    """
+    从远程指定的仓库下载模型文件。
+    Args:
+        model_fp_or_dir: 下载的模型文件会保存到此路径
+        remote_repo: 指定的远程仓库
+        file_or_dir: model_fp_or_dir 是文件路径还是目录路径。注：下载的都是目录
+        mirror_url: 指定的 HuggingFace 国内镜像网址；如果无法从 HuggingFace 官方仓库下载，会自动从此国内镜像下载。默认值为 'https://hf-mirror.com'
+    """
+    model_fp_or_dir = Path(model_fp_or_dir)
+    if file_or_dir == 'file':
+        if model_fp_or_dir.exists():
+            return model_fp_or_dir
+        model_dir = model_fp_or_dir.parent
+    else:
+        model_dir = model_fp_or_dir
+    if model_dir.exists():
+        shutil.rmtree(str(model_dir))
+    model_dir.mkdir(parents=True)
+    download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {remote_repo} --local-dir {model_dir}'
+    subprocess.run(download_cmd, shell=True)
+    download_status = False
+    if file_or_dir == 'file':
+        if model_fp_or_dir.exists():  # download failed above
+            download_status = True
+    else:  # model_dir 存在且非空，则下载成功
+        if model_dir.exists() and list(model_dir.glob('**/[!.]*')):
+            download_status = True
+    if not download_status:  # download failed above
+        if model_dir.exists():
+            shutil.rmtree(str(model_dir))
+        env = os.environ.copy()
+        env['HF_ENDPOINT'] = mirror_url
+        subprocess.run(download_cmd, env=env, shell=True)
+    return model_fp_or_dir

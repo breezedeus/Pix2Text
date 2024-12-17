@@ -28,6 +28,7 @@ from ..utils import (
     box2list,
     x_overlap,
     merge_boxes,
+    prepare_model_files2,
 )
 
 logger = logging.getLogger(__name__)
@@ -124,15 +125,11 @@ class DocXLayoutParser(LayoutParser):
         model_fp = model_dir / 'DocXLayout_231012.pth'
         if model_fp.exists():
             return model_fp
-        if model_dir.exists():
-            shutil.rmtree(str(model_dir))
-        model_dir.mkdir(parents=True)
-        download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False breezedeus/pix2text-layout --local-dir {model_dir}'
-        os.system(download_cmd)
-        if not model_fp.exists():  # download failed above
-            if model_dir.exists():
-                shutil.rmtree(str(model_dir))
-            os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
+        model_fp = prepare_model_files2(
+            model_fp_or_dir=model_fp,
+            remote_repo="breezedeus/pix2text-layout",
+            file_or_dir="file",
+        )
         return model_fp
 
     def convert_eval_format(self, all_bboxes, opt):
