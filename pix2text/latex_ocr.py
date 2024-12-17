@@ -25,7 +25,7 @@ from transformers.generation import (
 )
 
 from .consts import MODEL_VERSION, AVAILABLE_MODELS
-from .utils import data_dir, select_device, prepare_imgs
+from .utils import data_dir, select_device, prepare_imgs, prepare_model_files2
 
 logger = logging.getLogger(__name__)
 
@@ -103,17 +103,14 @@ class LatexOCR(object):
     def _prepare_model_files(self, root, model_backend, model_info):
         model_root_dir = Path(root) / MODEL_VERSION
         model_dir = model_root_dir / model_info['local_model_id']
-        if model_dir.is_dir():
+        if model_dir.is_dir() and list(model_dir.glob('**/[!.]*')):
             return str(model_dir)
         assert 'hf_model_id' in model_info
-        model_dir.mkdir(parents=True)
-        download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {model_info["hf_model_id"]} --local-dir {model_dir}'
-        os.system(download_cmd)
-        # 如果当前目录下无文件，就从huggingface上下载
-        if not list(model_dir.glob('**/[!.]*')):
-            if model_dir.exists():
-                shutil.rmtree(str(model_dir))
-            os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
+        model_dir = prepare_model_files2(
+            model_fp_or_dir=model_dir,
+            remote_repo=model_info["hf_model_id"],
+            file_or_dir="dir",
+        )
         return model_dir
 
     def _init_model(
