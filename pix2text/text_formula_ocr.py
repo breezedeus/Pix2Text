@@ -580,3 +580,119 @@ if __name__ == '__main__':
     img = read_img(img, return_type='Image')
     out = p2t.recognize(img)
     logger.info(out)
+
+
+
+# 基于 Vlm 实现一个 TextFormulaOCR 的子类
+class VlmTextFormulaOCR(TextFormulaOCR):
+    def __init__(
+        self,
+        *,
+        vlm: Optional[Any] = None,
+        **kwargs,
+    ):
+        """
+        Recognize text and formula from an image.
+        Args:
+            vlm (Optional[Any]): VLM model; defaults to `None`.
+            **kwargs ():
+        """
+        if vlm is None:
+            raise ValueError('vlm must not be None')
+        super().__init__(**kwargs)
+        self.vlm = vlm
+        self.enable_formula = True
+
+    def recognize(
+        self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs
+    ) -> Union[str, List[Dict[str, Any]]]:
+        """
+        Perform Mathematical Formula Detection (MFD) on the image, and then recognize the information contained in each section.
+        Args:
+            img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
+            return_text (bool): Whether to return only the recognized text; default value is `True`
+            kwargs (): Other parameters for `vlm.__call__()`
+
+        Returns: a str when `return_text` is `True`, or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
+            with each dict representing one detected box, containing keys:
+
+                * `type`: The category of the image; Optional: 'text', 'isolated', 'embedding'
+                * `text`: The recognized text or Latex formula
+                * `score`: The confidence score [0, 1]; the higher, the more confident
+                * `position`: Position information of the block, `np.ndarray`, with shape of [4, 2]
+                * `line_number`: The line number of the box (first line `line_number==0`), boxes with the same value indicate they are on the same line
+
+        """
+        resized_shape = kwargs.get('resized_shape', 768)
+        if isinstance(img, Image.Image):
+            img0 = img.convert('RGB')
+        else:
+            img0 = read_img(img, return_type='Image')
+        w, h = img0.size
+        result = self.vlm(img_path=img0, auto_resize=True, resized_shape=resized_shape, **kwargs)
+        if return_text:
+            return result["text"]
+
+        result["type"] = "text"
+        result["position"] = np.array([[0, 0], [w-1, 0], [w-1, h-1], [0, h-1]])
+        result["line_number"] = 0
+        return [result]
+
+    def recognize_text(
+        self,
+        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+        return_text: bool = True,
+        rec_config: Optional[dict] = None,
+        **kwargs,
+    ) -> Union[str, List[str], List[Any], List[List[Any]]]:
+        return self._recognize_batch(imgs, res_type='text', return_text=return_text, rec_config=rec_config)
+
+    def recognize_formula(
+        self,
+        imgs: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]],
+        batch_size: int = 1,
+        return_text: bool = True,
+        rec_config: Optional[dict] = None,
+        **kwargs,
+    ) -> Union[str, List[str], Dict[str, Any], List[Dict[str, Any]]]:
+        """
+        Recognize pure Math Formula images to LaTeX Expressions
+        Args:
+            imgs (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]): The image or list of images
+            batch_size (int): The batch size. Useless here
+            return_text (bool): Whether to return only the recognized text; default value is `True`
+            rec_config (Optional[dict]): The config for recognition
+            **kwargs (): Special model parameters. Not used for now
+
+        Returns: The LaTeX Expression or list of LaTeX Expressions;
+                str or List[str] when `return_text` is True;
+                Dict[str, Any] or List[Dict[str, Any]] when `return_text` is False, with the following keys:
+
+                    * `text`: The recognized LaTeX text
+                    * `score`: The confidence score [0, 1]; the higher, the more confident
+
+        """
+        return self._recognize_batch(imgs, res_type='formula', return_text=return_text, rec_config=rec_config)
+
+    def _recognize_batch(self, imgs, *, res_type, return_text = True, rec_config = None):
+        rec_config = rec_config or {}
+        if isinstance(imgs, (str, Path, Image.Image)):
+            return self.recognize(imgs, return_text, **rec_config)
+
+        results = self.vlm(imgs, **rec_config)
+        if return_text:
+            results = [one['text'] for one in results]
+        else:
+            for img, result in zip(imgs, results):
+                if isinstance(img, Image.Image):
+                    w, h = img.size
+                else:
+                    with read_img(img, return_type='Image') as img0:
+                        w, h = img0.size
+
+                result["type"] = res_type 
+                result["position"] = np.array([[0, 0], [w-1, 0], [w-1, h-1], [0, h-1]])
+                result["line_number"] = 0
+        return results
+    
+

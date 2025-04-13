@@ -17,6 +17,9 @@ outputs/
 *.jpg
 *.jpeg
 *.png
+docs/feedbacks/
+*.tar
+*.pth
 build/
 develop-eggs/
 dist/

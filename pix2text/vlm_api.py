@@ -3,10 +3,12 @@ import io
 import requests
 import base64
 import logging
-from typing import Optional, Union
+from typing import Optional, Union, List
+from pathlib import Path
 
+import numpy as np
 from PIL import Image
-from litellm import completion
+from litellm import completion, batch_completion
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +81,44 @@ def encode_image(
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
+def parse_content(content) -> dict:
+    """Parse the content from the API response.
+    Example: 
+        convert '## text_language\nzh\n## text_content\n```\n## 写作。Writing. (50 points)\n写一写自己的一个爱好。\n```' to a structured dictionary:
+        {
+            "language": "zh",
+            "content": "## 写作。Writing. (50 points)\n写一写自己的一个爱好。\n```"
+        }
+
+    Args:
+        content (str): The content string to parse.
+
+    Returns:
+        dict: The parsed content, with keys "language" and "text".
+            - language (str): The language of the content.
+            - text (str): The text content, which may include Markdown formatting.
+    """
+    if not isinstance(content, str):
+        raise ValueError("Content must be a string")
+    splits = content.split("## text_content")
+    if len(splits) != 2:
+        raise ValueError("Content format is incorrect")
+    parsed_str = splits[1].strip()
+    # 去掉 开头的 ```.*\n 和结尾的 ```
+    if parsed_str.startswith("```"):
+        parsed_str = parsed_str[parsed_str.index("\n") + 1 :]
+    if parsed_str.endswith("```"):
+        parsed_str = parsed_str[: parsed_str.rindex("```")].strip()
+    lang_splits = splits[0].split("## text_language")
+    if len(lang_splits) != 2:
+        raise ValueError("Language format is incorrect")
+    lang = lang_splits[1].strip()
+
+    return {
+        "language": lang,
+        "text": parsed_str,
+    } 
+
 PROMPT = """
 首先识别图片中的文字是什么语言，然后再把图片中的文字或数学公式转换成Markdown格式表示， 数学公式使用tex表示。
 注意：
@@ -112,48 +152,86 @@ class Vlm(object):
 
     def __call__(
         self,
-        img_path: Union[str, Image.Image],
+        img_path: Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]] = None,
         *,
         prompt: str = PROMPT,
+        resized_shape: int = 768,
         auto_resize: bool = True,
+        parsing_func: Optional[callable] = parse_content,
         **kwargs,
-    ):
+    ) -> Union[dict, List[dict]]:
         """Call the VLM API to convert image to text.
         Args:
-            img_path (str): Path to the image file.
+            img_path (Union[str, Path, Image.Image, List[str], List[Path], List[Image.Image]]): Path to the image file or files.
             prompt (str): Prompt for the API.
             auto_resize (bool): Whether to automatically resize large images.
             **kwargs: Additional arguments for the API call.
         Returns:
-            str: The text extracted from the image. None if an error occurs.
+            dict or List[dict]: A dictionary for single image and list of dicts for multiple images. Each dict contains the text extracted from the image and the score:
+                - text: Extracted text from the image.
+                - score: Probability score of the extracted text.
         """
-        if not isinstance(img_path, (str, Image.Image)):
-            raise ValueError("img_path must be a string or PIL Image object")
-        base64_image = encode_image(img_path, auto_resize=auto_resize)
-        content = [
-            {"type": "text", "text": prompt},
-            {
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-            },
-        ]
-        try:
-            response = completion(
-                model=self.model_name,
-                messages=[
+        single_image = False if isinstance(img_path, (list, tuple)) else True
+        img_paths = [img_path] if single_image else img_path
+        messages = []
+        for img_path in img_paths:
+            if isinstance(img_path, Path):
+                img_path = str(img_path)
+            if not isinstance(img_path, (str, Image.Image)):
+                raise ValueError("img_path must be a string or PIL Image object")
+            base64_image = encode_image(img_path, max_image_size=resized_shape, auto_resize=auto_resize)
+            content = [
+                {"type": "text", "text": prompt},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                },
+            ]
+            messages.append(
+                [
                     {"role": "user", "content": content},
-                ],
+                ]
+            )
+
+        try:
+            responses = batch_completion(
+                model=self.model_name,
+                messages=messages,
                 api_key=self.api_key,
                 **kwargs,
             )
 
-            # Extract the response content
-            out = response.get("choices", [{}])[0].get("message", {}).get("content")
+            results = []
+            for response in responses:
+                # Extract the response content
+                out = response.get("choices", [{}])[0].get("message", {}).get("content")
+                logprob = response.get("choices", [{}])[0].get("logprobs")
+                # to probability
+                prob = float(np.exp(logprob)) if logprob else 0.0
+                if parsing_func is None:
+                    one_res = {
+                        "text": out,
+                        "score": prob,
+                    }
+                else:
+                    try:
+                        one_res = parsing_func(out)
+                        one_res["score"] = prob
+                    except Exception as exc:
+                        logger.error("An error occurred while parsing the content: %s", exc)
+                        one_res = {
+                            "text": out,
+                            "score": prob,
+                        }
+                results.append(one_res)
         except Exception as exc:
             logger.error("An error occurred: %s", exc)
-            out = None
+            results = [{
+                "text": "",
+                "score": 0.0,
+            } for _ in img_paths]
 
-        return out
+        return results[0] if single_image else results
 
     def __repr__(self):
         return f"Vlm(model_name={self.model_name})"
