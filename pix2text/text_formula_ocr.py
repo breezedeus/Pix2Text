@@ -37,6 +37,7 @@ from .utils import (
     read_img,
     save_layout_img,
 )
+from .vlm_api import Vlm
 
 logger = logging.getLogger(__name__)
 
@@ -603,6 +604,27 @@ class VlmTextFormulaOCR(TextFormulaOCR):
         self.vlm = vlm
         self.enable_formula = True
 
+    @classmethod
+    def from_config(
+        cls,
+        configs: Optional[dict] = None,
+        **kwargs,
+    ):
+        # Combine configs with any additional kwargs
+        all_kwargs = kwargs.copy()
+        if configs:
+            all_kwargs.update(configs)
+        
+        vlm = Vlm(
+            model_name=all_kwargs.pop("model_name", None),
+            api_key=all_kwargs.pop("api_key", None),
+        )
+
+        return cls(
+            vlm=vlm,
+            **all_kwargs
+        )
+
     def recognize(
         self, img: Union[str, Path, Image.Image], return_text: bool = True, **kwargs
     ) -> Union[str, List[Dict[str, Any]]]:
@@ -629,7 +651,7 @@ class VlmTextFormulaOCR(TextFormulaOCR):
         else:
             img0 = read_img(img, return_type='Image')
         w, h = img0.size
-        result = self.vlm(img_path=img0, auto_resize=True, resized_shape=resized_shape, **kwargs)
+        result = self.vlm(img_path=img0, auto_resize=True, **kwargs)
         if return_text:
             return result["text"]
 

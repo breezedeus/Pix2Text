@@ -5,6 +5,7 @@ import dotenv
 from pix2text import set_logger
 from pix2text.vlm_api import Vlm
 from pix2text.vlm_table_ocr import VlmTableOCR
+from pix2text.text_formula_ocr import VlmTextFormulaOCR
 
 logger = set_logger()
 # Load environment variables from .env file
@@ -50,3 +51,24 @@ def test_vlm_table_ocr():
 
     # Print the result
     print(result)
+
+
+def test_vlm_text_formula_ocr():
+    img_path = "docs/examples/mixed.jpg" 
+    img_path = "docs/examples/vietnamese.jpg" 
+    
+    vlm_text_formula_ocr = VlmTextFormulaOCR.from_config(
+        model_name=os.getenv("GEMINI_MODEL"),
+        api_key=os.getenv("GEMINI_API_KEY"),
+    )
+    result = vlm_text_formula_ocr.recognize(img_path, return_text=False)
+    
+    # Print the result
+    print("识别结果:")
+    print(result)
+    
+    # 可以进一步测试提取公式部分
+    if hasattr(vlm_text_formula_ocr, 'extract_formula'):
+        formula = vlm_text_formula_ocr.extract_formula(result)
+        print("提取的公式:")
+        print(formula)

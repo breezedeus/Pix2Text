@@ -27,8 +27,9 @@ from .layout_parser import LayoutParser, ElementType
 from .doc_xl_layout import DocXLayoutParser
 # from .layoutlmv3 import LayoutLMv3LayoutParser
 from .doc_yolo_layout_parser import DocYoloLayoutParser
-from .text_formula_ocr import TextFormulaOCR
+from .text_formula_ocr import TextFormulaOCR, VlmTextFormulaOCR
 from .table_ocr import TableOCR
+from .vlm_table_ocr import VlmTableOCR
 from .page_elements import Element, Page, Document
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,59 @@ def prepare_layout_engine(layout_config: Optional[Dict[str, Any]], device: str =
     else:
         raise ValueError(f'Unsupported layout parser: {kls}')
     return layout_engine
+
+
+def prepare_text_formula_ocr_engine(
+    text_formula_config, enable_formula: bool, device: str, **kwargs
+):
+    text_formula_config = text_formula_config or {}
+    kls = text_formula_config.pop('model_type', 'TextFormulaOCR')
+    if kls == 'TextFormulaOCR':
+        text_formula_ocr = TextFormulaOCR.from_config(
+            text_formula_config, enable_formula=enable_formula, device=device, **kwargs
+        )
+    elif kls == 'VlmTextFormulaOCR':
+        assert "model_name" in text_formula_config, "VlmTextFormulaOCR requires model_name"
+        assert "api_key" in text_formula_config, "VlmTextFormulaOCR requires api_key"
+        text_formula_ocr = VlmTextFormulaOCR.from_config(
+            model_name=text_formula_config["model_name"],
+            api_key=text_formula_config["api_key"],
+            **kwargs,
+        )
+    else:
+        raise ValueError(f'Unsupported text formula OCR: {kls}')
+    return text_formula_ocr
+
+
+def prepare_table_ocr_engine(
+    table_config,
+    device: str,
+    text_formula_ocr: Optional[TextFormulaOCR] = None,
+    **kwargs,
+):
+    table_config = table_config or {}
+    kls = table_config.pop('model_type', 'TableOCR')
+    if kls == 'TableOCR':
+        if text_formula_ocr is None:
+            raise ValueError("text_formula_ocr must be provided for table OCR engine preparation.")
+
+        table_ocr = TableOCR.from_config(
+            text_formula_ocr.text_ocr,
+            text_formula_ocr.spellchecker,
+            table_config,
+            device=device,
+        )
+    elif kls == 'VlmTableOCR':
+        assert "model_name" in table_config, "VlmTableOCR requires model_name"
+        assert "api_key" in table_config, "VlmTableOCR requires api_key"
+        table_ocr = VlmTableOCR.from_config(
+            model_name=table_config["model_name"],
+            api_key=table_config["api_key"],
+            **kwargs,
+        )
+    else:
+        raise ValueError(f'Unsupported table OCR: {kls}')
+    return table_ocr
 
 
 class Pix2Text(object):
@@ -115,15 +169,15 @@ class Pix2Text(object):
         table_config = total_configs.get('table', None)
 
         layout_parser = prepare_layout_engine(layout_config, device=device)
-        text_formula_ocr = TextFormulaOCR.from_config(
-            text_formula_config, enable_formula=enable_formula, device=device, **kwargs
+        text_formula_ocr = prepare_text_formula_ocr_engine(
+            text_formula_config, enable_formula, device, **kwargs
         )
         if enable_table:
-            table_ocr = TableOCR.from_config(
-                text_formula_ocr.text_ocr,
-                text_formula_ocr.spellchecker,
+            table_ocr = prepare_table_ocr_engine(
                 table_config,
                 device=device,
+                text_formula_ocr=text_formula_ocr,
+                **kwargs,
             )
         else:
             table_ocr = None

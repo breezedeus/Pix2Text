@@ -176,3 +176,38 @@ def test_example_text():
     p2t = Pix2Text(enable_formula=False)
     outs = p2t.recognize_text(img_fp)
     print(outs)
+
+
+def test_vlm_recognize_page():
+    import dotenv
+    dotenv.load_dotenv()
+
+    model_name=os.getenv("GEMINI_MODEL")
+    api_key=os.getenv("GEMINI_API_KEY")
+
+    # img_fp = './docs/examples/formula.jpg'
+    img_fp = './docs/examples/page2.png'
+    # img_fp = './docs/examples/mixed.jpg'
+    total_config = {
+        'layout': None,
+        'text_formula': {
+            "model_type": "VlmTextFormulaOCR",
+            "model_name": model_name,
+            "api_key": api_key,
+        },
+        "table": {
+            "model_type": "VlmTableOCR",
+            "model_name": model_name,
+            "api_key": api_key,
+        },
+    }
+    p2t = Pix2Text.from_config(total_configs=total_config)
+    out_page = p2t.recognize_page(
+        img_fp,
+        page_id='test_page_1',
+        title_contain_formula=False,
+        text_contain_formula=True,
+        save_debug_res='./outputs',
+    )
+    # print(out_page)
+    out_page.to_markdown('page-output')
