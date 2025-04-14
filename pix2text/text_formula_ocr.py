@@ -699,7 +699,10 @@ class VlmTextFormulaOCR(TextFormulaOCR):
     def _recognize_batch(self, imgs, *, res_type, return_text = True, rec_config = None):
         rec_config = rec_config or {}
         if isinstance(imgs, (str, Path, Image.Image)):
-            return self.recognize(imgs, return_text, **rec_config)
+            result = self.recognize(imgs, return_text, **rec_config)
+            if not return_text:
+                result = result[0]
+            return result
 
         results = self.vlm(imgs, **rec_config)
         if return_text:
