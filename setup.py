@@ -41,6 +41,7 @@ extras_require = {
     "multilingual": ["easyocr"],
     "dev": ["pip-tools", "pytest"],
     "serve": ["uvicorn[standard]", "fastapi", "python-multipart", "pydantic"],
+    "vlm": ["litellm"],
 }
 
 entry_points = """

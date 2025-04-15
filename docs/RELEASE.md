@@ -1,5 +1,18 @@
 # Release Notes
 
+# Update 2025.04.15: **V1.1.3** Released
+
+Major Changes:
+
+- Support for `VlmTableOCR` and `VlmTextFormulaOCR` models based on the VLM interface (see [LiteLLM documentation](https://docs.litellm.ai/docs/)) allowing the use of closed-source VLM models. Installation command: `pip install pix2text[vlm]`.
+  - Usage examples can be found in [tests/test_vlm.py](tests/test_vlm.py) and [tests/test_pix2text.py](tests/test_pix2text.py).
+
+主要变更：
+
+- 支持基于 VLM 接口（具体参考 [LiteLLM 文档](https://docs.litellm.ai/docs/)）的 `VlmTableOCR` 和 `VlmTextFormulaOCR` 模型，可使用闭源 VLM 模型。安装命令：`pip install pix2text[vlm]`。
+  - 使用方式见 [tests/test_vlm.py](tests/test_vlm.py) 和 [tests/test_pix2text.py](tests/test_pix2text.py)。
+
+
 # Update 2024.12.17: **V1.1.2.3** Released
 
 Major Changes:

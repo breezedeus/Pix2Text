@@ -8,12 +8,22 @@
 pip install pix2text
 ```
 
+### 其他语言支持
 如果需要识别**英文**与**简体中文**之外的文字，请使用以下命令安装额外的包：
 
 ```bash
 pip install pix2text[multilingual]
 ```
 
+### 使用 LLM/VLM API 接口
+
+如果需要使用 **LLM/VLM** API 接口，请使用以下命令安装额外的包：
+
+```bash
+pip install pix2text[vlm]
+```
+
+### 国内安装源
 安装速度慢的话，可以指定国内的安装源，如使用阿里云的安装源：
 
 ```bash
