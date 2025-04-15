@@ -640,7 +640,8 @@ class VlmTextFormulaOCR(TextFormulaOCR):
         Args:
             img (str or Image.Image): an image path, or `Image.Image` loaded by `Image.open()`
             return_text (bool): Whether to return only the recognized text; default value is `True`
-            kwargs (): Other parameters for `vlm.__call__()`
+            kwargs (): Other parameters for `vlm.__call__()`,
+                * `prompt`: The prompt for the VLM model
 
         Returns: a str when `return_text` is `True`, or a list of ordered (top to bottom, left to right) dicts when `return_text` is `False`,
             with each dict representing one detected box, containing keys:

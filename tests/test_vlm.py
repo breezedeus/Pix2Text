@@ -54,22 +54,17 @@ def test_vlm_table_ocr():
 
 
 def test_vlm_text_formula_ocr():
+    # img_path = "docs/examples/vietnamese.jpg" 
     img_path = "docs/examples/mixed.jpg" 
-    img_path = "docs/examples/vietnamese.jpg" 
+    img_path = "docs/examples/ch_tra1.jpg" 
     
     vlm_text_formula_ocr = VlmTextFormulaOCR.from_config(
         model_name=os.getenv("GEMINI_MODEL"),
         api_key=os.getenv("GEMINI_API_KEY"),
         enable_spell_checker=False,
     )
-    result = vlm_text_formula_ocr.recognize(img_path, return_text=False)
+    result = vlm_text_formula_ocr.recognize(img_path, resized_shape=768, return_text=False)
     
     # Print the result
     print("识别结果:")
     print(result)
-    
-    # 可以进一步测试提取公式部分
-    if hasattr(vlm_text_formula_ocr, 'extract_formula'):
-        formula = vlm_text_formula_ocr.extract_formula(result)
-        print("提取的公式:")
-        print(formula)

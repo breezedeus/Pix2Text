@@ -202,12 +202,14 @@ def test_vlm_recognize_page():
         },
     }
     p2t = Pix2Text.from_config(total_configs=total_config)
-    out_page = p2t.recognize_page(
-        img_fp,
-        page_id='test_page_1',
-        title_contain_formula=False,
-        text_contain_formula=True,
-        save_debug_res='./outputs',
-    )
+    tf_out = p2t.recognize_text_formula(img=img_fp, resized_shape=768, return_text=False)
+    print(tf_out)
+    # out_page = p2t.recognize_page(
+    #     img_fp,
+    #     page_id='test_page_1',
+    #     title_contain_formula=False,
+    #     text_contain_formula=True,
+    #     save_debug_res='./outputs',
+    # )
     # print(out_page)
-    out_page.to_markdown('page-output')
+    # out_page.to_markdown('page-output')
