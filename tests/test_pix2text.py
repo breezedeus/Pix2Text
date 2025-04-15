@@ -186,8 +186,8 @@ def test_vlm_recognize_page():
     api_key=os.getenv("GEMINI_API_KEY")
 
     # img_fp = './docs/examples/formula.jpg'
-    img_fp = './docs/examples/page2.png'
-    # img_fp = './docs/examples/mixed.jpg'
+    # img_fp = './docs/examples/page2.png'
+    img_fp = './docs/examples/mixed.jpg'
     total_config = {
         'layout': None,
         'text_formula': {

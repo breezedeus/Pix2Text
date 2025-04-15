@@ -571,57 +571,64 @@ class TextFormulaOCR(object):
         return outs
 
 
-if __name__ == '__main__':
-    from .utils import set_logger
-
-    logger = set_logger(log_level='DEBUG')
-
-    p2t = TextFormulaOCR()
-    img = 'docs/examples/english.jpg'
-    img = read_img(img, return_type='Image')
-    out = p2t.recognize(img)
-    logger.info(out)
-
-
-
 # 基于 Vlm 实现一个 TextFormulaOCR 的子类
 class VlmTextFormulaOCR(TextFormulaOCR):
     def __init__(
         self,
         *,
         vlm: Optional[Any] = None,
+        spellchecker: Optional[SpellChecker] = None,
         **kwargs,
     ):
         """
         Recognize text and formula from an image.
         Args:
             vlm (Optional[Any]): VLM model; defaults to `None`.
-            **kwargs ():
+            spellchecker (Optional[SpellChecker]): Spell Checker; defaults to `None`.
+            **kwargs (): not used for now.
         """
         if vlm is None:
             raise ValueError('vlm must not be None')
-        super().__init__(**kwargs)
         self.vlm = vlm
-        self.enable_formula = True
+        self.spellchecker = spellchecker
 
     @classmethod
     def from_config(
         cls,
-        configs: Optional[dict] = None,
+        total_configs: Optional[dict] = None,
+        enable_spell_checker: bool = True,
         **kwargs,
     ):
+        """
+        Args:
+            total_configs (dict): Configuration information for VlmTextFormulaOCR; defaults to `None`, which means using the default configuration. Usually the following keys are used:
+                * languages (str or Sequence[str]): The language code(s) of the text to be recognized; defaults to `('en', 'ch_sim')`.
+            enable_spell_checker (bool): Whether to enable the capability of Spell Checker; defaults to True.
+            **kwargs (): Reserved for other parameters: 
+                * model_name (str): The name of the VLM model; defaults to `None`, which means using the default model.
+                * api_key (str): The API key for the VLM model; defaults to `None`, which means using the default API key.
+        """
+        total_configs = total_configs or {}
         # Combine configs with any additional kwargs
         all_kwargs = kwargs.copy()
-        if configs:
-            all_kwargs.update(configs)
+        if total_configs:
+            all_kwargs.update(total_configs)
         
         vlm = Vlm(
             model_name=all_kwargs.pop("model_name", None),
             api_key=all_kwargs.pop("api_key", None),
         )
 
+        spellchecker = None
+        if enable_spell_checker:
+            languages = total_configs.get('languages', ('en', 'ch_sim'))
+            checker_languages = set(languages) & CHECKER_SUPPORTED_LANGUAGES
+            if checker_languages:
+                spellchecker = SpellChecker(language=checker_languages)
+
         return cls(
             vlm=vlm,
+            spellchecker=spellchecker,
             **all_kwargs
         )
 
@@ -721,3 +728,13 @@ class VlmTextFormulaOCR(TextFormulaOCR):
         return results
     
 
+if __name__ == '__main__':
+    from .utils import set_logger
+
+    logger = set_logger(log_level='DEBUG')
+
+    p2t = TextFormulaOCR()
+    img = 'docs/examples/english.jpg'
+    img = read_img(img, return_type='Image')
+    out = p2t.recognize(img)
+    logger.info(out)

@@ -60,6 +60,7 @@ def test_vlm_text_formula_ocr():
     vlm_text_formula_ocr = VlmTextFormulaOCR.from_config(
         model_name=os.getenv("GEMINI_MODEL"),
         api_key=os.getenv("GEMINI_API_KEY"),
+        enable_spell_checker=False,
     )
     result = vlm_text_formula_ocr.recognize(img_path, return_text=False)
     
