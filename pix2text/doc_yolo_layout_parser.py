@@ -408,6 +408,11 @@ def fetch_column_info(layout_res, img_width, img_height):
             info["col_number"] = cur_col
     logger.debug(f"Column number: {cur_col}, with column width: {col_width}")
 
+    if cur_col == 1:
+        # 只有一列，直接返回
+        for item in layout_res:
+            item["col_number"] = 1
+
     layout_res.sort(
         key=lambda x: (x["col_number"], x["position"][0][1], x["position"][0][0])
     )

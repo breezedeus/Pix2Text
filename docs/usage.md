@@ -134,6 +134,32 @@ total_config = {
 p2t = Pix2Text.from_config(total_configs=total_config)
 ```
 
+使用 VLM API 做文字和公式识别的示例如下：
+
+```python
+import os
+from pix2text import Pix2Text
+
+model_name=os.getenv("GEMINI_MODEL")  # "gemini/gemini-2.0-flash-lite"
+api_key=os.getenv("GEMINI_API_KEY")  # "<your-api-key>"
+
+total_config = {
+    'layout': None,
+    'text_formula': {
+        "model_type": "VlmTextFormulaOCR",  # 指定类名
+        "model_name": model_name,
+        "api_key": api_key,
+    },
+    "table": {
+        "model_type": "VlmTableOCR",  # 指定类名
+        "model_name": model_name,
+        "api_key": api_key,
+    },
+}
+p2t = Pix2Text.from_config(total_configs=total_config)
+```
+`model_name` 和 `api_key` 的取值，具体可参考 [LiteLLM 文档](https://docs.litellm.ai/docs/)。
+
 更多初始化的示例请参见 [tests/test_pix2text.py](https://github.com/breezedeus/Pix2Text/blob/main/tests/test_pix2text.py)。
 
 ## 各种识别接口

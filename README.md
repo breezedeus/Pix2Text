@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/figs/p2t-logo.png" width="250px"/>
+  <img src="./docs/figs/p2t-logo.png" width="220px"/>
   <div>&nbsp;</div>
 
 [![Discord](https://img.shields.io/discord/1200765964434821260?label=Discord)](https://discord.gg/GgD87WM8Tf)
@@ -29,6 +29,13 @@
 
 
 # Pix2Text
+
+## Update 2025.04.15: **V1.1.3** Released
+
+Major Changes:
+
+- Support for `VlmTableOCR` and `VlmTextFormulaOCR` models based on the VLM interface (see [LiteLLM documentation](https://docs.litellm.ai/docs/)) allowing the use of closed-source VLM models. Installation command: `pip install pix2text[vlm]`.
+  - Usage examples can be found in [tests/test_vlm.py](tests/test_vlm.py) and [tests/test_pix2text.py](tests/test_pix2text.py).
 
 ## Update 2024.11.17: **V1.1.2** Released
 
