@@ -6,7 +6,7 @@ from .utils import read_img, set_logger, merge_line_texts
 from .render import render_html
 from .doc_xl_layout import DocXLayoutParser
 # from .layoutlmv3 import LayoutLMv3LayoutParser
-from .doc_yolo_layout_parser import DocYoloLayoutParser
+# from .doc_yolo_layout_parser import DocYoloLayoutParser
 from .latex_ocr import LatexOCR
 from .formula_detector import MathFormulaDetector
 from .text_formula_ocr import TextFormulaOCR
