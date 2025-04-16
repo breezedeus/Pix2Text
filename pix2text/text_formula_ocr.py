@@ -7,7 +7,7 @@ import re
 from itertools import chain
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List
-from copy import copy, deepcopy
+from copy import copy
 
 from PIL import Image
 import numpy as np

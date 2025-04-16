@@ -24,12 +24,9 @@ from .utils import (
     merge_line_texts,
 )
 from .layout_parser import LayoutParser, ElementType
-from .doc_xl_layout import DocXLayoutParser
 # from .layoutlmv3 import LayoutLMv3LayoutParser
-from .doc_yolo_layout_parser import DocYoloLayoutParser
-from .text_formula_ocr import TextFormulaOCR, VlmTextFormulaOCR
+from .text_formula_ocr import TextFormulaOCR
 from .table_ocr import TableOCR
-from .vlm_table_ocr import VlmTableOCR
 from .page_elements import Element, Page, Document
 
 logger = logging.getLogger(__name__)
@@ -39,10 +36,14 @@ def prepare_layout_engine(layout_config: Optional[Dict[str, Any]], device: str =
     layout_config = layout_config or {}
     kls = layout_config.pop('model_type', 'DocYoloLayoutParser')
     if kls == 'DocXLayoutParser':
+        from .doc_xl_layout import DocXLayoutParser
+
         layout_engine = DocXLayoutParser.from_config(layout_config, device=device)
     # elif kls == 'LayoutLMv3LayoutParser':
     #     layout_engine = LayoutLMv3LayoutParser.from_config(layout_config, device=device)
     elif kls == 'DocYoloLayoutParser':
+        from .doc_yolo_layout_parser import DocYoloLayoutParser
+
         layout_engine = DocYoloLayoutParser.from_config(layout_config, device=device)
     else:
         raise ValueError(f'Unsupported layout parser: {kls}')
@@ -59,6 +60,8 @@ def prepare_text_formula_ocr_engine(
             text_formula_config, enable_formula=enable_formula, device=device, **kwargs
         )
     elif kls == 'VlmTextFormulaOCR':
+        from .text_formula_ocr import VlmTextFormulaOCR
+
         assert "model_name" in text_formula_config, "VlmTextFormulaOCR requires model_name"
         assert "api_key" in text_formula_config, "VlmTextFormulaOCR requires api_key"
         text_formula_ocr = VlmTextFormulaOCR.from_config(
@@ -90,6 +93,8 @@ def prepare_table_ocr_engine(
             device=device,
         )
     elif kls == 'VlmTableOCR':
+        from .vlm_table_ocr import VlmTableOCR
+
         assert "model_name" in table_config, "VlmTableOCR requires model_name"
         assert "api_key" in table_config, "VlmTableOCR requires api_key"
         table_ocr = VlmTableOCR.from_config(
