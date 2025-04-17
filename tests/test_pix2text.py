@@ -213,3 +213,17 @@ def test_vlm_recognize_page():
     # )
     # print(out_page)
     # out_page.to_markdown('page-output')
+
+
+def test_multilingual_ocr():
+    img_fp = 'docs/examples/vietnamese.jpg'
+    img_fp = 'docs/feedbacks/ru.png'
+    total_config = {
+        "layout": {},
+        "text_formula": {"languages": ("ru",)},
+    }
+    p2t = Pix2Text.from_config(total_configs=total_config)
+    outs = p2t.recognize(
+        img_fp, file_type="text_formula", return_text=True, auto_line_break=False
+    )
+    print(outs)
