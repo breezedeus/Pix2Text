@@ -11,7 +11,6 @@ from PIL import Image
 import numpy as np
 
 from .utils import read_img
-from .vlm_api import Vlm
 
 
 
@@ -77,6 +76,8 @@ class VlmTableOCR(object):
         Returns:
             VlmTableOCR: An instance of VlmTableOCR
         """
+        from .vlm_api import Vlm
+
         # Combine configs with any additional kwargs
         all_kwargs = kwargs.copy()
         if configs:

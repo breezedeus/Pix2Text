@@ -37,7 +37,6 @@ from .utils import (
     read_img,
     save_layout_img,
 )
-from .vlm_api import Vlm
 
 logger = logging.getLogger(__name__)
 
@@ -608,6 +607,8 @@ class VlmTextFormulaOCR(TextFormulaOCR):
                 * model_name (str): The name of the VLM model; defaults to `None`, which means using the default model.
                 * api_key (str): The API key for the VLM model; defaults to `None`, which means using the default API key.
         """
+        from .vlm_api import Vlm
+
         total_configs = total_configs or {}
         # Combine configs with any additional kwargs
         all_kwargs = kwargs.copy()
