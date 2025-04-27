@@ -1,5 +1,16 @@
 # Release Notes
 
+# Update 2025.04.27: **V1.1.3.1** Released
+
+Major Changes:
+
+- Bugfix: Fixed the issue of model import related to VLM.
+
+主要变更：
+
+- 修复了 VLM 相关的模型导入问题。
+
+
 # Update 2025.04.15: **V1.1.3** Released
 
 Major Changes:
