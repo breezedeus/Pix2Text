@@ -69,6 +69,8 @@ def custom_deepcopy(value):
 
 
 def select_device(device) -> str:
+    if isinstance(device, str) and device.lower() == "gpu":
+        device = "cuda"
     if device is not None:
         return device
 
@@ -155,6 +157,13 @@ def read_tsv_file(fp, sep='\t', img_folder=None, mode='eval'):
 def get_average_color(img):
     # Convert image to numpy array
     img_array = np.array(img)
+    
+    # Check if image is grayscale (2D) or has channels (3D)
+    if len(img_array.shape) < 3:
+        # Grayscale image (single channel)
+        avg_value = img_array.mean()
+        return (int(avg_value),) * 3
+    
     # Get average color, ignoring fully transparent pixels
     if img_array.shape[2] == 4:  # RGBA
         alpha = img_array[:,:,3]
@@ -164,8 +173,22 @@ def get_average_color(img):
             avg_color = rgb[mask].mean(axis=0)
         else:
             avg_color = rgb.mean(axis=(0,1))
-    else:  # RGB
-        avg_color = img_array.mean(axis=(0,1))
+    else:  # RGB or other format
+        channels = img_array.shape[2]
+        if channels == 1:  # Single channel (like grayscale with dimension)
+            avg_value = img_array.mean()
+            return (int(avg_value),) * 3
+        elif channels == 3:  # RGB
+            avg_color = img_array.mean(axis=(0,1))
+        else:  # Other formats, use first 3 channels or pad
+            avg_color = img_array[:,:,:min(3, channels)].mean(axis=(0,1))
+            # If less than 3 channels, duplicate the last one
+            if channels < 3:
+                avg_color = list(avg_color)
+                while len(avg_color) < 3:
+                    avg_color.append(avg_color[-1])
+                avg_color = np.array(avg_color)
+    
     return tuple(map(int, avg_color))
 
 
@@ -178,7 +201,7 @@ def convert_transparent_to_contrasting(img: Image.Image):
     Convert transparent pixels to a contrasting color.
     """
     # Check if the image has an alpha channel
-    if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+    if img.mode in ('RGBA', 'LA'):
         # Get average color of non-transparent pixels
         avg_color = get_average_color(img)
 
@@ -186,11 +209,33 @@ def convert_transparent_to_contrasting(img: Image.Image):
         bg_color = get_contrasting_color(avg_color)
 
         # Create a new background image with the contrasting color
-        background = Image.new('RGBA', img.size, bg_color)
+        # Add alpha channel (255) for RGBA format
+        rgba_bg_color = bg_color + (255,)
+        background = Image.new('RGBA', img.size, rgba_bg_color)
 
         # Paste the image on the background.
-        # If the image has an alpha channel, it will be used as a mask
+        # The alpha channel will be used as mask
         background.paste(img, (0, 0), img)
+
+        # Convert to RGB (removes alpha channel)
+        return background.convert('RGB')
+    # Special handling for palette mode with transparency
+    elif img.mode == 'P' and 'transparency' in img.info:
+        # Convert P to RGBA first, which handles the transparency info properly
+        img_rgba = img.convert('RGBA')
+        
+        # Get average color of non-transparent pixels
+        avg_color = get_average_color(img_rgba)
+
+        # Get contrasting color for background
+        bg_color = get_contrasting_color(avg_color)
+
+        # Create a new background image with the contrasting color
+        rgba_bg_color = bg_color + (255,)
+        background = Image.new('RGBA', img.size, rgba_bg_color)
+
+        # Paste the RGBA-converted image on the background
+        background.paste(img_rgba, (0, 0), img_rgba)
 
         # Convert to RGB (removes alpha channel)
         return background.convert('RGB')

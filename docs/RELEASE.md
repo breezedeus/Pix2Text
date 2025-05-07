@@ -1,5 +1,15 @@
 # Release Notes
 
+# Update 2025.05.06: **V1.1.3.2** Released
+
+Major Changes:
+
+- Fixed a potential error when processing transparent images, see [#171](https://github.com/breezedeus/Pix2Text/issues/171) for details.
+
+主要变更：
+
+- 修复了处理透明图片时可能出现的错误，具体见 [#171](https://github.com/breezedeus/Pix2Text/issues/171) 。
+
 # Update 2025.04.27: **V1.1.3.1** Released
 
 Major Changes:
@@ -9,7 +19,6 @@ Major Changes:
 主要变更：
 
 - 修复了 VLM 相关的模型导入问题。
-
 
 # Update 2025.04.15: **V1.1.3** Released
 
