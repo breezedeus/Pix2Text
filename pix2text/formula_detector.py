@@ -70,7 +70,7 @@ def find_files(directory, extension):
     # 创建Path对象
     dir_path = Path(directory)
 
-    pattern = f"mfd*{extension}"
+    pattern = f"*mfd*{extension}"
 
     outs = []
     # 使用rglob方法递归查找匹配的文件
