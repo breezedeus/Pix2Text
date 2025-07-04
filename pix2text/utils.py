@@ -6,6 +6,7 @@ import hashlib
 import os
 import re
 import shutil
+import shlex
 from copy import deepcopy
 from functools import cmp_to_key
 from pathlib import Path
@@ -1057,6 +1058,26 @@ def merge_line_texts(
     return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'
 
 
+def run_hf_download_cmd(remote_repo, model_dir, env=None):
+    """
+    统一在不同平台下执行 huggingface-cli 下载命令。
+    Args:
+        remote_repo: huggingface 仓库名
+        model_dir: 下载到的本地目录
+        env: 可选，传递给 subprocess 的环境变量
+    """
+    if platform.system() == 'Windows':
+        download_cmd = [
+            'huggingface-cli', 'download', '--repo-type', 'model',
+            '--resume-download', '--local-dir-use-symlinks', 'False',
+            remote_repo, '--local-dir', str(model_dir)
+        ]
+        subprocess.run(download_cmd, env=env, shell=False)
+    else:
+        download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {remote_repo} --local-dir {shlex.quote(str(model_dir))}'
+        subprocess.run(download_cmd, env=env, shell=True)
+
+
 def prepare_model_files(root, model_info, mirror_url='https://hf-mirror.com') -> Path:
     model_root_dir = Path(root) / MODEL_VERSION
     model_dir = model_root_dir / model_info['local_model_id']
@@ -1064,16 +1085,14 @@ def prepare_model_files(root, model_info, mirror_url='https://hf-mirror.com') ->
         return model_dir
     assert 'hf_model_id' in model_info
     model_dir.mkdir(parents=True)
-    download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {model_info["hf_model_id"]} --local-dir {model_dir}'
-    subprocess.run(download_cmd, shell=True)
+    run_hf_download_cmd(model_info["hf_model_id"], model_dir)
     # 如果当前目录下无文件，就从huggingface上下载
     if not list(model_dir.glob('**/[!.]*')):
         if model_dir.exists():
             shutil.rmtree(str(model_dir))
-        # os.system('HF_ENDPOINT=https://hf-mirror.com ' + download_cmd)
         env = os.environ.copy()
         env['HF_ENDPOINT'] = mirror_url
-        subprocess.run(download_cmd, env=env, shell=True)
+        run_hf_download_cmd(model_info["hf_model_id"], model_dir, env=env)
     return model_dir
 
 
@@ -1096,8 +1115,7 @@ def prepare_model_files2(model_fp_or_dir, remote_repo, file_or_dir='file', mirro
     if model_dir.exists():
         shutil.rmtree(str(model_dir))
     model_dir.mkdir(parents=True)
-    download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {remote_repo} --local-dir {model_dir}'
-    subprocess.run(download_cmd, shell=True)
+    run_hf_download_cmd(remote_repo, model_dir)
     download_status = False
     if file_or_dir == 'file':
         if model_fp_or_dir.exists():  # download failed above
@@ -1110,5 +1128,5 @@ def prepare_model_files2(model_fp_or_dir, remote_repo, file_or_dir='file', mirro
             shutil.rmtree(str(model_dir))
         env = os.environ.copy()
         env['HF_ENDPOINT'] = mirror_url
-        subprocess.run(download_cmd, env=env, shell=True)
+        run_hf_download_cmd(remote_repo, model_dir, env=env)
     return model_fp_or_dir
