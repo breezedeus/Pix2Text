@@ -16,6 +16,16 @@ predict:
 #	 --latex-ocr-model-fp ~/.pix2text/formula/p2t-mfr-20230702.pth --rec-kwargs '{"det_bbox_max_expand_ratio": 0}'\
 #	 -i docs/examples/ch_tra7.jpg --save-analysis-res tmp-output.jpg
 
+evaluate-mfr:
+	p2t evaluate -l en,ch_sim --mfd-config '{"model_name": "mfd"}' \
+	--formula-ocr-config '{"model_name":"mfr", "model_backend": "onnx"}' \
+	--text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' \
+	--resized-shape 768 --auto-line-break --file-type formula \
+	--max-samples 50 --prefix-img-dir data \
+	-i data/exported_call_events_with_images.json -o data/exported_cer_mfr1.0.json \
+	--output-excel data/exported_cer_mfr1.0.xls --output-html data/exported_cer_mfr1.0.html
+	
+
 package:
 	rm -rf build
 	python setup.py sdist bdist_wheel

@@ -1130,3 +1130,398 @@ def prepare_model_files2(model_fp_or_dir, remote_repo, file_or_dir='file', mirro
         env['HF_ENDPOINT'] = mirror_url
         run_hf_download_cmd(remote_repo, model_dir, env=env)
     return model_fp_or_dir
+
+
+def calculate_cer(predicted_text: str, ground_truth_text: str) -> float:
+    """
+    Calculate Character Error Rate (CER) between predicted text and ground truth text.
+    
+    Uses torchmetrics implementation for accurate CER calculation.
+    
+    Args:
+        predicted_text: The predicted text string
+        ground_truth_text: The ground truth text string
+        
+    Returns:
+        float: Character Error Rate (0.0 = perfect match, higher values = more errors)
+    """
+    try:
+        from torchmetrics.text import CharErrorRate
+        
+        # Initialize the CER metric
+        cer_metric = CharErrorRate()
+        
+        # Calculate CER
+        cer = cer_metric(predicted_text, ground_truth_text)
+        
+        return float(cer.item())
+        
+    except ImportError:
+        # Fallback to simple implementation if torchmetrics is not available
+        import difflib
+        
+        # Convert to lists of characters for comparison
+        pred_chars = list(predicted_text)
+        gt_chars = list(ground_truth_text)
+        
+        # Use difflib to get the differences
+        matcher = difflib.SequenceMatcher(None, gt_chars, pred_chars)
+        
+        # Count operations
+        substitutions = 0
+        deletions = 0
+        insertions = 0
+        
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == 'replace':
+                # Count substitutions (replacements)
+                substitutions += max(i2 - i1, j2 - j1)
+            elif tag == 'delete':
+                # Count deletions
+                deletions += i2 - i1
+            elif tag == 'insert':
+                # Count insertions
+                insertions += j2 - j1
+            # 'equal' operations don't count as errors
+        
+        # Calculate total errors
+        total_errors = substitutions + deletions + insertions
+        
+        # Calculate CER
+        if len(gt_chars) == 0:
+            # If ground truth is empty, CER is 1.0 if prediction is not empty, 0.0 otherwise
+            return 1.0 if len(pred_chars) > 0 else 0.0
+        
+        cer = total_errors / len(gt_chars)
+        return cer
+
+
+def calculate_cer_batch(predictions: List[str], ground_truths: List[str]) -> Dict[str, float]:
+    """
+    Calculate CER for a batch of predictions and ground truths.
+    
+    Uses torchmetrics for efficient batch processing when available.
+    
+    Args:
+        predictions: List of predicted text strings
+        ground_truths: List of ground truth text strings
+        
+    Returns:
+        dict: Dictionary containing average CER and individual CERs
+    """
+    if len(predictions) != len(ground_truths):
+        raise ValueError("Number of predictions must equal number of ground truths")
+    
+    try:
+        from torchmetrics.text import CharErrorRate
+        
+        # Initialize the CER metric
+        cer_metric = CharErrorRate()
+        
+        # Calculate CER for the entire batch
+        batch_cer = cer_metric(predictions, ground_truths)
+        
+        # Calculate individual CERs
+        cers = []
+        for pred, gt in zip(predictions, ground_truths):
+            individual_metric = CharErrorRate()
+            cer = individual_metric([pred], [gt])
+            cers.append(float(cer.item()))
+        
+        return {
+            'average_cer': float(batch_cer.item()),
+            'individual_cers': cers,
+            'total_samples': len(cers)
+        }
+        
+    except ImportError:
+        # Fallback to individual calculation if torchmetrics is not available
+        cers = []
+        for pred, gt in zip(predictions, ground_truths):
+            cer = calculate_cer(pred, gt)
+            cers.append(cer)
+        
+        avg_cer = sum(cers) / len(cers) if cers else 0.0
+        
+        return {
+            'average_cer': avg_cer,
+            'individual_cers': cers,
+            'total_samples': len(cers)
+        }
+
+
+def save_evaluation_results_to_excel_with_images(
+    results: List[Dict[str, Any]], 
+    output_file: str,
+    img_path_key: str = 'img_path',
+    gt_key: str = 'ground_truth',
+    pred_key: str = 'prediction',
+    cer_key: str = 'cer',
+    prefix_img_dir: str = '',
+    max_img_width: int = 200,
+    max_img_height: int = 150
+) -> bool:
+    """
+    Save evaluation results to Excel file with embedded images.
+    
+    Args:
+        results: List of dictionaries containing evaluation results
+        output_file: Path to save the Excel file
+        img_path_key: Key name for image path in results
+        gt_key: Key name for ground truth text in results
+        pred_key: Key name for predicted text in results
+        cer_key: Key name for CER value in results
+        prefix_img_dir: Root directory to prepend to image paths
+        max_img_width: Maximum width for embedded images in pixels
+        max_img_height: Maximum height for embedded images in pixels
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        import openpyxl
+        from openpyxl.drawing.image import Image as XLImage
+        from openpyxl.utils import get_column_letter
+        from PIL import Image as PILImage
+        import io
+        
+    except ImportError as e:
+        print(f"Error: Required library not found: {e}")
+        print("Please install openpyxl: pip install openpyxl")
+        return False
+    
+    try:
+        # Create a new workbook and select the active sheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Evaluation Results"
+        
+        # Set up headers
+        headers = ['Image', 'Ground Truth', 'Prediction', 'CER']
+        for col, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col, value=header)
+            ws.cell(row=1, column=col).font = openpyxl.styles.Font(bold=True)
+        
+        # Set column widths
+        ws.column_dimensions['A'].width = 30  # Image column
+        ws.column_dimensions['B'].width = 50  # Ground Truth column
+        ws.column_dimensions['C'].width = 50  # Prediction column
+        ws.column_dimensions['D'].width = 15  # CER column
+        
+        # Process each result
+        for row_idx, result in enumerate(results, 2):
+            # Handle image path
+            img_path = result.get(img_path_key, '')
+            if prefix_img_dir and not os.path.isabs(img_path):
+                img_path = os.path.join(prefix_img_dir, img_path)
+            
+            # Add ground truth, prediction, and CER
+            ws.cell(row=row_idx, column=2, value=result.get(gt_key, ''))
+            ws.cell(row=row_idx, column=3, value=result.get(pred_key, ''))
+            ws.cell(row=row_idx, column=4, value=result.get(cer_key, 0.0))
+            
+            # Try to embed image
+            if img_path and os.path.exists(img_path):
+                try:
+                    # Open and resize image
+                    with PILImage.open(img_path) as pil_img:
+                        # Convert to RGB if necessary
+                        if pil_img.mode in ('RGBA', 'LA', 'P'):
+                            pil_img = pil_img.convert('RGB')
+                        
+                        # Calculate resize ratio to fit within max dimensions
+                        width, height = pil_img.size
+                        ratio = min(max_img_width / width, max_img_height / height, 1.0)
+                        new_width = int(width * ratio)
+                        new_height = int(height * ratio)
+                        
+                        if ratio < 1.0:
+                            pil_img = pil_img.resize((new_width, new_height), PILImage.Resampling.LANCZOS)
+                        
+                        # Save to bytes
+                        img_bytes = io.BytesIO()
+                        pil_img.save(img_bytes, format='PNG')
+                        img_bytes.seek(0)
+                        
+                        # Create openpyxl image
+                        xl_img = XLImage(img_bytes)
+                        xl_img.width = new_width
+                        xl_img.height = new_height
+                        
+                        # Add image to cell
+                        ws.add_image(xl_img, f'A{row_idx}')
+                        
+                except Exception as e:
+                    print(f"Warning: Could not embed image {img_path}: {e}")
+                    ws.cell(row=row_idx, column=1, value=f"Image Error: {os.path.basename(img_path)}")
+            else:
+                ws.cell(row=row_idx, column=1, value=f"Not Found: {os.path.basename(img_path) if img_path else 'No path'}")
+        
+        # Save the workbook
+        wb.save(output_file)
+        print(f"Excel file with embedded images saved to: {output_file}")
+        return True
+        
+    except Exception as e:
+        print(f"Error saving Excel file: {e}")
+        return False
+
+
+def create_html_report_with_images(
+    results: List[Dict[str, Any]], 
+    output_file: str,
+    img_path_key: str = 'img_path',
+    gt_key: str = 'ground_truth',
+    pred_key: str = 'prediction',
+    cer_key: str = 'cer',
+    prefix_img_dir: str = '',
+    max_img_width: int = 200,
+    max_img_height: int = 150
+) -> bool:
+    """
+    Create HTML report with embedded images as alternative to Excel.
+    
+    Args:
+        results: List of dictionaries containing evaluation results
+        output_file: Path to save the HTML file
+        img_path_key: Key name for image path in results
+        gt_key: Key name for ground truth text in results
+        pred_key: Key name for predicted text in results
+        cer_key: Key name for CER value in results
+        prefix_img_dir: Root directory to prepend to image paths
+        max_img_width: Maximum width for embedded images in pixels
+        max_img_height: Maximum height for embedded images in pixels
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        import base64
+        from PIL import Image as PILImage
+        import io
+        
+        # HTML template
+        html_template = """<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pix2Text Evaluation Results</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        table {{ border-collapse: collapse; width: 100%; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }}
+        th {{ background-color: #f2f2f2; font-weight: bold; }}
+        img {{ max-width: {max_width}px; max-height: {max_height}px; }}
+        .cer-good {{ color: green; }}
+        .cer-medium {{ color: orange; }}
+        .cer-bad {{ color: red; }}
+        .image-error {{ color: red; font-style: italic; }}
+    </style>
+</head>
+<body>
+    <h1>Pix2Text Evaluation Results</h1>
+    <table>
+        <tr>
+            <th>Image</th>
+            <th>Ground Truth</th>
+            <th>Prediction</th>
+            <th>CER</th>
+        </tr>
+        {rows}
+    </table>
+</body>
+</html>"""
+        
+        rows_html = ""
+        total_cer = 0.0
+        valid_count = 0
+        
+        for result in results:
+            # Handle image path
+            img_path = result.get(img_path_key, '')
+            if prefix_img_dir and not os.path.isabs(img_path):
+                img_path = os.path.join(prefix_img_dir, img_path)
+            
+            # Process image
+            img_html = ""
+            if img_path and os.path.exists(img_path):
+                try:
+                    with PILImage.open(img_path) as pil_img:
+                        if pil_img.mode in ('RGBA', 'LA', 'P'):
+                            pil_img = pil_img.convert('RGB')
+                        
+                        # Resize if needed
+                        width, height = pil_img.size
+                        ratio = min(max_img_width / width, max_img_height / height, 1.0)
+                        new_width = int(width * ratio)
+                        new_height = int(height * ratio)
+                        
+                        if ratio < 1.0:
+                            pil_img = pil_img.resize((new_width, new_height), PILImage.Resampling.LANCZOS)
+                        
+                        # Convert to base64
+                        img_bytes = io.BytesIO()
+                        pil_img.save(img_bytes, format='PNG')
+                        img_base64 = base64.b64encode(img_bytes.getvalue()).decode()
+                        
+                        img_html = f'<img src="data:image/png;base64,{img_base64}" alt="Image">'
+                        
+                except Exception as e:
+                    img_html = f'<span class="image-error">Error: {os.path.basename(img_path)}</span>'
+            else:
+                img_html = f'<span class="image-error">Not Found: {os.path.basename(img_path) if img_path else "No path"}</span>'
+            
+            # Get text values
+            gt_text = result.get(gt_key, '').replace('\n', '<br>')
+            pred_text = result.get(pred_key, '').replace('\n', '<br>')
+            cer_value = result.get(cer_key, 0.0)
+            
+            # Determine CER class for styling
+            if cer_value <= 0.1:
+                cer_class = "cer-good"
+            elif cer_value <= 0.3:
+                cer_class = "cer-medium"
+            else:
+                cer_class = "cer-bad"
+            
+            if cer_value is not None:
+                total_cer += cer_value
+                valid_count += 1
+            
+            # Create row HTML
+            row_html = f"""        <tr>
+            <td>{img_html}</td>
+            <td>{gt_text}</td>
+            <td>{pred_text}</td>
+            <td class="{cer_class}">{cer_value:.4f}</td>
+        </tr>"""
+            rows_html += row_html
+        
+        # Calculate average CER
+        avg_cer = total_cer / valid_count if valid_count > 0 else 0.0
+        
+        # Add summary row
+        summary_row = f"""        <tr style="background-color: #f9f9f9; font-weight: bold;">
+            <td colspan="3">Average CER</td>
+            <td>{avg_cer:.4f}</td>
+        </tr>"""
+        rows_html += summary_row
+        
+        # Generate final HTML
+        final_html = html_template.format(
+            max_width=max_img_width,
+            max_height=max_img_height,
+            rows=rows_html
+        )
+        
+        # Save HTML file
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(final_html)
+        
+        print(f"HTML report saved to: {output_file}")
+        print(f"Average CER: {avg_cer:.4f}")
+        return True
+        
+    except Exception as e:
+        print(f"Error creating HTML report: {e}")
+        return False
