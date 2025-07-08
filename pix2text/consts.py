@@ -47,6 +47,11 @@ class AvailableModels(object):
                 'hf_model_id': 'breezedeus/pix2text-mfd-1.5',
                 'local_model_id': 'mfd-1.5-onnx',
             },
+            ('mfr-1.5', 'onnx'): {
+                # 'filename': 'p2t-mfr-onnx.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-1.5',
+                'local_model_id': 'mfr-1.5-onnx',
+            },
         }
     )
 
@@ -126,6 +131,21 @@ class AvailableModels(object):
                 # 'filename': 'p2t-mfd-pro-pytorch.zip',  # download the file from CN OSS
                 'hf_model_id': 'breezedeus/pix2text-mfd-pro-1.5-pytorch',
                 'local_model_id': 'mfd-pro-1.5-pytorch',
+            },
+            ('mfr-1.5', 'pytorch'): {
+                # 'filename': 'p2t-mfr-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-1.5-pytorch',
+                'local_model_id': 'mfr-1.5-pytorch',
+            },
+            ('mfr-pro-1.5', 'onnx'): {
+                # 'filename': 'p2t-mfr-pro-onnx.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-pro-1.5',
+                'local_model_id': 'mfr-pro-1.5-onnx',
+            },
+            ('mfr-pro-1.5', 'pytorch'): {
+                # 'filename': 'p2t-mfr-pro-pytorch.zip',  # download the file from CN OSS
+                'hf_model_id': 'breezedeus/pix2text-mfr-pro-1.5-pytorch',
+                'local_model_id': 'mfr-pro-1.5-pytorch',
             },
         }
     )
