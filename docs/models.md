@@ -44,7 +44,7 @@ Pix2Text 自 **V1.1.1** 开始，**数学公式检测模型** 下载地址：[br
 
 ## 数学公式识别模型（MFR）
 **数学公式识别模型** 下载地址：[breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) （不能科学上网请使用 [国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfr)）。
-把这里面的所有文件都下载到 `~/.pix2text/1.1/mfr-onnx` （Windows 系统放在 `C:\Users\<username>\AppData\Roaming\pix2text\1.1\mfr-onnx`）目录下即可，目录不存在的话请自己创建。
+把这里面的所有文件都下载到 `~/.pix2text/1.1/mfr-1.5-onnx` （Windows 系统放在 `C:\Users\<username>\AppData\Roaming\pix2text\1.1\mfr-1.5-onnx`）目录下即可，目录不存在的话请自己创建。
 
 > 注：上面路径的 `1.1` 是 pix2text 的版本号，`1.1.*` 都对应 `1.1`。如果是其他版本请自行替换。
 

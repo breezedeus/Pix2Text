@@ -18,7 +18,7 @@ predict:
 
 evaluate-mfr:
 	p2t evaluate -l en,ch_sim --mfd-config '{"model_name": "mfd"}' \
-	--formula-ocr-config '{"model_name":"mfr", "model_backend": "onnx"}' \
+	--formula-ocr-config '{"model_name":"mfr-1.5","model_backend":"onnx"}' \
 	--text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' \
 	--resized-shape 768 --auto-line-break --file-type formula \
 	--max-samples 50 --prefix-img-dir data \
@@ -36,7 +36,7 @@ upload:
 
 # 开启 OCR HTTP 服务
 serve:
-	p2t serve -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}'
+	p2t serve -l en,ch_sim -a mfd -t yolov7 --analyzer-model-fp ~/.cnstd/1.2/analysis/mfd-yolov7-epoch224-20230613.pt --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}'
 
 docker-build:
 	docker build -t breezedeus/pix2text:v$(VERSION) .

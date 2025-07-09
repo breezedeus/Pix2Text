@@ -53,7 +53,7 @@ p2t predict -l en,ch_sim --resized-shape 768 --file-type pdf -i docs/examples/te
 预测时也支持使用自定义的参数或模型。例如，使用自定义的模型进行预测：
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro-1.5", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
 
@@ -99,7 +99,7 @@ p2t serve -l en,ch_sim -H 0.0.0.0 -p 8503
 服务开启时也支持使用自定义的参数或模型。例如，使用自定义的模型进行预测：
 
 ```bash
-p2t serve -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' -H 0.0.0.0 -p 8503
+p2t serve -l en,ch_sim --mfd-config '{"model_name": "mfd-pro-1.5", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' -H 0.0.0.0 -p 8503
 ```
 
 ### 服务调用
