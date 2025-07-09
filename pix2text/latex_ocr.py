@@ -36,7 +36,7 @@ class LatexOCR(object):
     def __init__(
         self,
         *,
-        model_name: str = 'mfr',
+        model_name: str = 'mfr-1.5',
         model_backend: str = 'onnx',
         device: str = None,
         context: str = None,  # deprecated, use `device` instead
@@ -49,7 +49,7 @@ class LatexOCR(object):
         """Initialize a LatexOCR model.
 
         Args:
-            model_name (str, optional): The name of the model. Defaults to 'mfr'.
+            model_name (str, optional): The name of the model. Defaults to 'mfr-1.5'.
             model_backend (str, optional): The model backend, either 'onnx' or 'pytorch'. Defaults to 'onnx'.
             device (str, optional): What device to use for computation, supports `['cpu', 'cuda', 'gpu']`; defaults to None, which selects the device automatically.
             context (str, optional): Deprecated, use `device` instead. What device to use for computation, supports `['cpu', 'cuda', 'gpu']`; defaults to None, which selects the device automatically.
