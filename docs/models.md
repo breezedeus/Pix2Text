@@ -5,8 +5,8 @@
 - **版面分析模型**：[breezedeus/pix2text-layout](https://huggingface.co/breezedeus/pix2text-layout) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-layout)）。
 - **表格识别模型**：[breezedeus/pix2text-table-rec](https://huggingface.co/breezedeus/pix2text-table-rec) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-table-rec)）。
 - **文字识别引擎**：支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 [CnOCR](https://github.com/breezedeus/cnocr) ，其他语言的识别使用的是开源 OCR 工具 [EasyOCR](https://github.com/JaidedAI/EasyOCR) 。
-- **数学公式检测模型（MFD）**：[breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfd)）。基于 [CnSTD](https://github.com/breezedeus/cnstd) 实现。
-- **数学公式识别模型（MFR）**：[breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfr)）。
+- **数学公式检测模型（MFD）**：[breezedeus/pix2text-mfd-1.5](https://huggingface.co/breezedeus/pix2text-mfd-1.5) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfd-1.5)）。基于 [CnSTD](https://github.com/breezedeus/cnstd) 实现。
+- **数学公式识别模型（MFR）**：[breezedeus/pix2text-mfr-1.5](https://huggingface.co/breezedeus/pix2text-mfr-1.5) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfr-1.5)）。
 
 其中多个模型来自其他开源作者， 非常感谢他们的贡献。
 
@@ -83,12 +83,12 @@ EasyOCR 模型下载请参考 [EasyOCR](https://github.com/JaidedAI/EasyOCR)。
 
 | 模型名称         | 购买地址                                                       | 说明 
 |--------------|------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| MFD pro 模型   | ~~[Lemon Squeezy](https://ocr.lemonsqueezy.com)~~          | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn)    | 
-| MFD pro 模型   | ~~[B站工房](https://gf.bilibili.com/item/detail/1102870055)~~ | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) | 
+| MFD pro 模型   | [Lemon Squeezy](https://ocr.lemonsqueezy.com)          | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn)    | 
+| MFD pro 模型   | [B站](https://mall.bilibili.com/neul-next/detailuniversal/detail.html?isMerchant=1&page=detailuniversal_detail&saleType=10&itemsId=11883911&loadingShow=1&noTitleBar=1&msource=merchant_share) | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) | 
 | MFR pro 模型   | [Lemon Squeezy](https://ocr.lemonsqueezy.com)              | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn)    | 
-| MFR pro 模型   | [B站工房](https://gf.bilibili.com/item/detail/1103052055)     | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) | 
+| MFR pro 模型   | [B站](https://mall.bilibili.com/neul-next/detailuniversal/detail.html?isMerchant=1&page=detailuniversal_detail&saleType=10&itemsId=11884166&loadingShow=1&noTitleBar=1&msource=merchant_share)     | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) | 
 | CnOCR pro 模型 | [Lemon Squeezy](https://ocr.lemonsqueezy.com)              | 包含企业版和个人版，可开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) 和 [CnOCR详细资料](https://www.breezedeus.com/article/cnocr) | 
-| CnOCR pro 模型 | [B站工房](https://gf.bilibili.com/item/detail/1104820055)     | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) 和 [CnOCR详细资料](https://www.breezedeus.com/article/cnocr) | 
+| CnOCR pro 模型 | [B站](https://mall.bilibili.com/neul-next/detailuniversal/detail.html?isMerchant=1&page=detailuniversal_detail&saleType=10&itemsId=11884138&loadingShow=1&noTitleBar=1&msource=merchant_share)     | 仅包含个人版，不可商用，不能开发票。具体说明见：[P2T详细资料](https://www.breezedeus.com/article/pix2text_cn) 和 [CnOCR详细资料](https://www.breezedeus.com/article/cnocr) | 
 
 购买过程遇到问题可以扫码加小助手为好友进行沟通，备注 `p2t`，小助手会尽快答复：
 
