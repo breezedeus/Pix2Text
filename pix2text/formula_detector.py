@@ -25,7 +25,7 @@ class MathFormulaDetector(YoloDetector):
     def __init__(
         self,
         *,
-        model_name: str = 'mfd',
+        model_name: str = 'mfd-1.5',
         model_backend: str = 'onnx',
         device: Optional[str] = None,
         model_path: Optional[Union[str, Path]] = None,
@@ -37,7 +37,7 @@ class MathFormulaDetector(YoloDetector):
         Math Formula Detector based on YOLO.
 
         Args:
-            model_name (str): model name, default is 'mfd'.
+            model_name (str): model name, default is 'mfd-1.5'.
             model_backend (str): model backend, default is 'onnx'.
             device (optional str): device to use, default is None.
             model_path (optional str): model path, default is None.
@@ -70,7 +70,7 @@ def find_files(directory, extension):
     # 创建Path对象
     dir_path = Path(directory)
 
-    pattern = f"mfd*{extension}"
+    pattern = f"*mfd*{extension}"
 
     outs = []
     # 使用rglob方法递归查找匹配的文件

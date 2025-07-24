@@ -22,7 +22,7 @@ doc.to_markdown('output-md')  # 导出的 Markdown 信息保存在 output-md 目
 也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro-1.5", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --rec-kwargs '{"page_numbers": [0, 1]}' --resized-shape 768 --file-type pdf -i docs/examples/test-doc.pdf -o output-md --save-debug-res output-debug
 ```
 
 识别结果见 [output-md/output.md](output-md/output.md)。
@@ -52,7 +52,7 @@ page.to_markdown('output-page')  # 导出的 Markdown 信息保存在 output-pag
 也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type page -i docs/examples/page2.png -o output-page --save-debug-res output-debug-page
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro-1.5", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type page -i docs/examples/page2.png -o output-page --save-debug-res output-debug-page
 ```
 
 识别结果和 [output-md/output.md](output-md/output.md) 类似。
@@ -82,7 +82,7 @@ print(outs)
 也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFD + MFR + CnOCR 三个付费模型）进行识别：
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg --save-debug-res out-debug-en1.jpg
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro-1.5", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg --save-debug-res out-debug-en1.jpg
 ```
 
 或者使用免费开源模型进行识别：
@@ -116,7 +116,7 @@ print(outs)
 也可以使用命令行完成一样的功能，如下面命令使用了付费版模型（MFR 一个付费模型）进行识别：
 
 ```bash
-p2t predict -l en,ch_sim --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --file-type formula -i docs/examples/math-formula-42.png
+p2t predict -l en,ch_sim --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --file-type formula -i docs/examples/math-formula-42.png
 ```
 
 或者使用免费开源模型进行识别：
@@ -171,7 +171,7 @@ p2t predict -l en,ch_sim --file-type text --no-return-text -i docs/examples/gene
 **识别命令**：
 
 ```bash
-p2t predict -l en --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
+p2t predict -l en --mfd-config '{"model_name": "mfd-pro-1.5", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --file-type text_formula -i docs/examples/en1.jpg
 ```
 
 ### 简体中文
@@ -183,7 +183,7 @@ p2t predict -l en --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx
 **识别命令**：
 
 ```bash
-p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/mixed.jpg --save-debug-res out-debug-mixed.jpg
+p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro-1.5", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --text-ocr-config '{"rec_model_name": "doc-densenet_lite_666-gru_large"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/mixed.jpg --save-debug-res out-debug-mixed.jpg
 ```
 
 ### 繁体中文
@@ -195,7 +195,7 @@ p2t predict -l en,ch_sim --mfd-config '{"model_name": "mfd-pro", "model_backend"
 **识别命令**：
 
 ```bash
-p2t predict -l en,ch_tra --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro","model_backend":"onnx"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/ch_tra.jpg --save-debug-res out-debug-tra.jpg
+p2t predict -l en,ch_tra --mfd-config '{"model_name": "mfd-pro", "model_backend": "onnx"}' --formula-ocr-config '{"model_name":"mfr-pro-1.5","model_backend":"onnx"}' --resized-shape 768 --auto-line-break --file-type text_formula -i docs/examples/ch_tra.jpg --save-debug-res out-debug-tra.jpg
 ```
 
 > 注意 ⚠️ ：请通过以下命令安装 pix2text 的多语言版本：

@@ -37,6 +37,12 @@ Major Changes:
 - Support for `VlmTableOCR` and `VlmTextFormulaOCR` models based on the VLM interface (see [LiteLLM documentation](https://docs.litellm.ai/docs/)) allowing the use of closed-source VLM models. Installation command: `pip install pix2text[vlm]`.
   - Usage examples can be found in [tests/test_vlm.py](tests/test_vlm.py) and [tests/test_pix2text.py](tests/test_pix2text.py).
 
+## Update 2025.07.25: **V1.1.4** Released
+
+Major Changes:
+
+- Upgraded the Mathematical Formula Detection (MFD) and Mathematical Formula Recognition (MFR) models to version 1.5. All default configurations, documentation, and examples now use `mfd-1.5` and `mfr-1.5` as the standard models.
+
 ## Update 2024.11.17: **V1.1.2** Released
 
 Major Changes:
@@ -77,8 +83,8 @@ See more at: [RELEASE.md](docs/RELEASE.md) .
 - **Layout Analysis Model**: [breezedeus/pix2text-layout](https://huggingface.co/breezedeus/pix2text-layout) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-layout)).
 - **Table Recognition Model**: [breezedeus/pix2text-table-rec](https://huggingface.co/breezedeus/pix2text-table-rec) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-table-rec)).
 - **Text Recognition Engine**: Supports **80+ languages** such as **English, Simplified Chinese, Traditional Chinese, Vietnamese**, etc. For English and Simplified Chinese recognition, it uses the open-source OCR tool [CnOCR](https://github.com/breezedeus/cnocr), while for other languages, it uses the open-source OCR tool [EasyOCR](https://github.com/JaidedAI/EasyOCR).
-- **Mathematical Formula Detection Model (MFD)**: [breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd)). Implemented based on [CnSTD](https://github.com/breezedeus/cnstd).
-- **Mathematical Formula Recognition Model (MFR)**: [breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfr)).
+- **Mathematical Formula Detection Model (MFD)**: [breezedeus/pix2text-mfd-1.5](https://huggingface.co/breezedeus/pix2text-mfd-1.5) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd-1.5)). Implemented based on [CnSTD](https://github.com/breezedeus/cnstd).
+- **Mathematical Formula Recognition Model (MFR)**: [breezedeus/pix2text-mfr-1.5](https://huggingface.co/breezedeus/pix2text-mfr-1.5) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfr-1.5)).
 
 Several models are contributed by other open-source authors, and their contributions are highly appreciated.
 

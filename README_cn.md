@@ -36,6 +36,12 @@
 - 支持基于 VLM 接口（具体参考 [LiteLLM 文档](https://docs.litellm.ai/docs/)）的 `VlmTableOCR` 和 `VlmTextFormulaOCR` 模型，可使用闭源 VLM 模型。安装命令：`pip install pix2text[vlm]`。
   - 使用方式见 [tests/test_vlm.py](tests/test_vlm.py) 和 [tests/test_pix2text.py](tests/test_pix2text.py)。
 
+## Update 2025.07.25：发布 **V1.1.4**
+
+主要变更：
+
+- 数学公式检测（MFD）和数学公式识别（MFR）模型升级到 1.5 版本，所有默认配置、文档和示例均以 `mfd-1.5` 和 `mfr-1.5` 为标准模型。
+
 ## Update 2024.11.17：发布 **V1.1.2**
 
 主要变更：
@@ -77,8 +83,8 @@
 - **版面分析模型**：[breezedeus/pix2text-layout](https://huggingface.co/breezedeus/pix2text-layout) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-layout)）。
 - **表格识别模型**：[breezedeus/pix2text-table-rec](https://huggingface.co/breezedeus/pix2text-table-rec) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-table-rec)）。
 - **文字识别引擎**：支持 **`80+` 种语言**，如**英文、简体中文、繁体中文、越南语**等。其中，**英文**和**简体中文**识别使用的是开源 OCR 工具 [CnOCR](https://github.com/breezedeus/cnocr) ，其他语言的识别使用的是开源 OCR 工具 [EasyOCR](https://github.com/JaidedAI/EasyOCR) 。
-- **数学公式检测模型（MFD）**：[breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfd)）。基于 [CnSTD](https://github.com/breezedeus/cnstd) 实现。
-- **数学公式识别模型（MFR）**：[breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfr)）。
+- **数学公式检测模型（MFD）**：[breezedeus/pix2text-mfd-1.5](https://huggingface.co/breezedeus/pix2text-mfd-1.5) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfd-1.5)）。基于 [CnSTD](https://github.com/breezedeus/cnstd) 实现。
+- **数学公式识别模型（MFR）**：[breezedeus/pix2text-mfr-1.5](https://huggingface.co/breezedeus/pix2text-mfr-1.5) （[国内镜像](https://hf-mirror.com/breezedeus/pix2text-mfr-1.5)）。
 
 其中多个模型来自其他开源作者， 非常感谢他们的贡献。
 

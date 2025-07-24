@@ -57,7 +57,7 @@ def test_recognize_page():
         'layout': {},
         'text_formula': {
             'formula': {
-                'model_name': 'mfr',
+                'model_name': 'mfr-1.5',
                 'model_backend': 'onnx',
                 'more_model_configs': {'provider': 'CPUExecutionProvider'},
             }
