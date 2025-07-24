@@ -29,18 +29,18 @@
 
 # Pix2Text (P2T)
 
+## Update 2025.07.25：发布 **V1.1.4**
+
+主要变更：
+
+- 数学公式检测（MFD）和数学公式识别（MFR）模型升级到 1.5 版本，所有默认配置、文档和示例均以 `mfd-1.5` 和 `mfr-1.5` 为标准模型。
+
 ## Update 2025.04.15：分布 **V1.1.3**
 
 主要变更：
 
 - 支持基于 VLM 接口（具体参考 [LiteLLM 文档](https://docs.litellm.ai/docs/)）的 `VlmTableOCR` 和 `VlmTextFormulaOCR` 模型，可使用闭源 VLM 模型。安装命令：`pip install pix2text[vlm]`。
   - 使用方式见 [tests/test_vlm.py](tests/test_vlm.py) 和 [tests/test_pix2text.py](tests/test_pix2text.py)。
-
-## Update 2025.07.25：发布 **V1.1.4**
-
-主要变更：
-
-- 数学公式检测（MFD）和数学公式识别（MFR）模型升级到 1.5 版本，所有默认配置、文档和示例均以 `mfd-1.5` 和 `mfr-1.5` 为标准模型。
 
 ## Update 2024.11.17：发布 **V1.1.2**
 
