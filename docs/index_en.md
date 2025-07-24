@@ -31,8 +31,8 @@
 - **Layout Analysis Model**: [breezedeus/pix2text-layout-docyolo](https://huggingface.co/breezedeus/pix2text-layout-docyolo) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-layout-docyolo)).
 - **Table Recognition Model**: [breezedeus/pix2text-table-rec](https://huggingface.co/breezedeus/pix2text-table-rec) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-table-rec)).
 - **Text Recognition Engine**: Supports **80+ languages** such as **English, Simplified Chinese, Traditional Chinese, Vietnamese**, etc. For English and Simplified Chinese recognition, it uses the open-source OCR tool [CnOCR](https://github.com/breezedeus/cnocr), while for other languages, it uses the open-source OCR tool [EasyOCR](https://github.com/JaidedAI/EasyOCR).
-- **Mathematical Formula Detection Model (MFD)**: [breezedeus/pix2text-mfd](https://huggingface.co/breezedeus/pix2text-mfd) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd)). Implemented based on [CnSTD](https://github.com/breezedeus/cnstd).
-- **Mathematical Formula Recognition Model (MFR)**: [breezedeus/pix2text-mfr](https://huggingface.co/breezedeus/pix2text-mfr) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfr)).
+- **Mathematical Formula Detection Model (MFD)**: [breezedeus/pix2text-mfd-1.5](https://huggingface.co/breezedeus/pix2text-mfd-1.5) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfd-1.5)). Implemented based on [CnSTD](https://github.com/breezedeus/cnstd).
+- **Mathematical Formula Recognition Model (MFR)**: [breezedeus/pix2text-mfr-1.5](https://huggingface.co/breezedeus/pix2text-mfr-1.5) ([Mirror](https://hf-mirror.com/breezedeus/pix2text-mfr-1.5)).
 
 Several models are contributed by other open-source authors, and their contributions are highly appreciated. 
 

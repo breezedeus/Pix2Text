@@ -1,5 +1,15 @@
 # Release Notes
 
+# Update 2025.07.25: **V1.1.4** Released
+
+Major Changes:
+
+- Upgraded the Mathematical Formula Detection (MFD) and Mathematical Formula Recognition (MFR) models to version 1.5. All default configurations, documentation, and examples now use `mfd-1.5` and `mfr-1.5` as the standard models.
+
+主要变更：
+
+- 数学公式检测（MFD）和数学公式识别（MFR）模型升级到 1.5 版本，所有默认配置、文档和示例均以 `mfd-1.5` 和 `mfr-1.5` 为标准模型。
+
 # Update 2025.05.06: **V1.1.3.2** Released
 
 Major Changes:
