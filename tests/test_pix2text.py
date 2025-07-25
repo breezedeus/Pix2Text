@@ -8,27 +8,29 @@ set_logger()
 
 
 def test_recognize_pdf():
-    pdf_fn = '1804.07821'
+    pdf_fn = 'test-doc'
     img_fp = f'./docs/examples/{pdf_fn}.pdf'
     text_formula_config = dict(
-        languages=('en', 'ch_sim'),
+        languages=("en", "ch_sim"),
         mfd=dict(  # 声明 MFD 的初始化参数
+            model_name="mfd-pro-1.5",
+            model_backend="onnx",
             model_path=os.path.expanduser(
-                '~/.pix2text/1.1/mfd-onnx/mfd-v20240618.onnx'
+                "~/.pix2text/1.1/mfd-1.5-onnx/pix2text-mfd-1.5.onnx"
             ),  # 注：修改成你的模型文件所存储的路径
         ),
         formula=dict(
-            model_name='mfr-pro',
-            model_backend='onnx',
+            model_name="mfr-pro-1.5",
+            model_backend="onnx",
             model_dir=os.path.expanduser(
-                '~/.pix2text/1.1/mfr-pro-onnx'
+                "~/.pix2text/1.1/mfr-pro-1.5-onnx"
             ),  # 注：修改成你的模型文件所存储的路径
         ),
         text=dict(
-            rec_model_name='doc-densenet_lite_666-gru_large',
-            rec_model_backend='onnx',
+            rec_model_name="doc-densenet_lite_666-gru_large",
+            rec_model_backend="onnx",
             rec_model_fp=os.path.expanduser(
-                '~/.cnocr/2.3/doc-densenet_lite_666-gru_large/cnocr-v2.3-doc-densenet_lite_666-gru_large-epoch=005-ft-model.onnx'
+                "~/.cnocr/2.3/doc-densenet_lite_666-gru_large/cnocr-v2.3-doc-densenet_lite_666-gru_large-epoch=005-ft-model.onnx"
                 # noqa
             ),  # 注：修改成你的模型文件所存储的路径
         ),
