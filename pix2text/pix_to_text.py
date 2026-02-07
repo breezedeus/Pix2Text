@@ -7,7 +7,7 @@ import os
 from copy import deepcopy
 from functools import cmp_to_key
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List, Literal
+from typing import Dict, Any, Optional, Union, List, Literal, overload
 
 import numpy as np
 from PIL import Image
@@ -110,6 +110,18 @@ def prepare_table_ocr_engine(
 class Pix2Text(object):
     # MODEL_FILE_PREFIX = 'pix2text-v{}'.format(MODEL_VERSION)
 
+    @overload
+    def __init__(
+        self,
+        *,
+        total_configs: dict,
+        enable_formula: bool = True,
+        enable_table: bool = True,
+        device: Optional[str] = None,
+        **kwargs,
+    ) -> None: ...
+
+    @overload
     def __init__(
         self,
         *,
@@ -118,24 +130,86 @@ class Pix2Text(object):
         table_ocr: Optional[TableOCR] = None,
         enable_formula: bool = True,
         **kwargs,
+    ) -> None: ...
+
+    def __init__(
+        self,
+        *,
+        total_configs: Optional[dict] = None,
+        enable_formula: bool = True,
+        enable_table: bool = True,
+        device: Optional[str] = None,
+        layout_parser: Optional[LayoutParser] = None,
+        text_formula_ocr: Optional[TextFormulaOCR] = None,
+        table_ocr: Optional[TableOCR] = None,
+        **kwargs,
     ):
         """
         Initialize the Pix2Text object.
+
+        Supports two initialization modes:
+
+        1. **Config-based** (same as ``from_config``)::
+
+            p2t = Pix2Text(total_configs=cfg, enable_table=True, device='cuda')
+
+        2. **Component-based** (pass pre-built engine objects)::
+
+            p2t = Pix2Text(layout_parser=lp, text_formula_ocr=tfo)
+
+        When *total_configs* is provided the config-based mode is used and
+        any directly passed component objects are ignored.
+
         Args:
-            layout_parser (LayoutParser): The layout parser object; default value is `None`, which means to create a default one
-            text_formula_ocr (TextFormulaOCR): The text and formula OCR object; default value is `None`, which means to create a default one
-            table_ocr (TableOCR): The table OCR object; default value is `None`, which means not to recognize tables
-            enable_formula (bool): Whether to enable formula recognition; default value is `True`
-            **kwargs (dict): Other arguments, currently not used
+            total_configs (dict): The total configuration; default value is ``None``.
+                If not ``None``, it should contain the following keys:
+
+                    * ``layout``: The layout parser configuration
+                    * ``text_formula``: The TextFormulaOCR configuration
+                    * ``table``: The table OCR configuration
+            enable_formula (bool): Whether to enable formula recognition; default value is ``True``
+            enable_table (bool): Whether to enable table recognition; default value is ``True``.
+                Only used in config-based mode.
+            device (str): The device to run the model; optional values are ``'cpu'``, ``'gpu'``
+                or ``'cuda'``; default value is ``None``, which means to select the device
+                automatically. Only used in config-based mode.
+            layout_parser (LayoutParser): The layout parser object; default value is ``None``,
+                which means to create a default one
+            text_formula_ocr (TextFormulaOCR): The text and formula OCR object; default value
+                is ``None``, which means to create a default one
+            table_ocr (TableOCR): The table OCR object; default value is ``None``, which means
+                not to recognize tables
+            **kwargs (dict): Other arguments
         """
-        if layout_parser is None:
-            device = select_device(None)
-            layout_parser = prepare_layout_engine({}, device=device)
-        if text_formula_ocr is None:
-            device = select_device(None)
-            text_formula_ocr = TextFormulaOCR.from_config(
-                None, enable_formula=enable_formula, device=device
+        if total_configs is not None:
+            total_configs = total_configs or {}
+            layout_config = total_configs.get('layout', None)
+            text_formula_config = total_configs.get('text_formula', None)
+            table_config = total_configs.get('table', None)
+
+            layout_parser = prepare_layout_engine(layout_config, device=device)
+            text_formula_ocr = prepare_text_formula_ocr_engine(
+                text_formula_config, enable_formula, device, **kwargs
             )
+            if enable_table:
+                table_ocr = prepare_table_ocr_engine(
+                    table_config,
+                    device=device,
+                    text_formula_ocr=text_formula_ocr,
+                    **kwargs,
+                )
+            else:
+                table_ocr = None
+        else:
+            if layout_parser is None:
+                device = select_device(device)
+                layout_parser = prepare_layout_engine({}, device=device)
+            if text_formula_ocr is None:
+                device = select_device(device)
+                text_formula_ocr = TextFormulaOCR.from_config(
+                    None, enable_formula=enable_formula, device=device
+                )
+
         self.layout_parser = layout_parser
         self.text_formula_ocr = text_formula_ocr
         self.table_ocr = table_ocr

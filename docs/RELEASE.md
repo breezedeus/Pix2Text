@@ -1,5 +1,15 @@
 # Release Notes
 
+# Update 2026.02.07: **V1.1.6** Released
+
+Major Changes:
+
+- The `Pix2Text` class now supports config-based initialization directly via `__init__`, with the same parameters as `from_config()`. Users can now use `Pix2Text(total_configs=..., enable_table=True, device='cuda')` instead of `Pix2Text.from_config(...)`.
+
+主要变更：
+
+- `Pix2Text` 类现在支持通过 `__init__` 直接进行基于配置的初始化，参数与 `from_config()` 相同。用户现在可以使用 `Pix2Text(total_configs=..., enable_table=True, device='cuda')` 代替 `Pix2Text.from_config(...)`。
+
 # Update 2026.02.07: **V1.1.5** Released
 
 Major Changes:

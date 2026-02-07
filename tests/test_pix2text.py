@@ -227,3 +227,29 @@ def test_multilingual_ocr():
         img_fp, file_type="text_formula", return_text=True, auto_line_break=False
     )
     print(outs)
+
+
+def test_init_with_total_configs():
+    """Test that Pix2Text can be initialized with total_configs directly (same as from_config)."""
+    total_config = {
+        'layout': {},
+        'text_formula': {
+            'formula': {
+                'model_name': 'mfr-1.5',
+                'model_backend': 'onnx',
+                'more_model_configs': {'provider': 'CPUExecutionProvider'},
+            }
+        },
+    }
+    # Initialize using total_configs parameter directly
+    p2t = Pix2Text(total_configs=total_config, enable_table=False, device='cpu')
+
+    assert p2t.layout_parser is not None
+    assert p2t.text_formula_ocr is not None
+    assert p2t.table_ocr is None  # enable_table=False
+    assert p2t.enable_formula is True  # default value
+    img_fp = './docs/examples/page2.png'
+    outs = p2t.recognize(
+        img_fp, file_type="text_formula", return_text=True, auto_line_break=False
+    )
+    print(outs)
