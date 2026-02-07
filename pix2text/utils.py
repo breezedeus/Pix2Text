@@ -1,18 +1,15 @@
 # coding: utf-8
 # [Pix2Text](https://github.com/breezedeus/pix2text): an Open-Source Alternative to Mathpix.
-# Copyright (C) 2022-2024, [Breezedeus](https://www.breezedeus.com).
+# Copyright (C) 2022-2026, [Breezedeus](https://www.breezedeus.com).
 
 import hashlib
 import os
 import re
-import shutil
-import shlex
 from copy import deepcopy
 from functools import cmp_to_key
 from pathlib import Path
 import logging
 import platform
-import subprocess
 from typing import Union, List, Any, Dict
 from collections import Counter, defaultdict
 
@@ -23,12 +20,11 @@ import torch
 from torchvision.utils import save_image
 
 from .consts import MODEL_VERSION
+from .hf_downloader import HuggingFaceDownloader, dir_has_files
 
-fmt = '[%(levelname)s %(asctime)s %(funcName)s:%(lineno)d] %(' 'message)s '
-logging.basicConfig(format=fmt)
+fmt = '[%(levelname)s %(asctime)s %(funcName)s:%(lineno)d] %(message)s'
 logging.captureWarnings(True)
 logger = logging.getLogger()
-
 
 def set_logger(log_file=None, log_level=logging.INFO, log_file_level=logging.NOTSET):
     """
@@ -39,6 +35,7 @@ def set_logger(log_file=None, log_level=logging.INFO, log_file_level=logging.NOT
     log_format = logging.Formatter(fmt)
     logger.setLevel(log_level)
     console_handler = logging.StreamHandler()
+    console_handler.setLevel(log_level)
     console_handler.setFormatter(log_format)
     logger.handlers = [console_handler]
     if log_file and log_file != '':
@@ -1058,41 +1055,17 @@ def merge_line_texts(
     return re.sub(rf'{line_sep}+', line_sep, outs)  # 把多个 '\n' 替换为 '\n'
 
 
-def run_hf_download_cmd(remote_repo, model_dir, env=None):
-    """
-    统一在不同平台下执行 huggingface-cli 下载命令。
-    Args:
-        remote_repo: huggingface 仓库名
-        model_dir: 下载到的本地目录
-        env: 可选，传递给 subprocess 的环境变量
-    """
-    if platform.system() == 'Windows':
-        download_cmd = [
-            'huggingface-cli', 'download', '--repo-type', 'model',
-            '--resume-download', '--local-dir-use-symlinks', 'False',
-            remote_repo, '--local-dir', str(model_dir)
-        ]
-        subprocess.run(download_cmd, env=env, shell=False)
-    else:
-        download_cmd = f'huggingface-cli download --repo-type model --resume-download --local-dir-use-symlinks False {remote_repo} --local-dir {shlex.quote(str(model_dir))}'
-        subprocess.run(download_cmd, env=env, shell=True)
-
-
 def prepare_model_files(root, model_info, mirror_url='https://hf-mirror.com') -> Path:
     model_root_dir = Path(root) / MODEL_VERSION
     model_dir = model_root_dir / model_info['local_model_id']
-    if model_dir.is_dir() and list(model_dir.glob('**/[!.]*')):
+    if dir_has_files(model_dir):
         return model_dir
-    assert 'hf_model_id' in model_info
-    model_dir.mkdir(parents=True)
-    run_hf_download_cmd(model_info["hf_model_id"], model_dir)
-    # 如果当前目录下无文件，就从huggingface上下载
-    if not list(model_dir.glob('**/[!.]*')):
-        if model_dir.exists():
-            shutil.rmtree(str(model_dir))
-        env = os.environ.copy()
-        env['HF_ENDPOINT'] = mirror_url
-        run_hf_download_cmd(model_info["hf_model_id"], model_dir, env=env)
+    if 'hf_model_id' not in model_info:
+        raise ValueError('model_info must include "hf_model_id"')
+    downloader = HuggingFaceDownloader(mirror_urls=mirror_url, logger=logger)
+    download_ok = downloader.download(model_info["hf_model_id"], model_dir)
+    if not download_ok or not dir_has_files(model_dir):
+        logger.warning('Model download did not create files in %s', model_dir)
     return model_dir
 
 
@@ -1103,7 +1076,7 @@ def prepare_model_files2(model_fp_or_dir, remote_repo, file_or_dir='file', mirro
         model_fp_or_dir: 下载的模型文件会保存到此路径
         remote_repo: 指定的远程仓库
         file_or_dir: model_fp_or_dir 是文件路径还是目录路径。注：下载的都是目录
-        mirror_url: 指定的 HuggingFace 国内镜像网址；如果无法从 HuggingFace 官方仓库下载，会自动从此国内镜像下载。默认值为 'https://hf-mirror.com'
+        mirror_url: HuggingFace 镜像网址，支持字符串或列表。字符串会默认按官方源->镜像顺序尝试。
     """
     model_fp_or_dir = Path(model_fp_or_dir)
     if file_or_dir == 'file':
@@ -1112,23 +1085,14 @@ def prepare_model_files2(model_fp_or_dir, remote_repo, file_or_dir='file', mirro
         model_dir = model_fp_or_dir.parent
     else:
         model_dir = model_fp_or_dir
-    if model_dir.exists():
-        shutil.rmtree(str(model_dir))
-    model_dir.mkdir(parents=True)
-    run_hf_download_cmd(remote_repo, model_dir)
-    download_status = False
+    downloader = HuggingFaceDownloader(mirror_urls=mirror_url, logger=logger)
+    download_ok = downloader.download(remote_repo, model_dir)
     if file_or_dir == 'file':
-        if model_fp_or_dir.exists():  # download failed above
-            download_status = True
-    else:  # model_dir 存在且非空，则下载成功
-        if model_dir.exists() and list(model_dir.glob('**/[!.]*')):
-            download_status = True
-    if not download_status:  # download failed above
-        if model_dir.exists():
-            shutil.rmtree(str(model_dir))
-        env = os.environ.copy()
-        env['HF_ENDPOINT'] = mirror_url
-        run_hf_download_cmd(remote_repo, model_dir, env=env)
+        if not model_fp_or_dir.exists() or not download_ok:
+            logger.warning('Model file not found after download: %s', model_fp_or_dir)
+    else:
+        if not dir_has_files(model_dir) or not download_ok:
+            logger.warning('Model directory is empty after download: %s', model_dir)
     return model_fp_or_dir
 
 
