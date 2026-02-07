@@ -13,73 +13,45 @@ CnOCR 和 CnSTD 中的模型分别存于 `~/.cnocr` 和 `~/.cnstd` 中（Windows
 
 
 ## 初始化
-### 方法一
 
-类 [Pix2Text](pix2text/pix_to_text.md) 是识别主类，包含了多个识别函数识别不同类型的 **图片** 或 **PDF文件** 中的内容。类 `Pix2Text` 的初始化函数如下：
+类 [Pix2Text](pix2text/pix_to_text.md) 是识别主类，包含了多个识别函数识别不同类型的 **图片** 或 **PDF文件** 中的内容。
+
+`Pix2Text` 支持两种初始化模式：
+
+### 方法一：基于配置初始化（推荐）
+
+通过传入 `total_configs` 配置字典来初始化，这是最常用的方式：
+
+```python
+from pix2text import Pix2Text
+
+# 使用默认配置
+p2t = Pix2Text()
+
+# 使用自定义配置
+total_config = {
+    'layout': {'scores_thresh': 0.45},
+    'text_formula': text_formula_config,
+}
+p2t = Pix2Text(total_configs=total_config, enable_table=True, device='cuda')
+```
+
+完整的初始化参数如下：
 
 ```python
 class Pix2Text(object):
     def __init__(
         self,
         *,
+        total_configs: Optional[dict] = None,
+        enable_formula: bool = True,
+        enable_table: bool = True,
+        device: Optional[str] = None,
         layout_parser: Optional[LayoutParser] = None,
         text_formula_ocr: Optional[TextFormulaOCR] = None,
         table_ocr: Optional[TableOCR] = None,
         **kwargs,
     ):
-		"""
-        Initialize the Pix2Text object.
-        Args:
-            layout_parser (LayoutParser): The layout parser object; default value is `None`, which means to create a default one
-            text_formula_ocr (TextFormulaOCR): The text and formula OCR object; default value is `None`, which means to create a default one
-            table_ocr (TableOCR): The table OCR object; default value is `None`, which means not to recognize tables
-            **kwargs (dict): Other arguments, currently not used
-        """
-```
-
-其中的几个参数含义如下：
-
-* `layout_parser`：版面分析模型对象，默认值为 `None`，表示使用默认的版面分析模型；
-* `text_formula_ocr`：文字与公式识别模型对象，默认值为 `None`，表示使用默认的文字与公式识别模型；
-* `table_ocr`：表格识别模型对象，默认值为 `None`，表示不识别表格；
-* `**kwargs`：其他参数，目前未使用。
-
-
-每个参数都有默认取值，所以可以不传入任何参数值进行初始化：`p2t = Pix2Text()`。但请注意，如果不传入任何参数值，那么只会导入默认的版面分析模型和文字与公式识别模型，而**不会导入表格识别模型**。
-
-初始化 Pix2Text 实例的更好的方法是使用以下的函数。
-
-### 方法二
-可以通过指定配置信息来初始化 `Pix2Text` 类的实例：
-
-```python
-@classmethod
-def from_config(
-		cls,
-		total_configs: Optional[dict] = None,
-		enable_formula: bool = True,
-		enable_table: bool = True,
-		device: str = None,
-		**kwargs,
-):
-	"""
-    Create a Pix2Text object from the configuration.
-    Args:
-        total_configs (dict): The total configuration; default value is `None`, which means to use the default configuration.
-            If not None, it should contain the following keys:
-
-                * `layout`: The layout parser configuration
-                * `text_formula`: The TextFormulaOCR configuration
-                * `table`: The table OCR configuration
-        enable_formula (bool): Whether to enable formula recognition; default value is `True`
-        enable_table (bool): Whether to enable table recognition; default value is `True`
-        device (str): The device to run the model; optional values are 'cpu', 'gpu' or 'cuda';
-            default value is `None`, which means to select the device automatically
-        **kwargs (dict): Other arguments
-
-    Returns: a Pix2Text object
-
-    """
 ```
 
 其中的几个参数含义如下：
@@ -90,13 +62,14 @@ def from_config(
 	- `table`：表格识别模型的配置；
   默认值为 `None`，表示使用默认配置。
 * `enable_formula`：是否启用公式识别，默认值为 `True`；
-* `enable_table`：是否启用表格识别，默认值为 `True`；
-* `device`：运行模型的设备，可选值为 `'cpu'`, `'gpu'` 或 `'cuda'`，默认值为 `None`，表示自动选择设备；
-* `**kwargs`：其他参数，目前未使用。
+* `enable_table`：是否启用表格识别，默认值为 `True`（仅在基于配置初始化时有效）；
+* `device`：运行模型的设备，可选值为 `'cpu'`, `'gpu'` 或 `'cuda'`，默认值为 `None`，表示自动选择设备（仅在基于配置初始化时有效）；
+* `layout_parser`：版面分析模型对象，默认值为 `None`，表示使用默认的版面分析模型（仅在组件模式下使用）；
+* `text_formula_ocr`：文字与公式识别模型对象，默认值为 `None`，表示使用默认的文字与公式识别模型（仅在组件模式下使用）；
+* `table_ocr`：表格识别模型对象，默认值为 `None`，表示不识别表格（仅在组件模式下使用）；
+* `**kwargs`：其他参数。
 
-这个函数的返回值是一个 `Pix2Text` 类的实例，可以直接使用这个实例进行识别。
-
-推荐使用此函数初始化 Pix2Text 的实例，如：`p2t = Pix2Text.from_config()`。
+当传入 `total_configs` 时，会使用基于配置的初始化模式；否则会使用组件模式（直接传入已构建的引擎对象）。
 
 一个包含配置信息的示例如下：
 
@@ -131,7 +104,7 @@ total_config = {
 	'layout': {'scores_thresh': 0.45},
 	'text_formula': text_formula_config,
 }
-p2t = Pix2Text.from_config(total_configs=total_config)
+p2t = Pix2Text(total_configs=total_config)
 ```
 
 使用 VLM API 做文字和公式识别的示例如下：
@@ -156,9 +129,45 @@ total_config = {
         "api_key": api_key,
     },
 }
-p2t = Pix2Text.from_config(total_configs=total_config)
+p2t = Pix2Text(total_configs=total_config)
 ```
 `model_name` 和 `api_key` 的取值，具体可参考 [LiteLLM 文档](https://docs.litellm.ai/docs/)。
+
+### 方法二：使用 `from_config` 类方法
+
+也可以通过 `from_config` 类方法来初始化，功能与方法一完全相同：
+
+```python
+@classmethod
+def from_config(
+		cls,
+		total_configs: Optional[dict] = None,
+		enable_formula: bool = True,
+		enable_table: bool = True,
+		device: str = None,
+		**kwargs,
+):
+	"""
+    Create a Pix2Text object from the configuration.
+    Args:
+        total_configs (dict): The total configuration; default value is `None`, which means to use the default configuration.
+            If not None, it should contain the following keys:
+
+                * `layout`: The layout parser configuration
+                * `text_formula`: The TextFormulaOCR configuration
+                * `table`: The table OCR configuration
+        enable_formula (bool): Whether to enable formula recognition; default value is `True`
+        enable_table (bool): Whether to enable table recognition; default value is `True`
+        device (str): The device to run the model; optional values are 'cpu', 'gpu' or 'cuda';
+            default value is `None`, which means to select the device automatically
+        **kwargs (dict): Other arguments
+
+    Returns: a Pix2Text object
+
+    """
+```
+
+使用示例：`p2t = Pix2Text.from_config(total_configs=total_config)`。
 
 更多初始化的示例请参见 [tests/test_pix2text.py](https://github.com/breezedeus/Pix2Text/blob/main/tests/test_pix2text.py)。
 
