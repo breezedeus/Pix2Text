@@ -1,5 +1,15 @@
 # Release Notes
 
+# Update 2026.02.07: **V1.1.5** Released
+
+Major Changes:
+
+- Refactored model download to use `huggingface_hub.snapshot_download()` with a mirror fallback list (official endpoint first).
+
+主要变更：
+
+- 模型下载逻辑改用 `huggingface_hub.snapshot_download()`，并支持镜像列表按顺序回退（优先官方地址）。
+
 # Update 2025.07.25: **V1.1.4** Released
 
 Major Changes:
