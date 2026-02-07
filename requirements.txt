@@ -40,9 +40,9 @@ click==8.1.7
     #   cnocr
     #   cnstd
     #   wandb
-cnocr[ort-cpu]==2.3.2.1
+cnocr[ort-cpu]==2.3.2.3
     # via -r requirements.in
-cnstd==1.2.6.1
+cnstd==1.2.7.1
     # via
     #   -r requirements.in
     #   cnocr
