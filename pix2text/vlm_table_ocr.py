@@ -86,6 +86,7 @@ class VlmTableOCR(object):
         vlm = Vlm(
             model_name=all_kwargs.pop("model_name", None),
             api_key=all_kwargs.pop("api_key", None),
+            api_base=all_kwargs.pop("api_base", None),
         )
 
         return cls(

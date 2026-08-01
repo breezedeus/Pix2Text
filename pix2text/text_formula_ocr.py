@@ -606,6 +606,7 @@ class VlmTextFormulaOCR(TextFormulaOCR):
             **kwargs (): Reserved for other parameters: 
                 * model_name (str): The name of the VLM model; defaults to `None`, which means using the default model.
                 * api_key (str): The API key for the VLM model; defaults to `None`, which means using the default API key.
+                * api_base (str): The base URL for an OpenAI-compatible API; defaults to `None`.
         """
         from .vlm_api import Vlm
 
@@ -618,6 +619,7 @@ class VlmTextFormulaOCR(TextFormulaOCR):
         vlm = Vlm(
             model_name=all_kwargs.pop("model_name", None),
             api_key=all_kwargs.pop("api_key", None),
+            api_base=all_kwargs.pop("api_base", None),
         )
 
         spellchecker = None
