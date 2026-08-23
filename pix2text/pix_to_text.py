@@ -67,6 +67,7 @@ def prepare_text_formula_ocr_engine(
         text_formula_ocr = VlmTextFormulaOCR.from_config(
             model_name=text_formula_config["model_name"],
             api_key=text_formula_config["api_key"],
+            api_base=text_formula_config.get("api_base"),
             **kwargs,
         )
     else:
@@ -100,6 +101,7 @@ def prepare_table_ocr_engine(
         table_ocr = VlmTableOCR.from_config(
             model_name=table_config["model_name"],
             api_key=table_config["api_key"],
+            api_base=table_config.get("api_base"),
             **kwargs,
         )
     else:

@@ -133,6 +133,33 @@ p2t = Pix2Text(total_configs=total_config)
 ```
 `model_name` 和 `api_key` 的取值，具体可参考 [LiteLLM 文档](https://docs.litellm.ai/docs/)。
 
+MiniMax-M3 can be configured through the OpenAI-compatible LiteLLM adapter:
+
+```python
+import os
+from pix2text import Pix2Text
+
+vlm_config = {
+    "model_name": "openai/MiniMax-M3",
+    "api_key": os.getenv("MINIMAX_API_KEY"),
+    "api_base": os.getenv("MINIMAX_API_BASE", "https://api.minimax.io/v1"),
+}
+total_config = {
+    "layout": None,
+    "text_formula": {
+        "model_type": "VlmTextFormulaOCR",
+        **vlm_config,
+    },
+    "table": {
+        "model_type": "VlmTableOCR",
+        **vlm_config,
+    },
+}
+p2t = Pix2Text.from_config(total_configs=total_config)
+```
+
+Set `MINIMAX_API_BASE=https://api.minimaxi.com/v1` to use the China endpoint.
+
 ### 方法二：使用 `from_config` 类方法
 
 也可以通过 `from_config` 类方法来初始化，功能与方法一完全相同：

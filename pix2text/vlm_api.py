@@ -146,9 +146,16 @@ class Vlm(object):
     This class uses the Litellm library to interact with the VLM API.
     """
 
-    def __init__(self, *, model_name: str, api_key: str) -> None:
+    def __init__(
+        self,
+        *,
+        model_name: str,
+        api_key: str,
+        api_base: Optional[str] = None,
+    ) -> None:
         self.model_name = model_name
         self.api_key = api_key
+        self.api_base = api_base
 
     def __call__(
         self,
@@ -194,6 +201,8 @@ class Vlm(object):
             )
 
         try:
+            if self.api_base:
+                kwargs.setdefault("api_base", self.api_base)
             responses = batch_completion(
                 model=self.model_name,
                 messages=messages,
