@@ -678,7 +678,13 @@ class VlmTextFormulaOCR(TextFormulaOCR):
         rec_config: Optional[dict] = None,
         **kwargs,
     ) -> Union[str, List[str], List[Any], List[List[Any]]]:
-        return self._recognize_batch(imgs, res_type='text', return_text=return_text, rec_config=rec_config)
+        return self._recognize_batch(
+            imgs,
+            res_type='text',
+            return_text=return_text,
+            rec_config=rec_config,
+            **kwargs,
+        )
 
     def recognize_formula(
         self,
@@ -705,10 +711,18 @@ class VlmTextFormulaOCR(TextFormulaOCR):
                     * `score`: The confidence score [0, 1]; the higher, the more confident
 
         """
-        return self._recognize_batch(imgs, res_type='formula', return_text=return_text, rec_config=rec_config)
+        return self._recognize_batch(
+            imgs,
+            res_type='formula',
+            return_text=return_text,
+            rec_config=rec_config,
+            **kwargs,
+        )
 
-    def _recognize_batch(self, imgs, *, res_type, return_text = True, rec_config = None):
-        rec_config = rec_config or {}
+    def _recognize_batch(
+        self, imgs, *, res_type, return_text=True, rec_config=None, **kwargs
+    ):
+        rec_config = {**(rec_config or {}), **kwargs}
         if isinstance(imgs, (str, Path, Image.Image)):
             result = self.recognize(imgs, return_text, **rec_config)
             if not return_text:

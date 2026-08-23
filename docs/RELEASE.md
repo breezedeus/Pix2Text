@@ -1,5 +1,17 @@
 # Release Notes
 
+# Update 2026.08.23: **V1.1.7** Released
+
+Major Changes:
+
+- Added `api_base` configuration for OpenAI-compatible VLM endpoints, including MiniMax-M3.
+- Forward VLM call options through the public text and formula recognition APIs.
+
+主要变更：
+
+- 支持为 OpenAI 兼容的 VLM 接口配置 `api_base`，包括 MiniMax-M3。
+- 公开的文本和公式识别接口会继续传递 VLM 调用参数。
+
 # Update 2026.02.07: **V1.1.6** Released
 
 Major Changes:
