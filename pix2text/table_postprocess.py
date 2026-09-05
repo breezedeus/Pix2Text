@@ -224,10 +224,23 @@ def slot_into_containers(container_objects, package_objects, overlap_threshold=0
     for package_num, package in enumerate(package_objects):
         match_scores = []
         package_rect = Rect(package['bbox'])
-        package_area = package_rect.get_area()        
+        package_area = package_rect.get_area()
+        if package_area <= 0:
+            # An inverted box (y0 > y1) or one with zero width or height produces
+            # an empty Rect, whose area is 0, and dividing by it raises
+            # ZeroDivisionError. Both shapes come out of ordinary OCR output.
+            # Normalising recovers the inverted case; a box that still covers no
+            # area cannot be slotted into any container, so it is left unassigned
+            # with a match score of 0 instead of aborting the whole table.
+            x0, y0, x1, y1 = package['bbox']
+            package_rect = Rect(min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
+            package_area = package_rect.get_area()
+            if package_area <= 0:
+                best_match_scores.append(0)
+                continue
         for container_num, container in enumerate(container_objects):
             container_rect = Rect(container['bbox'])
-            intersect_area = container_rect.intersect(package['bbox']).get_area()
+            intersect_area = container_rect.intersect(package_rect).get_area()
             overlap_fraction = intersect_area / package_area
             match_scores.append({'container': container, 'container_num': container_num, 'score': overlap_fraction})
 
