@@ -133,14 +133,16 @@ p2t = Pix2Text(total_configs=total_config)
 ```
 `model_name` 和 `api_key` 的取值，具体可参考 [LiteLLM 文档](https://docs.litellm.ai/docs/)。
 
-MiniMax-M3 can be configured through the OpenAI-compatible LiteLLM adapter:
+MiniMax-M3.1-Flash is the recommended starting model for MiniMax VLM calls;
+MiniMax-M3 is the alternate current model. Configure the OpenAI-compatible
+LiteLLM adapter as follows:
 
 ```python
 import os
 from pix2text import Pix2Text
 
 vlm_config = {
-    "model_name": "openai/MiniMax-M3",
+    "model_name": "openai/MiniMax-M3.1-Flash",
     "api_key": os.getenv("MINIMAX_API_KEY"),
     "api_base": os.getenv("MINIMAX_API_BASE", "https://api.minimax.io/v1"),
 }
@@ -159,6 +161,23 @@ p2t = Pix2Text.from_config(total_configs=total_config)
 ```
 
 Set `MINIMAX_API_BASE=https://api.minimaxi.com/v1` to use the China endpoint.
+To use LiteLLM's Anthropic-compatible adapter, replace `vlm_config` above with:
+
+```python
+vlm_config = {
+    "model_name": "anthropic/MiniMax-M3.1-Flash",
+    "api_key": os.getenv("MINIMAX_API_KEY"),
+    "api_base": os.getenv("MINIMAX_API_BASE", "https://api.minimax.io/anthropic"),
+}
+```
+
+For that adapter, use `https://api.minimaxi.com/anthropic` in China. To select
+MiniMax-M3, change only the model suffix to `MiniMax-M3`, retaining the
+`openai/` or `anthropic/` prefix. These examples omit thinking and effort
+options so the API defaults apply: Flash uses adaptive thinking; M3 defaults
+to adaptive on OpenAI and disabled on Anthropic. Flash does not use a legacy
+thinking-token budget. Existing explicit model names and per-call options
+remain supported by the generic VLM engine.
 
 ### 方法二：使用 `from_config` 类方法
 
